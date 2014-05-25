@@ -1,0 +1,7 @@
+when the symbol changes in the sorted first letter list, any specific transitions yielding longer runs than others? would imply different orderings than alphabetical could be better
+need to sort the entire BW table with different ordering, encoded chars within a subcode belonging to one letter will be permuted
+also analyze transitions within one grouping of the first column (orderings in the second column); worth worrying about? the code letters corresponding to that group would be permuted given a different odering for the second (etc.) columns
+
+inversion coding
+overwork
+effect of reversed bwt on computing optimized sorts
