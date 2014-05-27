@@ -47,8 +47,8 @@ def analyze_transition(bw1, bw2):
     a = analyze_partial_mtf(cd.mtf_partial_enc(bw1))
     b = analyze_partial_mtf(cd.mtf_partial_enc(bw2))
     ab = analyze_partial_mtf(cd.mtf_partial_enc(bw1 + bw2))
-    TransitionResult = namedtuple('TransitionResult', ['left', 'right',
-                                                         'together', 'diff'])
+#     TransitionResult = namedtuple('TransitionResult', ['left', 'right',
+#                                                          'together', 'diff'])
     length = TransitionResult(a.length, b.length, ab.length,
                                abs(a.length - b.length))
     num_chars = TransitionResult(a.num_chars, b.num_chars, ab.num_chars,
@@ -74,9 +74,9 @@ def analyze_transition(bw1, bw2):
     weighted_mean = ((a.mean * a.length_rec + b.mean * b.length_rec)
                      / ab_length_rec) - ab.mean
     mean = TransitionResult(a.mean, b.mean, ab.mean, weighted_mean)
-    TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
-                                          ['length', 'num_chars', 'max_code',
-                                           'median', 'mean'])
+#     TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
+#                                           ['length', 'num_chars', 'max_code',
+#                                            'median', 'mean'])
     result = TransitionAnalysisResult(length, num_chars, max_code, median, mean)
     return result
 
@@ -128,31 +128,46 @@ def print_transition_analyses(text):
                  mean_line]
         print(make_table_string(table))
 
+# keep them here so pickle can find them
+TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
+                                          ['length', 'num_chars', 'max_code',
+                                           'median', 'mean'])
+
+TransitionResult = namedtuple('TransitionResult',
+                              ['left', 'right', 'together', 'diff'])
 if __name__ == '__main__':
 #     f = open('/home/dddsnn/Downloads/calgary/book1')
 #     text = f.read()
 #     trs = analyze_transitions(text)
 #     print('transitions done')
-#     g = nx.Graph()
-#     edges = []
-#     for a, b in trs:
-#         tmpa = a
-#         tmpb = b
-#         # replace '\x00' with 0 (integer) so numpy doesn't mess up
-#         if a == '\x00':
-#             tmpa = 0
-#         if b == '\x00':
-#             tmpb = 0
-#         edges.append((tmpa, tmpb, {'cost':trs[(a, b)].mean.diff}))
-# #     edges = [(a, b, {'cost':trs[(a, b)].mean.diff}) for (a, b) in trs]
+#     pickle.dump(trs, open('/home/dddsnn/tmp/book1/transitions', 'wb'))
+
+    trs = pickle.load(open('/home/dddsnn/tmp/book1/transitions', 'rb'))
+    g = nx.DiGraph()
+    edges = []
+    # encode the real names as simpler strings, because numpy can't handle
+    # '\x00' and openopt can't handle integers as node names
+    # write 'nx' for the normal character x and 'sx' for special characters
+    # '\x00' -> 's0'
+#     for k in trs.keys():
+#         if k[0] == '\x00':
+#             a = 's0'
+#         else:
+#             a = 'n' + k[0]
+#         if k[1] == '\x00':
+#             b = 's0'
+#         else:
+#             b = 'n' + k[1]
+#         edges.append((a, b, {'cost':trs[k].mean.diff}))
 #     g.add_edges_from(edges)
 #     print('graph created')
-#     pickle.dump(g, open('/home/dddsnn/tmp/graph', 'wb'))
+#     pickle.dump(g, open('/home/dddsnn/tmp/book1/graph', 'wb'))
 
-    g = pickle.load(open('/home/dddsnn/tmp/graph', 'rb'))
-    print(len(g.nodes()))
+    g = pickle.load(open('/home/dddsnn/tmp/book1/graph', 'rb'))
     problem = TSP(g, objective='cost')
-    result = problem.solve('glpk')
+    problem.solve('interalg', maxTime=4200, manage=True)
+    result = problem.solve('interalg', maxTime=4200)
+    pickle.dump(result, open('/home/dddsnn/tmp/book1/result-interalg', 'wb'))
 
 #     bw = cd.bw_encode(text)
 # #     print(bw2)
