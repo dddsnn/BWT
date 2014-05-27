@@ -9,6 +9,7 @@ import bwt.coder as cd
 from openopt import TSP
 import networkx as nx
 import numpy as np
+import pickle
 
 def analyze_partial_mtf(code):
     raw = code
@@ -42,6 +43,7 @@ def analyze_partial_mtf(code):
     return result
 
 def analyze_transition(bw1, bw2):
+    '''Analyze a single transition between two BW encoded strings.'''
     a = analyze_partial_mtf(cd.mtf_partial_enc(bw1))
     b = analyze_partial_mtf(cd.mtf_partial_enc(bw2))
     ab = analyze_partial_mtf(cd.mtf_partial_enc(bw1 + bw2))
@@ -78,6 +80,19 @@ def analyze_transition(bw1, bw2):
     result = TransitionAnalysisResult(length, num_chars, max_code, median, mean)
     return result
 
+def analyze_transitions(text):
+    '''Analyze all the transitions between characters for a text.'''
+    bw_code = cd.bw_encode(text)
+    first = bw_code.firsts
+    bw_code = bw_code.encoded
+    subcodes = {c: '' for c in first}
+    for i in range(len(first)):
+        subcodes[first[i]] += bw_code[i]
+    transitions = {(a, b): analyze_transition(subcodes[a], subcodes[b])
+                   for a in subcodes.keys()
+                   for b in subcodes.keys() if a != b}
+    return transitions
+
 def make_table_string(table):
     result = ''
     col_width = [max(len(str(x)) for x in col) for col in zip(*table)]
@@ -87,39 +102,61 @@ def make_table_string(table):
     return result
 
 def print_transition_analyses(text):
-    code = cd.bw_encode(text)
-    first = code.firsts
-    bw_code = code.encoded
-    subcodes = {c: '' for c in first}
-    for i in range(len(first)):
-        subcodes[first[i]] += bw_code[i]
-    transitions = {a + b: analyze_transition(subcodes[a], subcodes[b])
-                   for a in subcodes.keys()
-                   for b in subcodes.keys() if a != b}
-
+    transitions = analyze_transitions(text)
     for k in sorted(transitions.keys()):
-        print('<' + k + '>\n')
+        print('<' + k[0] + '-' + k[1] + '>\n')
         header = ['', 'left', 'right', 'together', 'diff']
-        len_line = ['lenght', transitions[k].length.left, transitions[k].length.right, transitions[k].length.together, transitions[k].length.diff]
-        num_chars_line = ['num_chars', transitions[k].num_chars.left, transitions[k].num_chars.right, transitions[k].num_chars.together, transitions[k].num_chars.diff]
-        max_line = ['max_code', transitions[k].max_code.left, transitions[k].max_code.right, transitions[k].max_code.together, transitions[k].max_code.diff]
-        median_line = ['median', transitions[k].median.left, transitions[k].median.right, transitions[k].median.together, transitions[k].median.diff]
-        mean_line = ['mean', transitions[k].mean.left, transitions[k].mean.right, transitions[k].mean.together, transitions[k].mean.diff]
-        table = [header, len_line, num_chars_line, max_line, median_line, mean_line]
+        len_line = ['lenght', transitions[k].length.left,
+                    transitions[k].length.right,
+                    transitions[k].length.together, transitions[k].length.diff]
+        num_chars_line = ['num_chars', transitions[k].num_chars.left,
+                          transitions[k].num_chars.right,
+                          transitions[k].num_chars.together,
+                          transitions[k].num_chars.diff]
+        max_line = ['max_code', transitions[k].max_code.left,
+                    transitions[k].max_code.right,
+                    transitions[k].max_code.together,
+                    transitions[k].max_code.diff]
+        median_line = ['median', transitions[k].median.left,
+                       transitions[k].median.right,
+                       transitions[k].median.together,
+                       transitions[k].median.diff]
+        mean_line = ['mean', transitions[k].mean.left,
+                     transitions[k].mean.right,
+                     transitions[k].mean.together, transitions[k].mean.diff]
+        table = [header, len_line, num_chars_line, max_line, median_line,
+                 mean_line]
         print(make_table_string(table))
 
 if __name__ == '__main__':
+#     f = open('/home/dddsnn/Downloads/calgary/book1')
+#     text = f.read()
+#     trs = analyze_transitions(text)
+#     print('transitions done')
 #     g = nx.Graph()
-#     g.add_edges_from([(i, j, {'cost': i + j}) for i in range(50) for j in range(50)])
-#     problem = TSP(g, objective='cost')
-#     result = problem.solve('glpk')
-    f = open('/home/dddsnn/Downloads/calgary/book2')
-    text = f.read()
-    text = text[0:50000]
-    print_transition_analyses(text)
+#     edges = []
+#     for a, b in trs:
+#         tmpa = a
+#         tmpb = b
+#         # replace '\x00' with 0 (integer) so numpy doesn't mess up
+#         if a == '\x00':
+#             tmpa = 0
+#         if b == '\x00':
+#             tmpb = 0
+#         edges.append((tmpa, tmpb, {'cost':trs[(a, b)].mean.diff}))
+# #     edges = [(a, b, {'cost':trs[(a, b)].mean.diff}) for (a, b) in trs]
+#     g.add_edges_from(edges)
+#     print('graph created')
+#     pickle.dump(g, open('/home/dddsnn/tmp/graph', 'wb'))
+
+    g = pickle.load(open('/home/dddsnn/tmp/graph', 'rb'))
+    print(len(g.nodes()))
+    problem = TSP(g, objective='cost')
+    result = problem.solve('glpk')
+
 #     bw = cd.bw_encode(text)
 # #     print(bw2)
-#     mtf = cd.mtf_enc(bw[1])
+#     mtf = cd.mtf_enc(bw.encoded)
 #     hf = cd.huffman_enc(mtf)
 #     dec = cd.huffman_dec(hf)
 #     print('{0} / {1} : {2}'
