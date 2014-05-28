@@ -8,7 +8,7 @@ import ctypes as ct
 from collections import namedtuple
 
 def bw_table(text):
-    """Create the Burrows-Wheeler table."""
+    '''Create the Burrows-Wheeler table.'''
     table = [text]
     for i in range(len(text) - 1):
         table.append(table[i][1:] + table[i][0])
@@ -16,14 +16,16 @@ def bw_table(text):
     return table
 
 def first_column(table):
-    """Get the first column of the BW table."""
+    '''Get the first column of the BW table.'''
     return ''.join([s[0] for s in table])
 
 def last_column(table):
-    """Get the last column of the BW table (the encoded string)."""
+    '''Get the last column of the BW table (the encoded string).'''
     return ''.join([s[-1] for s in table])
 
-def bw_encode(text):
+def bw_encode(text, order=None):
+    # TODO check that the values in order are unique
+    # TODO check that order is complete (all chars from text are in it)
     num_chars = 25  # number of characters to save for ordering
     l = len(text)
     # loop the text around so we can get long substrings from the end
@@ -32,7 +34,10 @@ def bw_encode(text):
     tuples = []
     for i in range(l):
         tuples.append((i, looptext[i:i + num_chars], text[i - 1]))
-    tuples.sort(key=lambda x: x[1])
+    if order:
+        tuples.sort(key=lambda x: [order[c] for c in x[1]])
+    else:
+        tuples.sort(key=lambda x: x[1])
     # check for duplicates and compare more characters
     for i in range(len(tuples) - 1):
         if tuples[i][1] == tuples[i + 1][1]:
@@ -63,7 +68,10 @@ def bw_encode(text):
                         long_tuples.append((t[0], looptext[t[0]:t[0] + j + 1],
                                             text[t[0] - 1]))
                         break
-            long_tuples.sort(key=lambda x: x[1])
+            if order:
+                tuples.sort(key=lambda x: [order[c] for c in x[1]])
+            else:
+                long_tuples.sort(key=lambda x: x[1])
             # replace the short tuples in the original list
             tuples[i:i + affected_idx] = long_tuples
     firsts = ''.join([t[1][0] for t in tuples])
@@ -73,7 +81,7 @@ def bw_encode(text):
     return result
 
 def print_demo(text):
-    """Print the sorted BW table, and the string of first and last letters."""
+    '''Print the sorted BW table, and the string of first and last letters.'''
     table = bw_table(text)
     firsts = first_column(table)
     encoded = last_column(table)
@@ -103,7 +111,7 @@ def mtf_partial_enc(text):
     return result
 
 def mtf_enc(text):
-    """Encode text with mtf. Only ASCII (for now)."""
+    '''Encode text with mtf. Only ASCII (for now).'''
     # initialize list of ascii characters
     alphabet = [chr(i) for i in range(128)]
     result = []
@@ -121,7 +129,7 @@ def mtf_enc(text):
     return result
 
 def huffman_enc(byte_list):
-    """Huffman encode a list of bytes."""
+    '''Huffman encode a list of bytes.'''
     lib = ct.cdll.LoadLibrary('../libhuffman.so')
     enc_in_len = len(byte_list)
     enc_in = ct.create_string_buffer(enc_in_len)
