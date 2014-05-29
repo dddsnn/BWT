@@ -5,7 +5,8 @@ Created on 23.05.2014
 '''
 
 import ctypes as ct
-from collections import namedtuple
+import warnings
+from bwt import BWEncodeResult
 
 def bw_table(text):
     '''Create the Burrows-Wheeler table.'''
@@ -23,63 +24,6 @@ def last_column(table):
     '''Get the last column of the BW table (the encoded string).'''
     return ''.join([s[-1] for s in table])
 
-def bw_encode(text, order=None):
-    # TODO check that the values in order are unique
-    # TODO check that order is complete (all chars from text are in it)
-    num_chars = 25  # number of characters to save for ordering
-    l = len(text)
-    # loop the text around so we can get long substrings from the end
-    looptext = text + text
-    # make tuples (pos in the table, first chars, last char)
-    tuples = []
-    for i in range(l):
-        tuples.append((i, looptext[i:i + num_chars], text[i - 1]))
-    if order:
-        tuples.sort(key=lambda x: [order[c] for c in x[1]])
-    else:
-        tuples.sort(key=lambda x: x[1])
-    # check for duplicates and compare more characters
-    for i in range(len(tuples) - 1):
-        if tuples[i][1] == tuples[i + 1][1]:
-            affected_idx = 2
-            # there might be more
-            if i + 2 < len(tuples):
-                while tuples[i + affected_idx][1] == tuples[i][1]:
-                    affected_idx += 1
-                    # break if we reach the end of the list
-                    if not i + affected_idx < len(tuples):
-                        break
-            # make tuples of the affected indices, but with enough characters
-            # to sort them
-            long_tuples = []
-            # take the affected tuples, take their positions and sort again
-            # using more characters
-            for t in tuples[i:i + affected_idx]:
-                others = [x for x in tuples[i:i + affected_idx] if x != t]
-                # if the j-th character in the string is different from all the
-                # other affected strings, add the string of length j to the
-                # long tuples
-                for j in range(25, l):
-                    # make a list of chars the other strings have a position j
-                    other_chars = [looptext[o[0] + j] for o in others]
-                    # if the current string's char doesn't appear in it,
-                    # j characters are enough
-                    if not looptext[t[0] + j] in other_chars:
-                        long_tuples.append((t[0], looptext[t[0]:t[0] + j + 1],
-                                            text[t[0] - 1]))
-                        break
-            if order:
-                tuples.sort(key=lambda x: [order[c] for c in x[1]])
-            else:
-                long_tuples.sort(key=lambda x: x[1])
-            # replace the short tuples in the original list
-            tuples[i:i + affected_idx] = long_tuples
-    firsts = ''.join([t[1][0] for t in tuples])
-    encoded = ''.join([t[2] for t in tuples])
-    BWEncodeResult = namedtuple('BWEncodeResult', ['firsts', 'encoded'])
-    result = BWEncodeResult(firsts, encoded)
-    return result
-
 def print_demo(text):
     '''Print the sorted BW table, and the string of first and last letters.'''
     table = bw_table(text)
@@ -93,51 +37,123 @@ def print_demo(text):
     print(firsts)
     print(encoded)
 
-def mtf_partial_enc(text):
+def bw_encode(bytes_, order=None):
+    '''BW encode a string of bytes.'''
+    # turn the order list of characters into a dict {byte: value} for ordering
+    if order:
+        order_dict = {}
+        for i, b in enumerate(order):
+            # ignore multiple occurences, count the first one
+            if not b in order_dict:
+                order_dict[b] = i
+                max_order = i
+            else:
+                warnings.warn('multiple occurence of symbol {0} in order.'
+                              ' ignoring.'.format(b))
+        # check that order is complete (all bytes from bytes_ are in it)
+        for b in bytes_:
+            if not b in order_dict:
+                warnings.warn('symbol {0} not in the custom order but in the '
+                              'bytes_.  appending'.format(b))
+                order_dict[b] = max_order + 1
+                max_order += 1
+    NUM_CHARS = 25  # number of characters to save for ordering
+    l = len(bytes_)
+    # loop the bytes_ around so we can get long substrings from the end
+    loopbytes = bytes_ + bytes_
+    # make tuples (pos in the table, first byte, last byte)
+    tuples = []
+    for i in range(l):
+        tuples.append((i, loopbytes[i:i + NUM_CHARS], bytes_[i - 1]))
+    if order:
+        tuples.sort(key=lambda x: [order_dict[b] for b in x[1]])
+    else:
+        tuples.sort(key=lambda x: x[1])
+    # check for duplicate first bytes and compare longer strings
+    for i in range(len(tuples) - 1):
+        if tuples[i][1] == tuples[i + 1][1]:
+            num_affected = 2
+            # there might be more
+            if i + 2 < len(tuples):
+                while tuples[i + num_affected][1] == tuples[i][1]:
+                    num_affected += 1
+                    # break if we reach the end of the list
+                    if not i + num_affected < len(tuples):
+                        break
+            # make tuples of the affected indices, but with enough bytes
+            # to sort them
+            long_tuples = []
+            # take the affected tuples, take their positions and sort again
+            # using more characters
+            for t in tuples[i:i + num_affected]:
+                others = [x for x in tuples[i:i + num_affected] if x != t]
+                # if the j-th character in the string is different from all the
+                # other affected strings, add the string of length j to the
+                # long tuples
+                for j in range(25, l):
+                    # make a list of chars the other strings have a position j
+                    other_chars = [loopbytes[o[0] + j] for o in others]
+                    # if the current string's char doesn't appear in it,
+                    # j characters are enough
+                    if not loopbytes[t[0] + j] in other_chars:
+                        long_tuples.append((t[0], loopbytes[t[0]:t[0] + j + 1],
+                                            bytes_[t[0] - 1]))
+                        break
+            if order:
+                tuples.sort(key=lambda x: [order_dict[b] for b in x[1]])
+            else:
+                long_tuples.sort(key=lambda x: x[1])
+            # replace the short tuples in the original list
+            tuples[i:i + num_affected] = long_tuples
+    firsts = bytes([t[1][0] for t in tuples])
+    encoded = bytes([t[2] for t in tuples])
+    result = BWEncodeResult(firsts, encoded)
+    return result
+
+def mtf_partial_enc(bytes_):
     alphabet = []
     result = []
-    for char in text:
-        if char in alphabet:
-            # append index of the character
-            index = alphabet.index(char)
+    for byte in bytes_:
+        if byte in alphabet:
+            # append index of the byte
+            index = alphabet.index(byte)
             result.append(index)
             # shift alphabet
             alphabet.pop(index)
-            alphabet.insert(0, char)
+            alphabet.insert(0, byte)
         else:
             # append -1 to signal new character
             result.append(-1)
-            alphabet.insert(0, char)
+            alphabet.insert(0, byte)
     return result
 
-def mtf_enc(text):
-    '''Encode text with mtf. Only ASCII (for now).'''
-    # initialize list of ascii characters
-    alphabet = [chr(i) for i in range(128)]
+def mtf_enc(bytes_):
+    '''Encode bytes_ with mtf.'''
+    # initialize the alphabet in natural order
+    alphabet = list(range(256))
     result = []
-    for char in text:
-        if char in alphabet:
+    for byte in bytes_:
+        if byte in alphabet:
             # append index of the character
-            index = alphabet.index(char)
+            index = alphabet.index(byte)
             result.append(index)
             # shift alphabet
             alphabet.pop(index)
-            alphabet.insert(0, char)
+            alphabet.insert(0, byte)
         else:
-            # not an ascii character
-            raise ValueError(char + ' is not an ASCII character')
+            raise ValueError(str(byte) + ' is not a byte.')
     return result
 
-def huffman_enc(byte_list):
+def huffman_enc(bytes_):
     '''Huffman encode a list of bytes.'''
     lib = ct.cdll.LoadLibrary('../libhuffman.so')
-    enc_in_len = len(byte_list)
+    enc_in_len = len(bytes_)
     enc_in = ct.create_string_buffer(enc_in_len)
     enc_in = ct.cast(enc_in, ct.POINTER(ct.c_ubyte))
     for i in range(enc_in_len):
-        if byte_list[i] > 256 or byte_list[i] < 0:
+        if bytes_[i] > 256 or bytes_[i] < 0:
             raise ValueError('Byte value not between 0 and 256')
-        enc_in[i] = byte_list[i]
+        enc_in[i] = bytes_[i]
     enc_out = ct.pointer(ct.c_ubyte())
     enc_out_len = ct.c_uint()
     lib.huffman_encode_memory(enc_in, ct.c_uint(enc_in_len), ct.byref(enc_out),
