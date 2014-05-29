@@ -39,36 +39,38 @@ def print_demo(text):
 
 def bw_encode(bytes_, order=None):
     '''BW encode a string of bytes.'''
+    # if no order was given, go with natural
+    if not order:
+        order = list(range(256))
     # turn the order list of characters into a dict {byte: value} for ordering
-    if order:
-        order_dict = {}
-        for i, b in enumerate(order):
-            # ignore multiple occurences, count the first one
-            if not b in order_dict:
-                order_dict[b] = i
-                max_order = i
-            else:
-                warnings.warn('multiple occurence of symbol {0} in order.'
-                              ' ignoring.'.format(b))
-        # check that order is complete (all bytes from bytes_ are in it)
-        for b in bytes_:
-            if not b in order_dict:
-                warnings.warn('symbol {0} not in the custom order but in the '
-                              'bytes_.  appending'.format(b))
-                order_dict[b] = max_order + 1
-                max_order += 1
+    order_dict = {}
+    for i, b in enumerate(order):
+        # ignore multiple occurrences, count the first one
+        if not b in order_dict:
+            order_dict[b] = i
+            max_order = i
+        else:
+            warnings.warn('multiple occurence of symbol {0} in order.'
+                          ' ignoring.'.format(b))
+    # check that order is complete (all bytes from bytes_ are in it)
+    for b in bytes_:
+        if not b in order_dict:
+            warnings.warn('symbol {0} not in the custom order but in the '
+                          'bytes_.  appending'.format(b))
+            # append any missing bytes
+            order_dict[b] = max_order + 1
+            max_order += 1
+
     NUM_CHARS = 25  # number of characters to save for ordering
     l = len(bytes_)
-    # loop the bytes_ around so we can get long substrings from the end
-    loopbytes = bytes_ + bytes_
+    # make a list by which the strings will be sorted
+    # use bytes_ + bytes_ so we can get long substrings from the end
+    order_list = [order_dict[b] for b in bytes_ + bytes_]
     # make tuples (pos in the table, first byte, last byte)
     tuples = []
     for i in range(l):
-        tuples.append((i, loopbytes[i:i + NUM_CHARS], bytes_[i - 1]))
-    if order:
-        tuples.sort(key=lambda x: [order_dict[b] for b in x[1]])
-    else:
-        tuples.sort(key=lambda x: x[1])
+        tuples.append((i, order_list[i:i + NUM_CHARS], bytes_[i - 1]))
+    tuples.sort(key=lambda x: x[1])
     # check for duplicate first bytes and compare longer strings
     for i in range(len(tuples) - 1):
         if tuples[i][1] == tuples[i + 1][1]:
@@ -90,19 +92,16 @@ def bw_encode(bytes_, order=None):
                 # if the j-th character in the string is different from all the
                 # other affected strings, add the string of length j to the
                 # long tuples
-                for j in range(25, l):
+                for j in range(NUM_CHARS, l):
                     # make a list of chars the other strings have a position j
-                    other_chars = [loopbytes[o[0] + j] for o in others]
+                    other_chars = [order_list[o[0] + j] for o in others]
                     # if the current string's char doesn't appear in it,
                     # j characters are enough
-                    if not loopbytes[t[0] + j] in other_chars:
-                        long_tuples.append((t[0], loopbytes[t[0]:t[0] + j + 1],
+                    if not order_list[t[0] + j] in other_chars:
+                        long_tuples.append((t[0], order_list[t[0]:t[0] + j + 1],
                                             bytes_[t[0] - 1]))
                         break
-            if order:
-                tuples.sort(key=lambda x: [order_dict[b] for b in x[1]])
-            else:
-                long_tuples.sort(key=lambda x: x[1])
+            long_tuples.sort(key=lambda x: x[1])
             # replace the short tuples in the original list
             tuples[i:i + num_affected] = long_tuples
     firsts = bytes([t[1][0] for t in tuples])

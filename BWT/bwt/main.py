@@ -74,4 +74,5 @@ def simulate_compression(in_path, order=None):
     print(res_text)
 
 if __name__ == '__main__':
-    simulate_compression('/home/dddsnn/Downloads/calgary/geo')
+    order = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+    simulate_compression('/home/dddsnn/Downloads/calgary/book1')
