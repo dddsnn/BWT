@@ -47,6 +47,20 @@ def make_graph(transitions, out_path=None):
     pickle.dump(g, open('/home/dddsnn/tmp/book1/graph', 'wb'))
     return g
 
+def solve_tsp():
+    # TODO
+    g = pickle.load(open('/home/dddsnn/tmp/book1/graph', 'rb'))
+    solver = oosolver('glpk', name='asf', fTol=1.0)
+    problem = TSP(g, objective='cost')
+    result = problem.solve('glpk', maxTime=1)
+    pickle.dump(result.nodes, open('/home/dddsnn/tmp/book1/result-glpk-nodes', 'wb'))
+    pickle.dump(result.edges, open('/home/dddsnn/tmp/book1/result-glpk-edges', 'wb'))
+    pickle.dump(result.Edges, open('/home/dddsnn/tmp/book1/result-glpk-Edges', 'wb'))
+
+    nodes = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-nodes', 'rb'))
+    edges = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-edges', 'rb'))
+    Edges = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-Edges', 'rb'))
+
 def simulate_compression(in_path, order=None):
     '''Simulate compression of a file and print achieved compression ratio.'''
     with open(in_path, 'rb') as in_file:
@@ -61,15 +75,3 @@ def simulate_compression(in_path, order=None):
 
 if __name__ == '__main__':
     simulate_compression('/home/dddsnn/Downloads/calgary/geo')
-
-#     g = pickle.load(open('/home/dddsnn/tmp/book1/graph', 'rb'))
-#     solver = oosolver('glpk', name='asf', fTol=1.0)
-#     problem = TSP(g, objective='cost')
-#     result = problem.solve('glpk', maxTime=1)
-#     pickle.dump(result.nodes, open('/home/dddsnn/tmp/book1/result-glpk-nodes', 'wb'))
-#     pickle.dump(result.edges, open('/home/dddsnn/tmp/book1/result-glpk-edges', 'wb'))
-#     pickle.dump(result.Edges, open('/home/dddsnn/tmp/book1/result-glpk-Edges', 'wb'))
-
-#     nodes = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-nodes', 'rb'))
-#     edges = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-edges', 'rb'))
-#     Edges = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-Edges', 'rb'))

@@ -161,17 +161,17 @@ def huffman_enc(bytes_):
     result = []
     for i in range(enc_out_len.value):
         result.append(enc_out[i])
-    return result
+    return bytes(result)
 
-def huffman_dec(byte_list):
+def huffman_dec(bytes_):
     lib = ct.cdll.LoadLibrary('../libhuffman.so')
-    dec_in_len = len(byte_list)
+    dec_in_len = len(bytes_)
     dec_in = ct.create_string_buffer(dec_in_len)
     dec_in = ct.cast(dec_in, ct.POINTER(ct.c_ubyte))
     for i in range(dec_in_len):
-        if byte_list[i] > 256 or byte_list[i] < 0:
+        if bytes_[i] > 256 or bytes_[i] < 0:
             raise ValueError('Byte value not between 0 and 256')
-        dec_in[i] = byte_list[i]
+        dec_in[i] = bytes_[i]
     dec_out = ct.pointer(ct.c_ubyte())
     dec_out_len = ct.c_uint()
     lib.huffman_decode_memory(dec_in, ct.c_uint(dec_in_len), ct.byref(dec_out),
@@ -179,12 +179,4 @@ def huffman_dec(byte_list):
     result = []
     for i in range(dec_out_len.value):
         result.append(dec_out[i])
-    return result
-
-if __name__ == '__main__':
-    pass
-#     for i in range(2, 100):
-#         orig = list(range(i))
-#         enc = huffman_enc(orig)
-#         dec = huffman_dec(enc)
-#         print(str(orig == dec) + ' : ' + str(len(enc) / len(orig)))
+    return bytes(result)
