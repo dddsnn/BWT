@@ -7,10 +7,7 @@ Created on 10.05.2014
 from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
-from collections import namedtuple
-from openopt import TSP, oosolver
 import networkx as nx
-import numpy as np
 import pickle
 
 def make_transitions(in_path, out_path=None):
@@ -122,21 +119,7 @@ def read_tsplib_files(in_path_tour, in_path_names):
             tour.append(names_dict[number])
     return tour
 
-def solve_tsp():
-    # TODO
-    g = pickle.load(open('/home/dddsnn/tmp/book1/graph', 'rb'))
-    solver = oosolver('glpk', name='asf', fTol=1.0)
-    problem = TSP(g, objective='cost')
-    result = problem.solve('glpk', maxTime=1)
-    pickle.dump(result.nodes, open('/home/dddsnn/tmp/book1/result-glpk-nodes', 'wb'))
-    pickle.dump(result.edges, open('/home/dddsnn/tmp/book1/result-glpk-edges', 'wb'))
-    pickle.dump(result.Edges, open('/home/dddsnn/tmp/book1/result-glpk-Edges', 'wb'))
-
-    nodes = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-nodes', 'rb'))
-    edges = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-edges', 'rb'))
-    Edges = pickle.load(open('/home/dddsnn/tmp/book1/result-interalg-Edges', 'rb'))
-
-def simulate_compression(in_path, order=None):
+def simulate_compression(in_path, title, order=None):
     '''Simulate compression of a file and print achieved compression ratio.'''
     with open(in_path, 'rb') as in_file:
         bytes_ = in_file.read()
@@ -144,17 +127,18 @@ def simulate_compression(in_path, order=None):
     mtf_code = cd.mtf_enc(bw_code.encoded)
     huff_code = cd.huffman_enc(mtf_code)
     res_text = '===================================================\n'
+    res_text += title + '\n'
     res_text += 'file: {0}\n'.format(in_path)
     res_text += 'in size: {0}\n'.format(len(bytes_))
     res_text += 'out_size: {0}\n'.format(len(huff_code))
-    res_text += 'ratio: {0}'.format(len(huff_code) / len(bytes_))
+    res_text += 'ratio: {0}\n'.format(len(huff_code) / len(bytes_))
     res_text += '==================================================\n'
     print(res_text)
 
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
 
-    make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
+#     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
 
 #     with open(wd + 'transitions', 'rb') as trs_file:
 #         trs = pickle.load(trs_file)
@@ -162,7 +146,8 @@ if __name__ == '__main__':
 #         g = make_graph(trs, metric)
 #         write_tsplib_files(g, wd, metric)
 
-#     for metric in ['mean', 'median', 'num_chars']:
-#         tour = read_tsplib_files(wd + metric + '.tour',
-#                                  wd + metric + '.nodenames')
-#         simulate_compression('/home/dddsnn/Downloads/calgary/book1', tour)
+    for metric in ['mean', 'median', 'num_chars']:
+        tour = read_tsplib_files(wd + metric + '.tour',
+                                 wd + metric + '.nodenames')
+        simulate_compression('/home/dddsnn/Downloads/calgary/book1',
+                             metric, tour)
