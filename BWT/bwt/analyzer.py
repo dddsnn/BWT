@@ -40,10 +40,13 @@ def analyze_transition(bw1, bw2):
     a = analyze_partial_mtf(cd.mtf_partial_enc(bw1))
     b = analyze_partial_mtf(cd.mtf_partial_enc(bw2))
     ab = analyze_partial_mtf(cd.mtf_partial_enc(bw1 + bw2))
+    # metric: difference between length of left vs. length of right
     length = TransitionResult(a.length, b.length, ab.length,
                                abs(a.length - b.length))
+    # metric: number of -1s in the second half of the combined code (the one
+    # that's being transitioned to)
     num_chars = TransitionResult(a.num_chars, b.num_chars, ab.num_chars,
-                                  a.num_chars + b.num_chars - ab.num_chars)
+                                  ab.num_chars - a.num_chars)
     max_code = TransitionResult(a.max_code, b.max_code, ab.max_code,
                              ab.max_code - max(a.max_code, b.max_code))
     # to avoid division by zero
@@ -51,9 +54,10 @@ def analyze_transition(bw1, bw2):
         ab_length_rec = 1
     else:
         ab_length_rec = ab.length_rec
-    weigthed_median = ((a.median * a.length_rec + b.median * b.length_rec)
+    median_metric = ((a.median * a.length_rec + b.median * b.length_rec)
                        / ab_length_rec) - ab.median
-    median = TransitionResult(a.median, b.median, ab.median, weigthed_median)
+    # metric: difference of expected median and the achieved median
+    median = TransitionResult(a.median, b.median, ab.median, median_metric)
     # TODO by ignoring new characters (-1s) in the mean, good transitions get a
     # penalty, because a character that was already there before the transition
     # probably affects the mean in a bad way, while an entirely new character
@@ -62,9 +66,10 @@ def analyze_transition(bw1, bw2):
     # (but only for the target of the transition, lots of new characters in the
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
-    weighted_mean = ((a.mean * a.length_rec + b.mean * b.length_rec)
+    # metric: difference of expected mean and the achieved mean
+    mean_metric = ((a.mean * a.length_rec + b.mean * b.length_rec)
                      / ab_length_rec) - ab.mean
-    mean = TransitionResult(a.mean, b.mean, ab.mean, weighted_mean)
+    mean = TransitionResult(a.mean, b.mean, ab.mean, mean_metric)
     result = TransitionAnalysisResult(length, num_chars, max_code, median, mean)
     return result
 
@@ -95,25 +100,25 @@ def print_transition_analyses(bytes_):
     transitions = analyze_transitions(bytes_)
     for k in sorted(transitions.keys()):
         print('<' + k[0] + '-' + k[1] + '>\n')
-        header = ['', 'left', 'right', 'together', 'diff']
+        header = ['', 'left', 'right', 'together', 'metric']
         len_line = ['lenght', transitions[k].length.left,
                     transitions[k].length.right,
-                    transitions[k].length.together, transitions[k].length.diff]
+                    transitions[k].length.together, transitions[k].length.metric]
         num_chars_line = ['num_chars', transitions[k].num_chars.left,
                           transitions[k].num_chars.right,
                           transitions[k].num_chars.together,
-                          transitions[k].num_chars.diff]
+                          transitions[k].num_chars.metric]
         max_line = ['max_code', transitions[k].max_code.left,
                     transitions[k].max_code.right,
                     transitions[k].max_code.together,
-                    transitions[k].max_code.diff]
+                    transitions[k].max_code.metric]
         median_line = ['median', transitions[k].median.left,
                        transitions[k].median.right,
                        transitions[k].median.together,
-                       transitions[k].median.diff]
+                       transitions[k].median.metric]
         mean_line = ['mean', transitions[k].mean.left,
                      transitions[k].mean.right,
-                     transitions[k].mean.together, transitions[k].mean.diff]
+                     transitions[k].mean.together, transitions[k].mean.metric]
         table = [header, len_line, num_chars_line, max_line, median_line,
                  mean_line]
         print(make_table_string(table))

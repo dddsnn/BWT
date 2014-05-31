@@ -26,7 +26,7 @@ def make_graph(transitions, metric, out_path=None):
     edges = []
     for a, b in transitions.keys():
         cost = getattr(transitions[(a, b)], metric)
-        edges.append((a, b, {'cost':cost.diff}))
+        edges.append((a, b, {'cost':cost.metric}))
     g.add_edges_from(edges)
     if out_path:
         with open(out_path, 'xb') as out_file:
@@ -137,16 +137,20 @@ def simulate_compression(in_path, title, order=None):
 
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
+    metrics = ['mean', 'median', 'num_chars']
 
 #     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
 
 #     with open(wd + 'transitions', 'rb') as trs_file:
 #         trs = pickle.load(trs_file)
-#     for metric in ['mean', 'median', 'num_chars']:
+#     for metric in metrics:
 #         g = make_graph(trs, metric)
 #         write_tsplib_files(g, wd, metric)
 
-    for metric in ['mean', 'median', 'num_chars']:
+    simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')
+    simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'aeiou...',
+                         b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
+    for metric in metrics:
         tour = read_tsplib_files(wd + metric + '.tour',
                                  wd + metric + '.nodenames')
         simulate_compression('/home/dddsnn/Downloads/calgary/book1',

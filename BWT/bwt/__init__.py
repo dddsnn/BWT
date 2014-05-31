@@ -13,4 +13,4 @@ TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
                                            'median', 'mean'])
 
 TransitionResult = namedtuple('TransitionResult',
-                              ['left', 'right', 'together', 'diff'])
+                              ['left', 'right', 'together', 'metric'])
