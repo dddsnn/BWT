@@ -4,9 +4,10 @@ Created on 10.05.2014
 @author: dddsnn
 '''
 
-from collections import namedtuple
+from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
+from collections import namedtuple
 from openopt import TSP, oosolver
 import networkx as nx
 import numpy as np
@@ -14,37 +15,25 @@ import pickle
 
 def make_transitions(in_path, out_path=None):
     '''Create the transition analysis for a file.'''
-    with open(in_path) as in_file:
+    with open(in_path, 'rb') as in_file:
         text = in_file.read()
     trs = an.analyze_transitions(text)
     if out_path:
-        with open(out_path, 'wb') as out_file:
+        with open(out_path, 'xb') as out_file:
             pickle.dump(trs, out_file)
     return trs
 
 
-def make_graph(transitions, out_path=None):
-    # TODO switch to bytes
-    trs = pickle.load(open('/home/dddsnn/tmp/book1/transitions', 'rb'))
+def make_graph(transitions, metric, out_path=None):
     g = nx.DiGraph()
     edges = []
-    # encode the real names as simpler strings, because numpy can't handle
-    # '\x00' and openopt can't handle integers as node names
-    # write 'nx' for the normal character x and 'sx' for special characters
-    # '\x00' -> 's0'
-    for k in trs.keys():
-        if k[0] == '\x00':
-            a = 's0'
-        else:
-            a = 'n' + k[0]
-        if k[1] == '\x00':
-            b = 's0'
-        else:
-            b = 'n' + k[1]
-        edges.append((a, b, {'cost':trs[k].mean.diff}))
+    for a, b in transitions.keys():
+        cost = getattr(transitions[(a, b)], metric)
+        edges.append((a, b, {'cost':cost.diff}))
     g.add_edges_from(edges)
-    print('graph created')
-    pickle.dump(g, open('/home/dddsnn/tmp/book1/graph', 'wb'))
+    if out_path:
+        with open(out_path, 'xb') as out_file:
+            pickle.dump(g, out_file)
     return g
 
 def write_tsplib_files(graph, out_dir_path, file_name):
@@ -102,15 +91,36 @@ def write_tsplib_files(graph, out_dir_path, file_name):
 
     # par file part
     par_text = 'PROBLEM_FILE = {0}\n'.format(file_name + '.atsp')
+    par_text += 'RUNS = 100\n'
     par_text += 'TOUR_FILE = ' + file_name + '.tour'
 
     # write the files
-    with open(out_dir_path + file_name + '.atsp', 'wt') as tsp_file:
+    with open(out_dir_path + file_name + '.atsp', 'xt') as tsp_file:
         tsp_file.write(tsp_text)
-    with open(out_dir_path + file_name + '.par', 'wt') as par_file:
+    with open(out_dir_path + file_name + '.par', 'xt') as par_file:
         par_file.write(par_text)
-    with open(out_dir_path + file_name + '.nodenames', 'wb') as names_file:
+    with open(out_dir_path + file_name + '.nodenames', 'xb') as names_file:
         pickle.dump(numbers_to_names, names_file)
+
+def read_tsplib_files(in_path_tour, in_path_names):
+    with open(in_path_tour, 'rt') as tour_file:
+        line = tour_file.readline().rstrip()
+        # skip until the TOUR_SECTION
+        while line != 'TOUR_SECTION':
+            line = tour_file.readline().rstrip()
+        node_number_list = []
+        line = tour_file.readline().rstrip()
+        while line != '-1':
+            node_number_list.append(int(line))
+            line = tour_file.readline().rstrip()
+
+    # now translate the numbers to names
+    tour = []
+    with open(in_path_names, 'rb') as names_file:
+        names_dict = pickle.load(names_file)
+        for number in node_number_list:
+            tour.append(names_dict[number])
+    return tour
 
 def solve_tsp():
     # TODO
@@ -133,15 +143,26 @@ def simulate_compression(in_path, order=None):
     bw_code = cd.bw_encode(bytes_, order)
     mtf_code = cd.mtf_enc(bw_code.encoded)
     huff_code = cd.huffman_enc(mtf_code)
-    res_text = 'file: {0}\nin size: {1}\nout_size: {2}\nratio: {3}'
-    res_text = res_text.format(in_path, len(bytes_), len(huff_code),
-                               len(huff_code) / len(bytes_))
+    res_text = '===================================================\n'
+    res_text += 'file: {0}\n'.format(in_path)
+    res_text += 'in size: {0}\n'.format(len(bytes_))
+    res_text += 'out_size: {0}\n'.format(len(huff_code))
+    res_text += 'ratio: {0}'.format(len(huff_code) / len(bytes_))
+    res_text += '==================================================\n'
     print(res_text)
 
 if __name__ == '__main__':
-    g = pickle.load(open('/home/dddsnn/tmp/book1/graph', 'rb'))
-    e = nx.get_edge_attributes(g, 'cost')
-    print(g.nodes())
-    write_tsplib_files(g, '/home/dddsnn/tmp/', 'tsp_text')
-#     order = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-#     simulate_compression('/home/dddsnn/Downloads/calgary/pic')
+    wd = '/home/dddsnn/tmp/book1/'
+
+    make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
+
+#     with open(wd + 'transitions', 'rb') as trs_file:
+#         trs = pickle.load(trs_file)
+#     for metric in ['mean', 'median', 'num_chars']:
+#         g = make_graph(trs, metric)
+#         write_tsplib_files(g, wd, metric)
+
+#     for metric in ['mean', 'median', 'num_chars']:
+#         tour = read_tsplib_files(wd + metric + '.tour',
+#                                  wd + metric + '.nodenames')
+#         simulate_compression('/home/dddsnn/Downloads/calgary/book1', tour)
