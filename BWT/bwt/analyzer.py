@@ -5,7 +5,7 @@ Created on 28.05.2014
 '''
 
 from bwt import TransitionResult, TransitionAnalysisResult, \
-                    PartialMTFAnalysisResult
+                PartialMTFAnalysisResult
 import bwt.coder as cd
 
 def analyze_partial_mtf(code):
@@ -68,14 +68,16 @@ def analyze_transition(bw1, bw2):
     result = TransitionAnalysisResult(length, num_chars, max_code, median, mean)
     return result
 
-def analyze_transitions(text):
-    '''Analyze all the transitions between characters for a text.'''
-    bw_code = cd.bw_encode(text)
+def analyze_transitions(bytes_):
+    '''Analyze all the transitions between bytes of a byte string.'''
+    bw_code = cd.bw_encode(bytes_)
     first = bw_code.firsts
     bw_code = bw_code.encoded
-    subcodes = {c: '' for c in first}
+    subcodes = {c: [] for c in first}
     for i in range(len(first)):
-        subcodes[first[i]] += bw_code[i]
+        subcodes[first[i]].append(bw_code[i])
+    for c in subcodes:
+        subcodes[c] = bytes(subcodes[c])
     transitions = {(a, b): analyze_transition(subcodes[a], subcodes[b])
                    for a in subcodes.keys()
                    for b in subcodes.keys() if a != b}
@@ -89,8 +91,8 @@ def make_table_string(table):
                                 for i, x in enumerate(line)) + " |\n"
     return result
 
-def print_transition_analyses(text):
-    transitions = analyze_transitions(text)
+def print_transition_analyses(bytes_):
+    transitions = analyze_transitions(bytes_)
     for k in sorted(transitions.keys()):
         print('<' + k[0] + '-' + k[1] + '>\n')
         header = ['', 'left', 'right', 'together', 'diff']
