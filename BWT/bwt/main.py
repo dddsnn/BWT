@@ -26,7 +26,7 @@ def make_graph(transitions, metric, out_path=None):
     edges = []
     for a, b in transitions.keys():
         cost = getattr(transitions[(a, b)], metric)
-        edges.append((a, b, {'cost':cost.metric}))
+        edges.append((a, b, {'cost':cost}))
     g.add_edges_from(edges)
     if out_path:
         with open(out_path, 'xb') as out_file:

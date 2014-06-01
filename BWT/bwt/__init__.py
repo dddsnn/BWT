@@ -9,8 +9,12 @@ PartialMTFAnalysisResult = namedtuple('PartialMTFAnalysisResult',
                                            'mean'])
 
 TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
-                                          ['length', 'num_chars', 'max_code',
-                                           'median', 'mean'])
+                                          ['data', 'length', 'num_chars',
+                                           'max_code', 'median', 'mean'])
 
-TransitionResult = namedtuple('TransitionResult',
-                              ['left', 'right', 'together', 'metric'])
+TransitionData = namedtuple('TransitionData',
+                                    ['length', 'num_chars', 'max_code',
+                                     'median', 'mean'])
+
+TransitionDataSet = namedtuple('TransitionDataSet',
+                              ['left', 'right', 'together'])

@@ -4,8 +4,7 @@ Created on 28.05.2014
 @author: dddsnn
 '''
 
-from bwt import TransitionResult, TransitionAnalysisResult, \
-                PartialMTFAnalysisResult
+from bwt import *
 import bwt.coder as cd
 
 def analyze_partial_mtf(code):
@@ -41,23 +40,23 @@ def analyze_transition(bw1, bw2):
     b = analyze_partial_mtf(cd.mtf_partial_enc(bw2))
     ab = analyze_partial_mtf(cd.mtf_partial_enc(bw1 + bw2))
     # metric: difference between length of left vs. length of right
-    length = TransitionResult(a.length, b.length, ab.length,
-                               abs(a.length - b.length))
+    length = TransitionDataSet(a.length, b.length, ab.length)
+    length_metric = abs(a.length - b.length)
+    num_chars = TransitionDataSet(a.num_chars, b.num_chars, ab.num_chars)
     # metric: number of -1s in the second half of the combined code (the one
     # that's being transitioned to)
-    num_chars = TransitionResult(a.num_chars, b.num_chars, ab.num_chars,
-                                  ab.num_chars - a.num_chars)
-    max_code = TransitionResult(a.max_code, b.max_code, ab.max_code,
-                             ab.max_code - max(a.max_code, b.max_code))
+    num_chars_metric = ab.num_chars - a.num_chars
+    max_code = TransitionDataSet(a.max_code, b.max_code, ab.max_code)
+    max_code_metric = ab.max_code - max(a.max_code, b.max_code)
     # to avoid division by zero
     if ab.length_rec == 0:
         ab_length_rec = 1
     else:
         ab_length_rec = ab.length_rec
+    median = TransitionDataSet(a.median, b.median, ab.median)
+    # metric: difference of expected median and the achieved median
     median_metric = ((a.median * a.length_rec + b.median * b.length_rec)
                        / ab_length_rec) - ab.median
-    # metric: difference of expected median and the achieved median
-    median = TransitionResult(a.median, b.median, ab.median, median_metric)
     # TODO by ignoring new characters (-1s) in the mean, good transitions get a
     # penalty, because a character that was already there before the transition
     # probably affects the mean in a bad way, while an entirely new character
@@ -66,11 +65,15 @@ def analyze_transition(bw1, bw2):
     # (but only for the target of the transition, lots of new characters in the
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
+
+    mean = TransitionDataSet(a.mean, b.mean, ab.mean)
     # metric: difference of expected mean and the achieved mean
     mean_metric = ((a.mean * a.length_rec + b.mean * b.length_rec)
                      / ab_length_rec) - ab.mean
-    mean = TransitionResult(a.mean, b.mean, ab.mean, mean_metric)
-    result = TransitionAnalysisResult(length, num_chars, max_code, median, mean)
+    data = TransitionData(length, num_chars, max_code, median, mean)
+    result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
+                                      max_code_metric, median_metric,
+                                      mean_metric)
     return result
 
 def analyze_transitions(bytes_):
@@ -97,28 +100,27 @@ def make_table_string(table):
     return result
 
 def print_transition_analyses(bytes_):
-    transitions = analyze_transitions(bytes_)
-    for k in sorted(transitions.keys()):
+    trs = analyze_transitions(bytes_)
+    for k in sorted(trs.keys()):
         print('<' + k[0] + '-' + k[1] + '>\n')
         header = ['', 'left', 'right', 'together', 'metric']
-        len_line = ['lenght', transitions[k].length.left,
-                    transitions[k].length.right,
-                    transitions[k].length.together, transitions[k].length.metric]
-        num_chars_line = ['num_chars', transitions[k].num_chars.left,
-                          transitions[k].num_chars.right,
-                          transitions[k].num_chars.together,
-                          transitions[k].num_chars.metric]
-        max_line = ['max_code', transitions[k].max_code.left,
-                    transitions[k].max_code.right,
-                    transitions[k].max_code.together,
-                    transitions[k].max_code.metric]
-        median_line = ['median', transitions[k].median.left,
-                       transitions[k].median.right,
-                       transitions[k].median.together,
-                       transitions[k].median.metric]
-        mean_line = ['mean', transitions[k].mean.left,
-                     transitions[k].mean.right,
-                     transitions[k].mean.together, transitions[k].mean.metric]
+        len_line = ['lenght', trs[k].data.length.left,
+                    trs[k].data.length.right,
+                    trs[k].data.length.together, trs[k].length]
+        num_chars_line = ['num_chars', trs[k].data.num_chars.left,
+                          trs[k].data.num_chars.right,
+                          trs[k].data.num_chars.together,
+                          trs[k].num_chars]
+        max_line = ['max_code', trs[k].data.max_code.left,
+                    trs[k].data.max_code.right,
+                    trs[k].data.max_code.together,
+                    trs[k].max_code]
+        median_line = ['median', trs[k].data.median.left,
+                       trs[k].data.median.right,
+                       trs[k].data.median.together, trs[k].median]
+        mean_line = ['mean', trs[k].data.mean.left,
+                     trs[k].data.mean.right,
+                     trs[k].data.mean.together, trs[k].mean]
         table = [header, len_line, num_chars_line, max_line, median_line,
                  mean_line]
         print(make_table_string(table))
