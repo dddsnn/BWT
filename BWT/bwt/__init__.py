@@ -10,7 +10,8 @@ PartialMTFAnalysisResult = namedtuple('PartialMTFAnalysisResult',
 
 TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
                                           ['data', 'length', 'num_chars',
-                                           'max_code', 'median', 'mean'])
+                                           'max_code', 'median', 'mean',
+                                           'chapin1'])
 
 TransitionData = namedtuple('TransitionData',
                                     ['length', 'num_chars', 'max_code',
