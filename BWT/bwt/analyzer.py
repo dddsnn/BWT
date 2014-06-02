@@ -40,15 +40,18 @@ def analyze_transition(bw1, bw2):
     mtf_a = analyze_partial_mtf(cd.mtf_partial_enc(bw1))
     mtf_b = analyze_partial_mtf(cd.mtf_partial_enc(bw2))
     mtf_ab = analyze_partial_mtf(cd.mtf_partial_enc(bw1 + bw2))
+
     # LENGTH
     # metric: difference between length of left vs. length of right
     length = TransitionDataSet(mtf_a.length, mtf_b.length, mtf_ab.length)
     length_metric = abs(mtf_a.length - mtf_b.length)
+
     # NUMBER OF CHARACTERS
     # metric: number of -1s in the second half of the combined code (the one
     # that's being transitioned to)
     num_chars = TransitionDataSet(mtf_a.num_chars, mtf_b.num_chars, mtf_ab.num_chars)
     num_chars_metric = mtf_ab.num_chars - mtf_a.num_chars
+
     # MAX CODE
     max_code = TransitionDataSet(mtf_a.max_code, mtf_b.max_code, mtf_ab.max_code)
     max_code_metric = mtf_ab.max_code - max(mtf_a.max_code, mtf_b.max_code)
@@ -57,6 +60,7 @@ def analyze_transition(bw1, bw2):
         ab_length_rec = 1
     else:
         ab_length_rec = mtf_ab.length_rec
+
     # MEDIAN
     median = TransitionDataSet(mtf_a.median, mtf_b.median, mtf_ab.median)
     # metric: difference of expected median and the achieved median
@@ -76,12 +80,14 @@ def analyze_transition(bw1, bw2):
     # metric: difference of expected mean and the achieved mean
     mean_metric = ((mtf_a.mean * mtf_a.length_rec + mtf_b.mean * mtf_b.length_rec)
                      / ab_length_rec) - mtf_ab.mean
-    # CHAPIN 1
+
+    # CHAPIN: sum of squares of differences of logs
     hst_a = make_histogram(bw1)
     hst_b = make_histogram(bw2)
     log_diffs = []
     for k in hst_a:
         # get the logs
+        # TODO not sure replacing -inf with 0 doesn't affect result
         if hst_a[k] == 0:
             log_a = 0
         else:
@@ -92,11 +98,22 @@ def analyze_transition(bw1, bw2):
             log_b = math.log(hst_b[k])
         log_diffs.append(log_a - log_b)
     # squares of differences of logarithms in the histograms
-    chapin1_metric = sum([d ** 2 for d in log_diffs])
+    chapin_hst_diff_metric = sum([d ** 2 for d in log_diffs])
+
+    # CHAPIN: kullback-leibler
+    logterms = []
+    for k in hst_a:
+        if hst_a[k] == 0:
+            # in case of zeros, ignore this term
+            # TODO http://mathoverflow.net/questions/72668/how-to-compute-kl-divergence-when-pmf-contains-0s
+            continue
+        logterms.apend(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
+    chapin_kl_metric = sum(logterms)
     data = TransitionData(length, num_chars, max_code, median, mean)
     result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
                                       max_code_metric, median_metric,
-                                      mean_metric, chapin1_metric)
+                                      mean_metric, chapin_hst_diff_metric,
+                                      chapin_kl_metric)
     return result
 
 def make_histogram(bw_code):

@@ -137,7 +137,8 @@ def simulate_compression(in_path, title, order=None):
 
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
-    metrics = ['mean', 'median', 'num_chars', 'chapin1']
+    metrics = ['mean', 'median', 'num_chars', 'chapin_hst_diff',
+               'chapin_kl_metric']
 
 #     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
 
