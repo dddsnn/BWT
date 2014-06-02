@@ -103,17 +103,58 @@ def analyze_transition(bw1, bw2):
     # CHAPIN: kullback-leibler
     logterms = []
     for k in hst_a:
-        if hst_a[k] == 0:
+        if hst_a[k] == 0 or hst_b[k] == 0:
             # in case of zeros, ignore this term
             # TODO http://mathoverflow.net/questions/72668/how-to-compute-kl-divergence-when-pmf-contains-0s
             continue
-        logterms.apend(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
+        logterms.append(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
     chapin_kl_metric = sum(logterms)
+    # CHAPIN: number of inversion between ordered histograms
+    # turn histograms into lists and sort them
+    hst_a = sorted([x for x in hst_a.values()])
+    hst_b = sorted([x for x in hst_b.values()])
+    inv = 0
+    for i, x in enumerate(hst_a):
+        # TODO need to recheck that i'm not counting anything multiple times
+        try:
+            i_b = hst_b.index(x)
+        except ValueError:
+            # no inversions if value isn't in hst_b, continue with next
+            continue
+        # all the items coming before x in hst_b
+        before_list = hst_b[:i_b]
+        # all the items coming after x in hst_a, but not equal to x
+        after_list = hst_a[i + 1:]
+        after_list = [a for a in after_list if a != x]
+        while after_list:
+            try:
+                # get the index of the first element of after_list in
+                # before_list
+                idx_in_before = before_list.index(after_list[0])
+                # inversion found, increment inv and delete the element
+                # from both lists
+                inv += 1
+                del before_list[idx_in_before]
+                del after_list[0]
+            except ValueError:
+                # element not found in before_list, delete from after_list
+                # and continue
+                del after_list[0]
+                continue
+    chapin_inv_metric = inv
+
+    # CHAPIN: log of previous
+    if inv == 0:
+        chapin_inv_log_metric = 0
+    else:
+        chapin_inv_log_metric = math.log(inv)
+
     data = TransitionData(length, num_chars, max_code, median, mean)
     result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
                                       max_code_metric, median_metric,
                                       mean_metric, chapin_hst_diff_metric,
-                                      chapin_kl_metric)
+                                      chapin_kl_metric, chapin_inv_metric,
+                                      chapin_inv_log_metric)
     return result
 
 def make_histogram(bw_code):

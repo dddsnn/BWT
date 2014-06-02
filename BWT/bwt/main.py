@@ -59,12 +59,23 @@ def write_tsplib_files(graph, out_dir_path, file_name):
     # dictionary edge->cost
     costs = nx.get_edge_attributes(graph, 'cost')
     # min and max edge costs, and the ratio
-    min_cost = min([abs(c) for c in costs.values() if c != 0])
+    costs_nonzero = [abs(c) for c in costs.values() if c != 0]
+    if costs_nonzero:
+        min_cost = min(costs_nonzero)
+    else:
+        min_cost = 0
     max_cost = max([abs(c) for c in costs.values()])
-    ratio = max_cost / min_cost
+    if min_cost:
+        ratio = max_cost / min_cost
+    else:
+        ratio = float('inf')
     print('ratio between smallest and largest value: {0}'.format(ratio))
     # choose the scaling factor so that the max cost is close to MAX_INT
-    factor = int((1 / max_cost) * MAX_INT)
+    if max_cost:
+        factor = int((1 / max_cost) * MAX_INT)
+    else:
+        # in case everything is 0
+        factor = 0
     print('scaling with factor {0}'.format(factor))
 
     max_len = len(str(INFINITY))  # length of the longest number
@@ -138,7 +149,7 @@ def simulate_compression(in_path, title, order=None):
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
     metrics = ['mean', 'median', 'num_chars', 'chapin_hst_diff',
-               'chapin_kl_metric']
+               'chapin_kl', 'chapin_inv', 'chapin_inv_log']
 
 #     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
 
