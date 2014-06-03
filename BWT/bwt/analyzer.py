@@ -35,55 +35,73 @@ def analyze_partial_mtf(code):
                                       max_code, median, mean)
     return result
 
-def analyze_transition(bw1, bw2):
-    '''Analyze mtf_a single transition between two BW encoded strings.'''
-    mtf_a = analyze_partial_mtf(cd.mtf_partial_enc(bw1))
-    mtf_b = analyze_partial_mtf(cd.mtf_partial_enc(bw2))
-    mtf_ab = analyze_partial_mtf(cd.mtf_partial_enc(bw1 + bw2))
+def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
+    '''Analyze pt_mtf_a single transition between two BW encoded strings.'''
+    # get the two bw subcodes corresponding to the first symbols
+    left_a = bw_code.firsts.index(first_symbol_a)
+    right_a = bw_code.firsts.rindex(first_symbol_a)
+    bw_a = bw_code.encoded[left_a:right_a + 1]
+    left_b = bw_code.firsts.index(first_symbol_b)
+    right_b = bw_code.firsts.rindex(first_symbol_b)
+    bw_b = bw_code.encoded[left_b:right_b + 1]
+    # make the partial mtf codes
+    pt_mtf_a = analyze_partial_mtf(cd.mtf_partial_enc(bw_a))
+    pt_mtf_b = analyze_partial_mtf(cd.mtf_partial_enc(bw_b))
+    pt_mtf_ab = analyze_partial_mtf(cd.mtf_partial_enc(bw_a + bw_b))
+    # make the full mtf code and the subcodes for the two first symbols
+    full_mtf_a = mtf_code[left_a:right_a + 1]
+    full_mtf_b = mtf_code[left_b:right_b + 1]
 
     # LENGTH
     # metric: difference between length of left vs. length of right
-    length = TransitionDataSet(mtf_a.length, mtf_b.length, mtf_ab.length)
-    length_metric = abs(mtf_a.length - mtf_b.length)
+    length = TransitionDataSet(pt_mtf_a.length, pt_mtf_b.length,
+                               pt_mtf_ab.length)
+    length_metric = abs(pt_mtf_a.length - pt_mtf_b.length)
 
     # NUMBER OF CHARACTERS
     # metric: number of -1s in the second half of the combined code (the one
     # that's being transitioned to)
-    num_chars = TransitionDataSet(mtf_a.num_chars, mtf_b.num_chars, mtf_ab.num_chars)
-    num_chars_metric = mtf_ab.num_chars - mtf_a.num_chars
+    num_chars = TransitionDataSet(pt_mtf_a.num_chars, pt_mtf_b.num_chars,
+                                  pt_mtf_ab.num_chars)
+    num_chars_metric = pt_mtf_ab.num_chars - pt_mtf_a.num_chars
 
     # MAX CODE
-    max_code = TransitionDataSet(mtf_a.max_code, mtf_b.max_code, mtf_ab.max_code)
-    max_code_metric = mtf_ab.max_code - max(mtf_a.max_code, mtf_b.max_code)
+    max_code = TransitionDataSet(pt_mtf_a.max_code, pt_mtf_b.max_code,
+                                 pt_mtf_ab.max_code)
+    max_code_metric = pt_mtf_ab.max_code - max(pt_mtf_a.max_code,
+                                               pt_mtf_b.max_code)
     # to avoid division by zero
-    if mtf_ab.length_rec == 0:
+    if pt_mtf_ab.length_rec == 0:
         ab_length_rec = 1
     else:
-        ab_length_rec = mtf_ab.length_rec
+        ab_length_rec = pt_mtf_ab.length_rec
 
     # MEDIAN
-    median = TransitionDataSet(mtf_a.median, mtf_b.median, mtf_ab.median)
+    median = TransitionDataSet(pt_mtf_a.median, pt_mtf_b.median,
+                               pt_mtf_ab.median)
     # metric: difference of expected median and the achieved median
-    median_metric = ((mtf_a.median * mtf_a.length_rec + mtf_b.median * mtf_b.length_rec)
-                       / ab_length_rec) - mtf_ab.median
-    # TODO by ignoring new characters (-1s) in the mean, good transitions get mtf_a
-    # penalty, because mtf_a character that was already there before the transition
-    # probably affects the mean in mtf_a bad way, while an entirely new character
+    median_metric = ((pt_mtf_a.median * pt_mtf_a.length_rec +
+                      pt_mtf_b.median * pt_mtf_b.length_rec)
+                       / ab_length_rec) - pt_mtf_ab.median
+    # TODO by ignoring new characters (-1s) in the mean, good transitions get pt_mtf_a
+    # penalty, because pt_mtf_a character that was already there before the transition
+    # probably affects the mean in pt_mtf_a bad way, while an entirely new character
     # won't affect it at all
-    # need to give new characters mtf_a "penalty" value in the partial mtf encode
+    # need to give new characters pt_mtf_a "penalty" value in the partial mtf encode
     # (but only for the target of the transition, lots of new characters in the
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
 
     # MEAN
-    mean = TransitionDataSet(mtf_a.mean, mtf_b.mean, mtf_ab.mean)
+    mean = TransitionDataSet(pt_mtf_a.mean, pt_mtf_b.mean, pt_mtf_ab.mean)
     # metric: difference of expected mean and the achieved mean
-    mean_metric = ((mtf_a.mean * mtf_a.length_rec + mtf_b.mean * mtf_b.length_rec)
-                     / ab_length_rec) - mtf_ab.mean
+    mean_metric = ((pt_mtf_a.mean * pt_mtf_a.length_rec +
+                    pt_mtf_b.mean * pt_mtf_b.length_rec)
+                     / ab_length_rec) - pt_mtf_ab.mean
 
     # CHAPIN: sum of squares of differences of logs
-    hst_a = make_histogram(bw1)
-    hst_b = make_histogram(bw2)
+    hst_a = make_histogram(bw_a)
+    hst_b = make_histogram(bw_b)
     log_diffs = []
     for k in hst_a:
         # get the logs
@@ -110,21 +128,25 @@ def analyze_transition(bw1, bw2):
         logterms.append(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
     chapin_kl_metric = sum(logterms)
     # CHAPIN: number of inversion between ordered histograms
-    # turn histograms into lists and sort them
-    hst_a = sorted([x for x in hst_a.values()])
-    hst_b = sorted([x for x in hst_b.values()])
+    # turn histograms of mtf into lists and sort them in decreasing order by key
+    mtf_hst_a = make_histogram(full_mtf_a)
+    mtf_hst_b = make_histogram(full_mtf_b)
+    mtf_hst_a = sorted(mtf_hst_a.items(), key=lambda x:x[0], reverse=True)
+    mtf_hst_b = sorted(mtf_hst_b.items(), key=lambda x:x[0], reverse=True)
+    mtf_hst_a = [x[1] for x in mtf_hst_a]
+    mtf_hst_b = [x[1] for x in mtf_hst_b]
     inv = 0
-    for i, x in enumerate(hst_a):
+    for i, x in enumerate(mtf_hst_a):
         # TODO need to recheck that i'm not counting anything multiple times
         try:
-            i_b = hst_b.index(x)
+            i_b = mtf_hst_b.index(x)
         except ValueError:
             # no inversions if value isn't in hst_b, continue with next
             continue
         # all the items coming before x in hst_b
-        before_list = hst_b[:i_b]
+        before_list = mtf_hst_b[:i_b]
         # all the items coming after x in hst_a, but not equal to x
-        after_list = hst_a[i + 1:]
+        after_list = mtf_hst_a[i + 1:]
         after_list = [a for a in after_list if a != x]
         while after_list:
             try:
@@ -157,27 +179,22 @@ def analyze_transition(bw1, bw2):
                                       chapin_inv_log_metric)
     return result
 
-def make_histogram(bw_code):
-    '''Make a histogram of symbol appearances for a block of BW code.'''
+def make_histogram(bytes_):
+    '''Make a histogram of symbol appearances for a bytes object.'''
     # initialize 0 for all possible bytes
     histogram = {i:0 for i in range(256)}
-    for b in bw_code:
+    for b in bytes_:
         histogram[b] += 1
     return histogram
 
 def analyze_transitions(bytes_):
     '''Analyze all the transitions between bytes of a byte string.'''
     bw_code = cd.bw_encode(bytes_)
-    first = bw_code.firsts
-    bw_code = bw_code.encoded
-    subcodes = {c: [] for c in first}
-    for i in range(len(first)):
-        subcodes[first[i]].append(bw_code[i])
-    for c in subcodes:
-        subcodes[c] = bytes(subcodes[c])
-    transitions = {(a, b): analyze_transition(subcodes[a], subcodes[b])
-                   for a in subcodes.keys()
-                   for b in subcodes.keys() if a != b}
+    firsts = set(bw_code.firsts)
+    mtf_code = cd.mtf_enc(bw_code.encoded)
+    transitions = {(a, b): analyze_transition(bw_code, mtf_code, a, b)
+                   for a in firsts
+                   for b in firsts if a != b}
     return transitions
 
 def make_table_string(table):
