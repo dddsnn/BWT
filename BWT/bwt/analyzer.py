@@ -178,7 +178,7 @@ def num_inversions(list_a, list_b):
                 # and continue
                 del after_list[0]
                 continue
-        return inv
+    return inv
 
 def make_histogram(bytes_):
     '''Make a histogram of symbol appearances for a bytes object.'''
