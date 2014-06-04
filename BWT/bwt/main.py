@@ -152,7 +152,7 @@ if __name__ == '__main__':
                'chapin_kl', 'chapin_inv', 'chapin_inv_log']
 
 #     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
-
+#
 #     with open(wd + 'transitions', 'rb') as trs_file:
 #         trs = pickle.load(trs_file)
 #     for metric in metrics:

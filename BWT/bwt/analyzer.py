@@ -35,7 +35,7 @@ def analyze_partial_mtf(code):
                                       max_code, median, mean)
     return result
 
-def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
+def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     '''Analyze pt_mtf_a single transition between two BW encoded strings.'''
     # get the two bw subcodes corresponding to the first symbols
     left_a = bw_code.firsts.index(first_symbol_a)
@@ -48,9 +48,6 @@ def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
     pt_mtf_a = analyze_partial_mtf(cd.mtf_partial_enc(bw_a))
     pt_mtf_b = analyze_partial_mtf(cd.mtf_partial_enc(bw_b))
     pt_mtf_ab = analyze_partial_mtf(cd.mtf_partial_enc(bw_a + bw_b))
-    # make the subcodes for a and b from the full mtf code
-    full_mtf_a = mtf_code[left_a:right_a + 1]
-    full_mtf_b = mtf_code[left_b:right_b + 1]
 
     # LENGTH
     # metric: difference between length of left vs. length of right
@@ -128,27 +125,43 @@ def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
         logterms.append(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
     chapin_kl_metric = sum(logterms)
     # CHAPIN: number of inversion between ordered histograms
-    # make histograms of the full mtf codes for a and b
-    mtf_hst_a = make_histogram(full_mtf_a)
-    mtf_hst_b = make_histogram(full_mtf_b)
-    # turn them into lists and sort in decreasing order of frequency
-    mtf_hst_a = sorted(mtf_hst_a.items(), key=lambda x:x[1], reverse=True)
-    mtf_hst_b = sorted(mtf_hst_b.items(), key=lambda x:x[1], reverse=True)
+    # turn the histograms into lists and sort in decreasing order of frequency
+    freq_list_a = sorted(hst_a.items(), key=lambda x:x[1], reverse=True)
+    freq_list_b = sorted(hst_b.items(), key=lambda x:x[1], reverse=True)
     # now just take the corresponding first symbols
-    mtf_hst_a = [x[0] for x in mtf_hst_a]
-    mtf_hst_b = [x[0] for x in mtf_hst_b]
+    freq_list_a = [x[0] for x in freq_list_a]
+    freq_list_b = [x[0] for x in freq_list_b]
+    # metric is the number of inversions between the two lists
+    chapin_inv_metric = num_inversions(freq_list_a, freq_list_b)
+
+    # CHAPIN: log of previous
+    if chapin_inv_metric == 0:
+        chapin_inv_log_metric = 0
+    else:
+        chapin_inv_log_metric = math.log(chapin_inv_metric)
+
+    data = TransitionData(length, num_chars, max_code, median, mean)
+    result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
+                                      max_code_metric, median_metric,
+                                      mean_metric, chapin_hst_diff_metric,
+                                      chapin_kl_metric, chapin_inv_metric,
+                                      chapin_inv_log_metric)
+    return result
+
+def num_inversions(list_a, list_b):
+    '''Compute the number of inversions between two lists.'''
     inv = 0
-    for i, x in enumerate(mtf_hst_a):
+    for i, x in enumerate(list_a):
         # TODO need to recheck that i'm not counting anything multiple times
         try:
-            i_b = mtf_hst_b.index(x)
+            i_b = list_b.index(x)
         except ValueError:
             # no inversions if value isn't in hst_b, continue with next
             continue
         # all the items coming before x in hst_b
-        before_list = mtf_hst_b[:i_b]
+        before_list = list_b[:i_b]
         # all the items coming after x in hst_a, but not equal to x
-        after_list = mtf_hst_a[i + 1:]
+        after_list = list_a[i + 1:]
         after_list = [a for a in after_list if a != x]
         while after_list:
             try:
@@ -165,21 +178,7 @@ def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
                 # and continue
                 del after_list[0]
                 continue
-    chapin_inv_metric = inv
-
-    # CHAPIN: log of previous
-    if inv == 0:
-        chapin_inv_log_metric = 0
-    else:
-        chapin_inv_log_metric = math.log(inv)
-
-    data = TransitionData(length, num_chars, max_code, median, mean)
-    result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
-                                      max_code_metric, median_metric,
-                                      mean_metric, chapin_hst_diff_metric,
-                                      chapin_kl_metric, chapin_inv_metric,
-                                      chapin_inv_log_metric)
-    return result
+        return inv
 
 def make_histogram(bytes_):
     '''Make a histogram of symbol appearances for a bytes object.'''
@@ -193,8 +192,7 @@ def analyze_transitions(bytes_):
     '''Analyze all the transitions between bytes of a byte string.'''
     bw_code = cd.bw_encode(bytes_)
     firsts = set(bw_code.firsts)
-    mtf_code = cd.mtf_enc(bw_code.encoded)
-    transitions = {(a, b): analyze_transition(bw_code, mtf_code, a, b)
+    transitions = {(a, b): analyze_transition(bw_code, a, b)
                    for a in firsts
                    for b in firsts if a != b}
     return transitions
