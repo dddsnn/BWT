@@ -48,7 +48,7 @@ def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
     pt_mtf_a = analyze_partial_mtf(cd.mtf_partial_enc(bw_a))
     pt_mtf_b = analyze_partial_mtf(cd.mtf_partial_enc(bw_b))
     pt_mtf_ab = analyze_partial_mtf(cd.mtf_partial_enc(bw_a + bw_b))
-    # make the full mtf code and the subcodes for the two first symbols
+    # make the subcodes for a and b from the full mtf code
     full_mtf_a = mtf_code[left_a:right_a + 1]
     full_mtf_b = mtf_code[left_b:right_b + 1]
 
@@ -128,13 +128,15 @@ def analyze_transition(bw_code, mtf_code, first_symbol_a, first_symbol_b):
         logterms.append(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
     chapin_kl_metric = sum(logterms)
     # CHAPIN: number of inversion between ordered histograms
-    # turn histograms of mtf into lists and sort them in decreasing order by key
+    # make histograms of the full mtf codes for a and b
     mtf_hst_a = make_histogram(full_mtf_a)
     mtf_hst_b = make_histogram(full_mtf_b)
-    mtf_hst_a = sorted(mtf_hst_a.items(), key=lambda x:x[0], reverse=True)
-    mtf_hst_b = sorted(mtf_hst_b.items(), key=lambda x:x[0], reverse=True)
-    mtf_hst_a = [x[1] for x in mtf_hst_a]
-    mtf_hst_b = [x[1] for x in mtf_hst_b]
+    # turn them into lists and sort in decreasing order of frequency
+    mtf_hst_a = sorted(mtf_hst_a.items(), key=lambda x:x[1], reverse=True)
+    mtf_hst_b = sorted(mtf_hst_b.items(), key=lambda x:x[1], reverse=True)
+    # now just take the corresponding first symbols
+    mtf_hst_a = [x[0] for x in mtf_hst_a]
+    mtf_hst_b = [x[0] for x in mtf_hst_b]
     inv = 0
     for i, x in enumerate(mtf_hst_a):
         # TODO need to recheck that i'm not counting anything multiple times
