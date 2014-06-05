@@ -149,18 +149,37 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     return result
 
 def num_inversions(list_a, list_b):
-    '''Compute the number of inversions between two lists.'''
+    '''Compute the number of inversions between two lists.
+    The lists need to be permutations of each other.
+    '''
+    inv = 0
+    for i_a, x in enumerate(list_a):
+        i_b = list_b.index(x)
+        # all the items coming before x in list_b
+        before_list = list_b[:i_b]
+        # all the items coming after x in hst_a
+        after_list = list_a[i_a + 1:]
+        for a in after_list:
+            if a in before_list:
+                # inverions found, increment inv
+                inv += 1
+    return inv
+
+def num_inversions_general(list_a, list_b):
+    '''Compute the number of inversions between two lists.
+    Can deal with lists of different lengths and multiple occurences.
+    '''
     inv = 0
     for i, x in enumerate(list_a):
         # TODO need to recheck that i'm not counting anything multiple times
         try:
             i_b = list_b.index(x)
         except ValueError:
-            # no inversions if value isn't in hst_b, continue with next
+            # no inversions if value isn't in list_b, continue with next
             continue
-        # all the items coming before x in hst_b
+        # all the items coming before x in list_b
         before_list = list_b[:i_b]
-        # all the items coming after x in hst_a, but not equal to x
+        # all the items coming after x in lst_a, but not equal to x
         after_list = list_a[i + 1:]
         after_list = [a for a in after_list if a != x]
         while after_list:
