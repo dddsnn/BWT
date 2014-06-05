@@ -151,8 +151,12 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     stripped_partial_mtf = list(filter(lambda x: x != -1, pt_mtf_ab))
     huffman_length = huffman_enc_length(bytes(stripped_partial_mtf))
     if len(stripped_partial_mtf) == 0:
-        # TODO just a large number
-        huffman_metric = 2000000
+        # if the stripped partial mtf code has length 0 it means there are no
+        # recurring characters in it. since that means no compression benefits
+        # for this transition, give it a bad value to penalize it
+        # good transitions will have lengths far below 1, so 10 should be enough
+        # to discourage tsp from including this transition
+        huffman_metric = 10
     else:
         huffman_metric = huffman_length / len(stripped_partial_mtf)
 
