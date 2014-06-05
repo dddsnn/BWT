@@ -10,23 +10,22 @@ import bwt.analyzer as an
 import networkx as nx
 import pickle
 
-def make_transitions(in_path, out_path=None):
+def make_transitions(in_path, metric, out_path=None):
     '''Create the transition analysis for a file.'''
     with open(in_path, 'rb') as in_file:
-        text = in_file.read()
-    trs = an.analyze_transitions(text)
+        bytes_ = in_file.read()
+    trs = an.analyze_transitions(bytes_, metric)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(trs, out_file)
     return trs
 
 
-def make_graph(transitions, metric, out_path=None):
+def make_graph(transitions, out_path=None):
     g = nx.DiGraph()
     edges = []
     for a, b in transitions.keys():
-        cost = getattr(transitions[(a, b)], metric)
-        edges.append((a, b, {'cost':cost}))
+        edges.append((a, b, {'cost':transitions[(a, b)]}))
     g.add_edges_from(edges)
     if out_path:
         with open(out_path, 'xb') as out_file:
@@ -151,15 +150,17 @@ def simulate_compression(in_path, title, order=None):
 
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
-    metrics = ['mean', 'median', 'num_chars', 'chapin_hst_diff',
+    metrics = ['max_code', 'mean', 'median', 'num_chars', 'chapin_hst_diff',
                'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman_metric']
 
-#     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
-#
-#     with open(wd + 'transitions', 'rb') as trs_file:
-#         trs = pickle.load(trs_file)
 #     for metric in metrics:
-#         g = make_graph(trs, metric)
+#         make_transitions('/home/dddsnn/Downloads/calgary/book1', metric,
+#                          wd + metric + '.transitions')
+#
+#     for metric in metrics:
+#         with open(wd + metric + '.transitions', 'rb') as trs_file:
+#             trs = pickle.load(trs_file)
+#         g = make_graph(trs)
 #         write_tsplib_files(g, wd, metric)
 
     simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')

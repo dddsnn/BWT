@@ -35,15 +35,34 @@ def analyze_partial_mtf(code):
                                       max_code, median, mean)
     return result
 
-def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
-    '''Analyze an_a single transition between two BW encoded strings.'''
+def bw_block(bw_code, first_symbol):
+    '''Get the BW code corresponding to a specific symbol in the first column.
+    '''
+    left = bw_code.firsts.index(first_symbol)
+    right = bw_code.firsts.rindex(first_symbol)
+    bw_block = bw_code.encoded[left:right + 1]
+    return bw_block
+
+def metric_num_chars(bw_code, first_symbol_a, first_symbol_b):
     # get the two bw subcodes corresponding to the first symbols
-    left_a = bw_code.firsts.index(first_symbol_a)
-    right_a = bw_code.firsts.rindex(first_symbol_a)
-    bw_a = bw_code.encoded[left_a:right_a + 1]
-    left_b = bw_code.firsts.index(first_symbol_b)
-    right_b = bw_code.firsts.rindex(first_symbol_b)
-    bw_b = bw_code.encoded[left_b:right_b + 1]
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
+    # make the partial mtf codes
+    pt_mtf_a = cd.mtf_partial_enc(bw_a)
+    pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+    # get the analyses for the parts
+    an_a = analyze_partial_mtf(pt_mtf_a)
+    an_ab = analyze_partial_mtf(pt_mtf_ab)
+
+    # metric: number of -1s in the second half of the combined code (the one
+    # that's being transitioned to)
+    metric = an_ab.num_chars - an_a.num_chars
+    return metric
+
+def metric_max_code(bw_code, first_symbol_a, first_symbol_b):
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
     # make the partial mtf codes
     pt_mtf_a = cd.mtf_partial_enc(bw_a)
     pt_mtf_b = cd.mtf_partial_enc(bw_b)
@@ -53,37 +72,34 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     an_b = analyze_partial_mtf(pt_mtf_b)
     an_ab = analyze_partial_mtf(pt_mtf_ab)
 
-    # LENGTH
-    # metric: difference between length of left vs. length of right
-    length = TransitionDataSet(an_a.length, an_b.length,
-                               an_ab.length)
-    length_metric = abs(an_a.length - an_b.length)
+    metric = an_ab.max_code - max(an_a.max_code, an_b.max_code)
+    return metric
 
-    # NUMBER OF CHARACTERS
-    # metric: number of -1s in the second half of the combined code (the one
-    # that's being transitioned to)
-    num_chars = TransitionDataSet(an_a.num_chars, an_b.num_chars,
-                                  an_ab.num_chars)
-    num_chars_metric = an_ab.num_chars - an_a.num_chars
+def metric_median(bw_code, first_symbol_a, first_symbol_b):
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
+    # make the partial mtf codes
+    pt_mtf_a = cd.mtf_partial_enc(bw_a)
+    pt_mtf_b = cd.mtf_partial_enc(bw_b)
+    pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+    # get the analyses for the parts
+    an_a = analyze_partial_mtf(pt_mtf_a)
+    an_b = analyze_partial_mtf(pt_mtf_b)
+    an_ab = analyze_partial_mtf(pt_mtf_ab)
 
-    # MAX CODE
-    max_code = TransitionDataSet(an_a.max_code, an_b.max_code,
-                                 an_ab.max_code)
-    max_code_metric = an_ab.max_code - max(an_a.max_code,
-                                               an_b.max_code)
     # to avoid division by zero
     if an_ab.length_rec == 0:
         ab_length_rec = 1
     else:
         ab_length_rec = an_ab.length_rec
 
-    # MEDIAN
-    median = TransitionDataSet(an_a.median, an_b.median,
-                               an_ab.median)
     # metric: difference of expected median and the achieved median
-    median_metric = ((an_a.median * an_a.length_rec +
-                      an_b.median * an_b.length_rec)
+    metric = ((an_a.median * an_a.length_rec + an_b.median * an_b.length_rec)
                        / ab_length_rec) - an_ab.median
+    return metric
+
+def metric_mean(bw_code, first_symbol_a, first_symbol_b):
     # TODO by ignoring new characters (-1s) in the mean, good transitions get an_a
     # penalty, because an_a character that was already there before the transition
     # probably affects the mean in an_a bad way, while an entirely new character
@@ -93,12 +109,33 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
 
-    # MEAN
-    mean = TransitionDataSet(an_a.mean, an_b.mean, an_ab.mean)
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
+    # make the partial mtf codes
+    pt_mtf_a = cd.mtf_partial_enc(bw_a)
+    pt_mtf_b = cd.mtf_partial_enc(bw_b)
+    pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+    # get the analyses for the parts
+    an_a = analyze_partial_mtf(pt_mtf_a)
+    an_b = analyze_partial_mtf(pt_mtf_b)
+    an_ab = analyze_partial_mtf(pt_mtf_ab)
+
+    # to avoid division by zero
+    if an_ab.length_rec == 0:
+        ab_length_rec = 1
+    else:
+        ab_length_rec = an_ab.length_rec
+
     # metric: difference of expected mean and the achieved mean
-    mean_metric = ((an_a.mean * an_a.length_rec +
-                    an_b.mean * an_b.length_rec)
+    metric = ((an_a.mean * an_a.length_rec + an_b.mean * an_b.length_rec)
                      / ab_length_rec) - an_ab.mean
+    return metric
+
+def metric_chapin_hst_diff(bw_code, first_symbol_a, first_symbol_b):
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
 
     # CHAPIN: sum of squares of differences of logs
     hst_a = make_histogram(bw_a)
@@ -117,8 +154,16 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
             log_b = math.log(hst_b[k])
         log_diffs.append(log_a - log_b)
     # squares of differences of logarithms in the histograms
-    chapin_hst_diff_metric = sum([d ** 2 for d in log_diffs])
+    metric = sum([d ** 2 for d in log_diffs])
+    return metric
 
+def metric_chapin_kl(bw_code, first_symbol_a, first_symbol_b):
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
+    # make the histograms
+    hst_a = make_histogram(bw_a)
+    hst_b = make_histogram(bw_b)
     # CHAPIN: kullback-leibler
     logterms = []
     for k in hst_a:
@@ -127,7 +172,17 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
             # TODO http://mathoverflow.net/questions/72668/how-to-compute-kl-divergence-when-pmf-contains-0s
             continue
         logterms.append(math.log(hst_b[k] / hst_a[k]) * hst_b[k])
-    chapin_kl_metric = sum(logterms)
+    metric = sum(logterms)
+    return metric
+
+def metric_chapin_inv(bw_code, first_symbol_a, first_symbol_b):
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
+    # make the histograms
+    hst_a = make_histogram(bw_a)
+    hst_b = make_histogram(bw_b)
+
     # CHAPIN: number of inversion between ordered histograms
     # turn the histograms into lists and sort in decreasing order of frequency
     freq_list_a = sorted(hst_a.items(), key=lambda x:x[1], reverse=True)
@@ -136,14 +191,23 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     freq_list_a = [x[0] for x in freq_list_a]
     freq_list_b = [x[0] for x in freq_list_b]
     # metric is the number of inversions between the two lists
-    chapin_inv_metric = num_inversions(freq_list_a, freq_list_b)
+    metric = num_inversions(freq_list_a, freq_list_b)
+    return metric
 
+def metric_chapin_inv_log(bw_code, first_symbol_a, first_symbol_b):
+    inv_metric = metric_chapin_inv(bw_code, first_symbol_a, first_symbol_b)
     # CHAPIN: log of previous
-    if chapin_inv_metric == 0:
-        chapin_inv_log_metric = 0
+    if inv_metric == 0:
+        metric = 0
     else:
-        chapin_inv_log_metric = math.log(chapin_inv_metric)
+        metric = math.log(inv_metric)
+    return metric
 
+def metric_huffman(bw_code, first_symbol_a, first_symbol_b):
+    # get the two bw subcodes corresponding to the first symbols
+    bw_a = bw_block(bw_code, first_symbol_a)
+    bw_b = bw_block(bw_code, first_symbol_b)
+    pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
     # HUFFMAN ENCODE METRIC
     # TODO -1s in the second part need to be weighted, see todo in mean
     # just encode the partial mtf (without -1s) with huffman and take the length
@@ -156,23 +220,16 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
         # for this transition, give it a bad value to penalize it
         # good transitions will have lengths far below 1, so 10 should be enough
         # to discourage tsp from including this transition
-        huffman_metric = 10
+        metric = 10
     else:
-        huffman_metric = huffman_length / len(stripped_partial_mtf)
-
-    data = TransitionData(length, num_chars, max_code, median, mean)
-    result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
-                                      max_code_metric, median_metric,
-                                      mean_metric, chapin_hst_diff_metric,
-                                      chapin_kl_metric, chapin_inv_metric,
-                                      chapin_inv_log_metric, huffman_metric)
-    return result
+        metric = huffman_length / len(stripped_partial_mtf)
+    return metric
 
 def huffman_enc_length(bytes_):
     '''Return the length of the huffman coded input.
     Use this wrapper if you just need the length because it catches some rare
-    cases that will crash the huffman library, but still gives the correct
-    result.
+    cases that will crash the huffman library, but still gives the correct (or
+    at least a correct enough) result.
     '''
     # the library can't handle an input that contains only one distinct byte
     # e.g. [2, 2, 2, 2, 2, 2]
@@ -184,7 +241,7 @@ def huffman_enc_length(bytes_):
         if i == l - 1:
             # reached the end and all bytes were the same: library will fail, so
             # return a good estimate
-            # huffman should code the byte with one bit, plus a little overhead
+            # huffman should code each byte with one bit, plus a little overhead
             # for the tree
             return int(math.ceil(l / 8)) + 5
 
@@ -250,45 +307,32 @@ def make_histogram(bytes_):
         histogram[b] += 1
     return histogram
 
-def analyze_transitions(bytes_):
+def analyze_transitions(bytes_, metric):
     '''Analyze all the transitions between bytes of a byte string.'''
+    if metric == 'num_chars':
+        an_func = metric_num_chars
+    elif metric == 'max_code':
+        an_func = metric_max_code
+    elif metric == 'median':
+        an_func = metric_median
+    elif metric == 'mean':
+        an_func = metric_mean
+    elif metric == 'chapin_hst_diff':
+        an_func = metric_chapin_hst_diff
+    elif metric == 'chapin_kl':
+        an_func = metric_chapin_kl
+    elif metric == 'chapin_inv':
+        an_func = metric_chapin_inv
+    elif metric == 'chapin_inv_log':
+        an_func = metric_chapin_inv_log
+    elif metric == 'huffman_metric':
+        an_func = metric_huffman
+    else:
+        raise ValueError('Unknown metric.')
+
     bw_code = cd.bw_encode(bytes_)
     firsts = set(bw_code.firsts)
-    transitions = {(a, b): analyze_transition(bw_code, a, b)
+    transitions = {(a, b): an_func(bw_code, a, b)
                    for a in firsts
                    for b in firsts if a != b}
     return transitions
-
-def make_table_string(table):
-    result = ''
-    col_width = [max(len(str(x)) for x in col) for col in zip(*table)]
-    for line in table:
-        result += "| " + " | ".join("{:{}}".format(x, col_width[i])
-                                for i, x in enumerate(line)) + " |\n"
-    return result
-
-def print_transition_analyses(bytes_):
-    trs = analyze_transitions(bytes_)
-    for k in sorted(trs.keys()):
-        print('<' + k[0] + '-' + k[1] + '>\n')
-        header = ['', 'left', 'right', 'together', 'metric']
-        len_line = ['lenght', trs[k].data.length.left,
-                    trs[k].data.length.right,
-                    trs[k].data.length.together, trs[k].length]
-        num_chars_line = ['num_chars', trs[k].data.num_chars.left,
-                          trs[k].data.num_chars.right,
-                          trs[k].data.num_chars.together,
-                          trs[k].num_chars]
-        max_line = ['max_code', trs[k].data.max_code.left,
-                    trs[k].data.max_code.right,
-                    trs[k].data.max_code.together,
-                    trs[k].max_code]
-        median_line = ['median', trs[k].data.median.left,
-                       trs[k].data.median.right,
-                       trs[k].data.median.together, trs[k].median]
-        mean_line = ['mean', trs[k].data.mean.left,
-                     trs[k].data.mean.right,
-                     trs[k].data.mean.together, trs[k].mean]
-        table = [header, len_line, num_chars_line, max_line, median_line,
-                 mean_line]
-        print(make_table_string(table))
