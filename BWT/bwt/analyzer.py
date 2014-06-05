@@ -145,11 +145,16 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
         chapin_inv_log_metric = math.log(chapin_inv_metric)
 
     # HUFFMAN ENCODE METRIC
+    # TODO -1s in the second part need to be weighted, see todo in mean
     # just encode the partial mtf (without -1s) with huffman and take the length
     # strip -1s from the partial mtf
-    stripped_partial_mtf = filter(lambda x: x != -1, pt_mtf_ab)
+    stripped_partial_mtf = list(filter(lambda x: x != -1, pt_mtf_ab))
     huffman_length = huffman_enc_length(bytes(stripped_partial_mtf))
-    huffman_metric = huffman_length / len(stripped_partial_mtf)
+    if len(stripped_partial_mtf) == 0:
+        # TODO just a large number
+        huffman_metric = 2000000
+    else:
+        huffman_metric = huffman_length / len(stripped_partial_mtf)
 
     data = TransitionData(length, num_chars, max_code, median, mean)
     result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
@@ -160,10 +165,25 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     return result
 
 def huffman_enc_length(bytes_):
-    '''Return the length of the huffman coded input.'''
-    # the library segfaults when the only input is NUL
-    if bytes_ == b'\x00':
-        return 1
+    '''Return the length of the huffman coded input.
+    Use this wrapper if you just need the length because it catches some rare
+    cases that will crash the huffman library, but still gives the correct
+    result.
+    '''
+    # the library can't handle an input that contains only one distinct byte
+    # e.g. [2, 2, 2, 2, 2, 2]
+    l = len(bytes_)
+    for i, b in enumerate(bytes_):
+        if b != bytes_[0]:
+            # at least two different bytes, break
+            break
+        if i == l - 1:
+            # reached the end and all bytes were the same: library will fail, so
+            # return a good estimate
+            # huffman should code the byte with one bit, plus a little overhead
+            # for the tree
+            return int(math.ceil(l / 8)) + 5
+
     huffman_code = cd.huffman_enc(bytes_)
     return len(huffman_code)
 

@@ -147,8 +147,6 @@ def huffman_enc(bytes_):
     '''Huffman encode a list of bytes.'''
     lib = ct.cdll.LoadLibrary('../libhuffman.so')
     enc_in_len = len(bytes_)
-    if b'\x00' in bytes_ and len(bytes_) < 20:
-        print('asd')
     if enc_in_len == 0:
         # the library segfaults for length 0. just return empty list
         return []

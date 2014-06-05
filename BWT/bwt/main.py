@@ -69,7 +69,9 @@ def write_tsplib_files(graph, out_dir_path, file_name):
         ratio = max_cost / min_cost
     else:
         ratio = float('inf')
-    print('ratio between smallest and largest value: {0}'.format(ratio))
+    print('min value: {0}'.format(min_cost))
+    print('max value: {0}'.format(max_cost))
+    print('ratio: {0}'.format(ratio))
     # choose the scaling factor so that the max cost is close to MAX_INT
     if max_cost:
         factor = int((1 / max_cost) * MAX_INT)
@@ -77,6 +79,7 @@ def write_tsplib_files(graph, out_dir_path, file_name):
         # in case everything is 0
         factor = 0
     print('scaling with factor {0}'.format(factor))
+    print()
 
     max_len = len(str(INFINITY))  # length of the longest number
     # append the scaled cost value matrix to the tsp text
@@ -151,19 +154,19 @@ if __name__ == '__main__':
     metrics = ['mean', 'median', 'num_chars', 'chapin_hst_diff',
                'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman_metric']
 
-    make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
-
-    with open(wd + 'transitions', 'rb') as trs_file:
-        trs = pickle.load(trs_file)
-    for metric in metrics:
-        g = make_graph(trs, metric)
-        write_tsplib_files(g, wd, metric)
-
-#     simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')
-#     simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'aeiou...',
-#                          b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
+#     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
+#
+#     with open(wd + 'transitions', 'rb') as trs_file:
+#         trs = pickle.load(trs_file)
 #     for metric in metrics:
-#         tour = read_tsplib_files(wd + metric + '.tour',
-#                                  wd + metric + '.nodenames')
-#         simulate_compression('/home/dddsnn/Downloads/calgary/book1',
-#                              metric, tour)
+#         g = make_graph(trs, metric)
+#         write_tsplib_files(g, wd, metric)
+
+    simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')
+    simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'aeiou...',
+                         b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
+    for metric in metrics:
+        tour = read_tsplib_files(wd + metric + '.tour',
+                                 wd + metric + '.nodenames')
+        simulate_compression('/home/dddsnn/Downloads/calgary/book1',
+                             metric, tour)
