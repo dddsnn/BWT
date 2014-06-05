@@ -36,7 +36,7 @@ def analyze_partial_mtf(code):
     return result
 
 def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
-    '''Analyze pt_mtf_a single transition between two BW encoded strings.'''
+    '''Analyze an_a single transition between two BW encoded strings.'''
     # get the two bw subcodes corresponding to the first symbols
     left_a = bw_code.firsts.index(first_symbol_a)
     right_a = bw_code.firsts.rindex(first_symbol_a)
@@ -45,56 +45,60 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     right_b = bw_code.firsts.rindex(first_symbol_b)
     bw_b = bw_code.encoded[left_b:right_b + 1]
     # make the partial mtf codes
-    pt_mtf_a = analyze_partial_mtf(cd.mtf_partial_enc(bw_a))
-    pt_mtf_b = analyze_partial_mtf(cd.mtf_partial_enc(bw_b))
-    pt_mtf_ab = analyze_partial_mtf(cd.mtf_partial_enc(bw_a + bw_b))
+    pt_mtf_a = cd.mtf_partial_enc(bw_a)
+    pt_mtf_b = cd.mtf_partial_enc(bw_b)
+    pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+    # get the analyses for the parts
+    an_a = analyze_partial_mtf(pt_mtf_a)
+    an_b = analyze_partial_mtf(pt_mtf_b)
+    an_ab = analyze_partial_mtf(pt_mtf_ab)
 
     # LENGTH
     # metric: difference between length of left vs. length of right
-    length = TransitionDataSet(pt_mtf_a.length, pt_mtf_b.length,
-                               pt_mtf_ab.length)
-    length_metric = abs(pt_mtf_a.length - pt_mtf_b.length)
+    length = TransitionDataSet(an_a.length, an_b.length,
+                               an_ab.length)
+    length_metric = abs(an_a.length - an_b.length)
 
     # NUMBER OF CHARACTERS
     # metric: number of -1s in the second half of the combined code (the one
     # that's being transitioned to)
-    num_chars = TransitionDataSet(pt_mtf_a.num_chars, pt_mtf_b.num_chars,
-                                  pt_mtf_ab.num_chars)
-    num_chars_metric = pt_mtf_ab.num_chars - pt_mtf_a.num_chars
+    num_chars = TransitionDataSet(an_a.num_chars, an_b.num_chars,
+                                  an_ab.num_chars)
+    num_chars_metric = an_ab.num_chars - an_a.num_chars
 
     # MAX CODE
-    max_code = TransitionDataSet(pt_mtf_a.max_code, pt_mtf_b.max_code,
-                                 pt_mtf_ab.max_code)
-    max_code_metric = pt_mtf_ab.max_code - max(pt_mtf_a.max_code,
-                                               pt_mtf_b.max_code)
+    max_code = TransitionDataSet(an_a.max_code, an_b.max_code,
+                                 an_ab.max_code)
+    max_code_metric = an_ab.max_code - max(an_a.max_code,
+                                               an_b.max_code)
     # to avoid division by zero
-    if pt_mtf_ab.length_rec == 0:
+    if an_ab.length_rec == 0:
         ab_length_rec = 1
     else:
-        ab_length_rec = pt_mtf_ab.length_rec
+        ab_length_rec = an_ab.length_rec
 
     # MEDIAN
-    median = TransitionDataSet(pt_mtf_a.median, pt_mtf_b.median,
-                               pt_mtf_ab.median)
+    median = TransitionDataSet(an_a.median, an_b.median,
+                               an_ab.median)
     # metric: difference of expected median and the achieved median
-    median_metric = ((pt_mtf_a.median * pt_mtf_a.length_rec +
-                      pt_mtf_b.median * pt_mtf_b.length_rec)
-                       / ab_length_rec) - pt_mtf_ab.median
-    # TODO by ignoring new characters (-1s) in the mean, good transitions get pt_mtf_a
-    # penalty, because pt_mtf_a character that was already there before the transition
-    # probably affects the mean in pt_mtf_a bad way, while an entirely new character
+    median_metric = ((an_a.median * an_a.length_rec +
+                      an_b.median * an_b.length_rec)
+                       / ab_length_rec) - an_ab.median
+    # TODO by ignoring new characters (-1s) in the mean, good transitions get an_a
+    # penalty, because an_a character that was already there before the transition
+    # probably affects the mean in an_a bad way, while an entirely new character
     # won't affect it at all
-    # need to give new characters pt_mtf_a "penalty" value in the partial mtf encode
+    # need to give new characters an_a "penalty" value in the partial mtf encode
     # (but only for the target of the transition, lots of new characters in the
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
 
     # MEAN
-    mean = TransitionDataSet(pt_mtf_a.mean, pt_mtf_b.mean, pt_mtf_ab.mean)
+    mean = TransitionDataSet(an_a.mean, an_b.mean, an_ab.mean)
     # metric: difference of expected mean and the achieved mean
-    mean_metric = ((pt_mtf_a.mean * pt_mtf_a.length_rec +
-                    pt_mtf_b.mean * pt_mtf_b.length_rec)
-                     / ab_length_rec) - pt_mtf_ab.mean
+    mean_metric = ((an_a.mean * an_a.length_rec +
+                    an_b.mean * an_b.length_rec)
+                     / ab_length_rec) - an_ab.mean
 
     # CHAPIN: sum of squares of differences of logs
     hst_a = make_histogram(bw_a)
@@ -140,13 +144,28 @@ def analyze_transition(bw_code, first_symbol_a, first_symbol_b):
     else:
         chapin_inv_log_metric = math.log(chapin_inv_metric)
 
+    # HUFFMAN ENCODE METRIC
+    # just encode the partial mtf (without -1s) with huffman and take the length
+    # strip -1s from the partial mtf
+    stripped_partial_mtf = filter(lambda x: x != -1, pt_mtf_ab)
+    huffman_length = huffman_enc_length(bytes(stripped_partial_mtf))
+    huffman_metric = huffman_length / len(stripped_partial_mtf)
+
     data = TransitionData(length, num_chars, max_code, median, mean)
     result = TransitionAnalysisResult(data, length_metric, num_chars_metric,
                                       max_code_metric, median_metric,
                                       mean_metric, chapin_hst_diff_metric,
                                       chapin_kl_metric, chapin_inv_metric,
-                                      chapin_inv_log_metric)
+                                      chapin_inv_log_metric, huffman_metric)
     return result
+
+def huffman_enc_length(bytes_):
+    '''Return the length of the huffman coded input.'''
+    # the library segfaults when the only input is NUL
+    if bytes_ == b'\x00':
+        return 1
+    huffman_code = cd.huffman_enc(bytes_)
+    return len(huffman_code)
 
 def num_inversions(list_a, list_b):
     '''Compute the number of inversions between two lists.

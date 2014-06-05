@@ -149,21 +149,21 @@ def simulate_compression(in_path, title, order=None):
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
     metrics = ['mean', 'median', 'num_chars', 'chapin_hst_diff',
-               'chapin_kl', 'chapin_inv', 'chapin_inv_log']
+               'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman_metric']
 
-#     make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
-#
-#     with open(wd + 'transitions', 'rb') as trs_file:
-#         trs = pickle.load(trs_file)
-#     for metric in metrics:
-#         g = make_graph(trs, metric)
-#         write_tsplib_files(g, wd, metric)
+    make_transitions('/home/dddsnn/Downloads/calgary/book1', wd + 'transitions')
 
-    simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')
-    simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'aeiou...',
-                         b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
+    with open(wd + 'transitions', 'rb') as trs_file:
+        trs = pickle.load(trs_file)
     for metric in metrics:
-        tour = read_tsplib_files(wd + metric + '.tour',
-                                 wd + metric + '.nodenames')
-        simulate_compression('/home/dddsnn/Downloads/calgary/book1',
-                             metric, tour)
+        g = make_graph(trs, metric)
+        write_tsplib_files(g, wd, metric)
+
+#     simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')
+#     simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'aeiou...',
+#                          b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
+#     for metric in metrics:
+#         tour = read_tsplib_files(wd + metric + '.tour',
+#                                  wd + metric + '.nodenames')
+#         simulate_compression('/home/dddsnn/Downloads/calgary/book1',
+#                              metric, tour)

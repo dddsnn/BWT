@@ -13,7 +13,7 @@ TransitionAnalysisResult = namedtuple('TransitionAnalysisResult',
                                            'max_code', 'median', 'mean',
                                            'chapin_hst_diff',
                                            'chapin_kl', 'chapin_inv',
-                                           'chapin_inv_log'])
+                                           'chapin_inv_log', 'huffman_metric'])
 
 TransitionData = namedtuple('TransitionData',
                                     ['length', 'num_chars', 'max_code',
