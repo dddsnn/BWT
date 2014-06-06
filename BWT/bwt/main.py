@@ -10,16 +10,45 @@ import bwt.analyzer as an
 import networkx as nx
 import pickle
 
-def make_transitions(in_path, metric, out_path=None):
+def make_aux_data(in_path, out_path=None):
+    '''Create data commonly used in transition analysis.'''
+    with open(in_path, 'rb') as in_file:
+        bytes_ = in_file.read()
+    raw = bytes_
+    bw_code = cd.bw_encode(bytes_)
+    mtf_code = cd.mtf_enc(bw_code.encoded)
+    firsts = set(bw_code.firsts)
+    bw_subcodes = {x:an.bw_block(bw_code, x) for x in firsts}
+    # first add subcodes for individual bytes
+    partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
+                            for x in bw_subcodes}
+    # now make and add the transitions
+    partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
+                                                         + bw_subcodes[b])
+                               for a in bw_subcodes for b in bw_subcodes
+                               if a != b}
+    partial_mtf_subcodes.update(partial_mtf_transitions)
+    partial_mtf_analyses = {x:an.analyze_partial_mtf(partial_mtf_subcodes[x])
+                            for x in partial_mtf_subcodes}
+    bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
+                        for x in bw_subcodes}
+
+    result = AuxData(raw, bw_code, mtf_code, bw_subcodes, partial_mtf_subcodes,
+                     partial_mtf_analyses, bw_subhistograms)
+    if out_path:
+        with open(out_path, 'xb') as out_file:
+            pickle.dump(result, out_file)
+    return result
+
+def make_transitions(in_path, metric, aux_data, out_path=None):
     '''Create the transition analysis for a file.'''
     with open(in_path, 'rb') as in_file:
         bytes_ = in_file.read()
-    trs = an.analyze_transitions(bytes_, metric)
+    trs = an.analyze_transitions(bytes_, metric, aux_data)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(trs, out_file)
     return trs
-
 
 def make_graph(transitions, out_path=None):
     g = nx.DiGraph()
@@ -151,12 +180,16 @@ def simulate_compression(in_path, title, order=None):
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
     metrics = ['max_code', 'mean', 'median', 'num_chars', 'chapin_hst_diff',
-               'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman_metric']
+                'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman']
 
+#     make_aux_data('/home/dddsnn/Downloads/calgary/book1', wd + 'aux')
+
+#     with open(wd + 'aux', 'rb') as aux_file:
+#         aux_data = pickle.load(aux_file)
 #     for metric in metrics:
 #         make_transitions('/home/dddsnn/Downloads/calgary/book1', metric,
-#                          wd + metric + '.transitions')
-#
+#                          aux_data, wd + metric + '.transitions')
+
 #     for metric in metrics:
 #         with open(wd + metric + '.transitions', 'rb') as trs_file:
 #             trs = pickle.load(trs_file)
