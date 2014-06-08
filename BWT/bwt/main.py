@@ -182,7 +182,7 @@ if __name__ == '__main__':
 #     metrics = ['max_code', 'mean', 'median', 'num_chars', 'chapin_hst_diff',
 #                 'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman',
 #                 'mean_new_penalty']
-    metrics = ['mean_new_penalty']
+    metrics = ['huffman', 'huffman_new_penalty']
 
 #     make_aux_data('/home/dddsnn/Downloads/calgary/book1', wd + 'aux')
 

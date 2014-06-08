@@ -148,6 +148,8 @@ def analyze_transitions(bytes_, metric, aux_data):
         an_func = metric_chapin_inv_log
     elif metric == 'huffman':
         an_func = metric_huffman
+    elif metric == 'huffman_new_penalty':
+        an_func = metric_huffman_new_penalty
     else:
         raise ValueError('Unknown metric.')
 
@@ -417,4 +419,42 @@ def metric_huffman(bw_code, first_symbol_a, first_symbol_b, aux_data):
         metric = 10
     else:
         metric = huffman_length / len(stripped_partial_mtf)
+    return metric
+
+def metric_huffman_new_penalty(bw_code, first_symbol_a, first_symbol_b,
+                               aux_data):
+    if aux_data:
+        pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a,
+                                                   first_symbol_b)]
+        bw_a = aux_data.bw_subcodes[first_symbol_a]
+    else:
+        # get the two bw subcodes corresponding to the first symbols
+        bw_a = bw_block(bw_code, first_symbol_a)
+        bw_b = bw_block(bw_code, first_symbol_b)
+        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+
+    # replace -1s in the right part of the partial mtf with values that haven't
+    # occurred before
+    length_a = len(bw_a)
+    stripped_pt_mtf_a = list(filter(lambda x: x != -1, pt_mtf_ab[:length_a]))
+    pt_mtf_b = pt_mtf_ab[length_a:]
+    max_code = max(pt_mtf_ab) + 1
+    stripped_pt_mtf_b = []
+    for b in pt_mtf_b:
+        if b == -1:
+            stripped_pt_mtf_b.append(max_code)
+            max_code += 1
+        else:
+            stripped_pt_mtf_b.append(b)
+    stripped_pt_mtf = stripped_pt_mtf_a + stripped_pt_mtf_b
+    huffman_length = huffman_enc_length(bytes(stripped_pt_mtf))
+    if len(stripped_pt_mtf) == 0:
+        # if the stripped partial mtf code has length 0 it means there are no
+        # recurring characters in it. since that means no compression benefits
+        # for this transition, give it a bad value to penalize it
+        # good transitions will have lengths far below 1, so 10 should be enough
+        # to discourage tsp from including this transition
+        metric = 10
+    else:
+        metric = huffman_length / len(stripped_pt_mtf)
     return metric
