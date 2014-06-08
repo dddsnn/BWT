@@ -179,8 +179,10 @@ def simulate_compression(in_path, title, order=None):
 
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
-    metrics = ['max_code', 'mean', 'median', 'num_chars', 'chapin_hst_diff',
-                'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman']
+#     metrics = ['max_code', 'mean', 'median', 'num_chars', 'chapin_hst_diff',
+#                 'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman',
+#                 'mean_new_penalty']
+    metrics = ['mean_new_penalty']
 
 #     make_aux_data('/home/dddsnn/Downloads/calgary/book1', wd + 'aux')
 
@@ -189,7 +191,7 @@ if __name__ == '__main__':
 #     for metric in metrics:
 #         make_transitions('/home/dddsnn/Downloads/calgary/book1', metric,
 #                          aux_data, wd + metric + '.transitions')
-
+#
 #     for metric in metrics:
 #         with open(wd + metric + '.transitions', 'rb') as trs_file:
 #             trs = pickle.load(trs_file)

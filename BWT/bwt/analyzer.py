@@ -136,6 +136,8 @@ def analyze_transitions(bytes_, metric, aux_data):
         an_func = metric_median
     elif metric == 'mean':
         an_func = metric_mean
+    elif metric == 'mean_new_penalty':
+        an_func = metric_mean_new_penalty
     elif metric == 'chapin_hst_diff':
         an_func = metric_chapin_hst_diff
     elif metric == 'chapin_kl':
@@ -271,6 +273,38 @@ def metric_mean(bw_code, first_symbol_a, first_symbol_b, aux_data):
     # metric: difference of expected mean and the achieved mean
     metric = ((an_a.mean * an_a.length_rec + an_b.mean * an_b.length_rec)
                      / ab_length_rec) - an_ab.mean
+    return metric
+
+def metric_mean_new_penalty(bw_code, first_symbol_a, first_symbol_b, aux_data):
+    if aux_data:
+        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+        an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+        an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
+    else:
+        # get the two bw subcodes corresponding to the first symbols
+        bw_a = bw_block(bw_code, first_symbol_a)
+        bw_b = bw_block(bw_code, first_symbol_b)
+        # make the partial mtf codes
+        pt_mtf_a = cd.mtf_partial_enc(bw_a)
+        pt_mtf_b = cd.mtf_partial_enc(bw_b)
+        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+        # get the analyses for the parts
+        an_a = analyze_partial_mtf(pt_mtf_a)
+        an_b = analyze_partial_mtf(pt_mtf_b)
+        an_ab = analyze_partial_mtf(pt_mtf_ab)
+
+    # bytes that will be counted are all non-(-1)s and the -1s from the second
+    # half
+    length = an_a.length_rec + an_b.length
+
+    new_in_right = an_ab.num_chars - an_a.num_chars
+    # penalty for every new value: minimum possible value the worst of themwill
+    # actually be encoded with
+    penalty = an_a.max_code + an_a.num_chars
+
+    # add a penalty for -1s in the right side
+    metric = ((an_a.mean * an_a.length_rec + an_b.mean * an_b.length_rec
+               + new_in_right * penalty) / length)
     return metric
 
 def metric_chapin_hst_diff(bw_code, first_symbol_a, first_symbol_b, aux_data):
