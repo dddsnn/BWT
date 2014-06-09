@@ -228,14 +228,15 @@ def simulate_compression(in_path, title, order=None):
     res_text += 'in size: {0}\n'.format(len(bytes_))
     res_text += 'out_size: {0}\n'.format(len(huff_code))
     res_text += 'ratio: {0}\n'.format(len(huff_code) / len(bytes_))
-    res_text += '==================================================\n'
+    res_text += '===================================================\n'
     print(res_text)
 
 if __name__ == '__main__':
     wd = '/home/dddsnn/tmp/book1/'
     metrics = ['max_code', 'mean', 'median', 'num_chars', 'chapin_hst_diff',
                 'chapin_kl', 'chapin_inv', 'chapin_inv_log', 'huffman',
-                'huffman_new_penalty', 'mean_new_penalty']
+                'huffman_new_penalty', 'mean_new_penalty', 'badness', 'badness_log']
+#     metrics = ['badness', 'badness_log']
 
 #     make_aux_data('/home/dddsnn/Downloads/calgary/book1', wd + 'aux')
 
@@ -256,10 +257,10 @@ if __name__ == '__main__':
     simulate_compression('/home/dddsnn/Downloads/calgary/book1', 'standard')
 
     for metric in metrics:
-#         tour = read_tsplib_files(wd + metric + '.tour',
-#                                  wd + metric + '.nodenames')
-        with open(wd + metric + '.transitions', 'rb') as trs_file:
-            trs = pickle.load(trs_file)
-        tour = very_greedy_tsp(trs)
+        tour = read_tsplib_files(wd + metric + '.tour',
+                                  wd + metric + '.nodenames')
+#         with open(wd + metric + '.transitions', 'rb') as trs_file:
+#             trs = pickle.load(trs_file)
+#         tour = very_greedy_tsp(trs)
         simulate_compression('/home/dddsnn/Downloads/calgary/book1',
                              metric, tour)
