@@ -4,6 +4,7 @@ Created on 28.05.2014
 @author: dddsnn
 '''
 
+import sys
 from bwt import *
 import bwt.coder as cd
 import math
@@ -128,36 +129,7 @@ def make_histogram(bytes_):
 
 def analyze_transitions(bytes_, metric, aux_data):
     '''Analyze all the transitions between bytes of a byte string.'''
-    if metric == 'num_chars':
-        an_func = metric_num_chars
-    elif metric == 'max_code':
-        an_func = metric_max_code
-    elif metric == 'median':
-        an_func = metric_median
-    elif metric == 'mean':
-        an_func = metric_mean
-    elif metric == 'mean_new_penalty':
-        an_func = metric_mean_new_penalty
-    elif metric == 'mean_right':
-        an_func = metric_mean_right
-    elif metric == 'chapin_hst_diff':
-        an_func = metric_chapin_hst_diff
-    elif metric == 'chapin_kl':
-        an_func = metric_chapin_kl
-    elif metric == 'chapin_inv':
-        an_func = metric_chapin_inv
-    elif metric == 'chapin_inv_log':
-        an_func = metric_chapin_inv_log
-    elif metric == 'huffman':
-        an_func = metric_huffman
-    elif metric == 'huffman_new_penalty':
-        an_func = metric_huffman_new_penalty
-    elif metric == 'badness':
-        an_func = metric_badness
-    elif metric == 'badness_log':
-        an_func = metric_badness_log
-    else:
-        raise ValueError('Unknown metric.')
+    an_func = getattr(sys.modules[__name__], metric)
 
     if aux_data:
         if aux_data.raw == bytes_:
@@ -564,9 +536,9 @@ def metric_badness_log(bw_code, first_symbol_a, first_symbol_b, aux_data):
         actual = pt_mtf_ab[i + length_left]
         if actual == -1:
             # new symbol in the combined mtf
-            badness += min_possible + PENALTY - ideal
+            badness += math.log(min_possible + PENALTY - ideal + 1)
             # minimal possible code for new symbols is now increased
             min_possible += 1
         else:
-            badness += actual - ideal
-    return math.log(badness + 1)
+            badness += math.log(actual - ideal + 1)
+    return badness
