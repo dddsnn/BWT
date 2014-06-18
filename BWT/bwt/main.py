@@ -4,12 +4,13 @@ Created on 10.05.2014
 @author: dddsnn
 '''
 
-import os.path
 from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
+import os.path
 import networkx as nx
 import pickle
+import numpy as np
 
 def make_aux_data(in_path, out_path=None):
     '''Create data commonly used in transition analysis.'''
@@ -33,9 +34,18 @@ def make_aux_data(in_path, out_path=None):
                             for x in partial_mtf_subcodes}
     bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
                         for x in bw_subcodes}
+    huffcode_len = an.huffman_codeword_lengths(mtf_code)
+    mtf_mean_steps = {}
+    for n in range(256):
+        l = [x for x in mtf_code if x >= n]
+        if l:
+            mtf_mean_steps[n] = np.mean(l)
+        else:
+            mtf_mean_steps[n] = n
 
     result = AuxData(raw, bw_code, mtf_code, bw_subcodes, partial_mtf_subcodes,
-                     partial_mtf_analyses, bw_subhistograms)
+                     partial_mtf_analyses, bw_subhistograms, huffcode_len,
+                     mtf_mean_steps)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(result, out_file)
@@ -234,16 +244,24 @@ def simulate_compression(in_path, title, order=None):
 
 if __name__ == '__main__':
     in_dir = '/home/dddsnn/Downloads/calgary/'
-    in_file_names = ['book1', 'book2', 'paper1']
+    in_file_names = ['bib', 'book1', 'book2', 'geo', 'news', 'obj1', 'obj2',
+                     'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
+                     'paper6', 'pic', 'progc', 'progl', 'progp', 'trans']
+    in_file_names = ['book2', 'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
+                     'paper6']
     base_work_dir = '/home/dddsnn/tmp/'
     metrics = ['metric_max_code', 'metric_mean', 'metric_mean_right',
                'metric_median', 'metric_num_chars', 'metric_chapin_hst_diff',
                'metric_chapin_kl', 'metric_chapin_inv',
                'metric_chapin_inv_log', 'metric_huffman',
                'metric_huffman_new_penalty', 'metric_mean_new_penalty',
-               'metric_badness', 'metric_badness_log']
-    metrics = ['metric_chapin_inv', 'metric_chapin_inv_log',
-               'metric_badness', 'metric_badness_log']
+               'metric_badness', 'metric_badness_huff_len']
+    metrics = ['metric_badness', 'metric_badness_weighted',
+               'metric_badness_mean_penalty',
+               'metric_badness_weighted_mean_penalty',
+               'metric_badness_huff_len', 'metric_badness_huff_len_weighted',
+               'metric_badness_huff_len_mean_penalty',
+               'metric_badness_huff_len_weighted_mean_penalty']
 
     # make directories
     for in_file_name in in_file_names:
@@ -251,10 +269,10 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         make_aux_data(in_path, wd + 'aux')
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        make_aux_data(in_path, wd + 'aux')
 
     # make transitions
 #     for in_file_name in in_file_names:
@@ -264,7 +282,7 @@ if __name__ == '__main__':
 #             aux_data = pickle.load(aux_file)
 #         for metric in metrics:
 #             make_transitions(in_path, metric, aux_data,
-#                              wd + metric + '.transitions')
+#                             wd + metric + '.transitions')
 
     # write tsplib files
 #     for in_file_name in in_file_names:
@@ -277,19 +295,19 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, metric)
 
     # simulate compression
-    for in_file_name in in_file_names:
-        print('===============================================================')
-        print(in_file_name)
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        simulate_compression(in_path, 'aeiou...',
-                             b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
-        simulate_compression(in_path, 'standard')
-
-        for metric in metrics:
-            tour = read_tsplib_files(wd + metric + '.tour',
-                                     wd + metric + '.nodenames')
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         simulate_compression(in_path, 'aeiou...',
+#                              b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ')
+#         simulate_compression(in_path, 'standard')
+#
+#         for metric in metrics:
+#             tsplib_tour = read_tsplib_files(wd + metric + '.tour',
+#                                      wd + metric + '.nodenames')
 #             with open(wd + metric + '.transitions', 'rb') as trs_file:
 #                 trs = pickle.load(trs_file)
-#             tour = very_greedy_tsp(trs)
-            simulate_compression(in_path, metric, tour)
+#             very_greedy_tour = very_greedy_tsp(trs)
+#             simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
+#             simulate_compression(in_path, metric + ' very greedy',
+#                                  very_greedy_tour)

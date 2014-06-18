@@ -5,6 +5,7 @@ Created on 28.05.2014
 '''
 
 import sys
+import queue
 from bwt import *
 import bwt.coder as cd
 import math
@@ -127,20 +128,68 @@ def make_histogram(bytes_):
         histogram[b] += 1
     return histogram
 
+def huffman_codeword_lengths(mtf_code):
+    '''For each byte value, give an estimate of the length in bit of the huffman
+    code word if the bytes_ were encoded with huffman while also including
+    values that usually wouldn't be encoded because they don't occur. Use for
+    MTF codes.
+    '''
+    all_counts = {n:mtf_code.count(n) for n in range(256)}
+    # remove trailing zeroes (not occuring values) and set intermediate zeroes
+    # to 0.2 (to make sure they get longer codes)
+    last = max([n for n in range(256) if all_counts[n] != 0])
+    counts = {k:v for k, v in all_counts.items() if k <= last}
+    # this is ugly
+    Node = namedtuple('Node', ['weight', 'inner', 'left', 'right', 'value'])
+    q = queue.PriorityQueue()
+    for n in range(256):
+        # replace zeroes coming after the last non-zero with 1/1000000 so they
+        # get the longest codes
+        if not n in counts:
+            counts[n] = 0.000001
+        # replace other zeroes with 1/5 so they usually get longer codes than
+        # non-zeroes but shorter ones than the trailing zeroes
+        if counts[n] == 0:
+            counts[n] = 0.2
+        q.put(Node(counts[n], False, (), (), n))
+    while q.qsize() > 1:
+        # get the two lowest items from the queue, make them into a node and put
+        # the node back into the queue with appropriate weight
+        left = q.get()
+        right = q.get()
+        weight = left.weight + right.weight
+        q.put(Node(weight, True, left, right, -1))
+    # now that the queue has only one element, it must be the root of the tree
+    NodeDepthTuple = namedtuple('NodeDepthTuple', ['node', 'depth'])
+    root = q.get()
+    root_tuple = NodeDepthTuple(root, 0)
+    tuples = [root_tuple]
+    lengths = {}
+    # go through the tree from the root and write the lengths for each value
+    # to the dict
+    while tuples:
+        t = tuples.pop()
+        if not t.node.inner:
+            # leaf node: write length into dict and continue
+            lengths[t.node.value] = t.depth
+            if t.depth == 0:
+                # just to make sure there isn't just one value that gets length
+                # zero (that's impossible)
+                lengths[t.node.value] = 1
+        else:
+            # inner node: put children into tuples and increment depth
+            tuples.append(NodeDepthTuple(t.node.left, t.depth + 1))
+            tuples.append(NodeDepthTuple(t.node.right, t.depth + 1))
+    return lengths
+
 def analyze_transitions(bytes_, metric, aux_data):
     '''Analyze all the transitions between bytes of a byte string.'''
-    an_func = getattr(sys.modules[__name__], metric)
+    if aux_data.raw != bytes_:
+        # not the correct data
+        raise ValueError('Not the correct aux data.')
 
-    if aux_data:
-        if aux_data.raw == bytes_:
-            bw_code = aux_data.bw_code
-        else:
-            # not the correct data
-            warnings.warn('Not the correct aux data.')
-            bw_code = cd.bw_encode(bytes_)
-            aux_data = None
-    else:
-        bw_code = cd.bw_encode(bytes_)
+    an_func = getattr(sys.modules[__name__], metric)
+    bw_code = aux_data.bw_code
     firsts = set(bw_code.firsts)
     transitions = {(a, b): an_func(bw_code, a, b, aux_data)
                    for a in firsts
@@ -148,19 +197,8 @@ def analyze_transitions(bytes_, metric, aux_data):
     return transitions
 
 def metric_num_chars(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-        an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the partial mtf codes
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        # get the analyses for the parts
-        an_a = analyze_partial_mtf(pt_mtf_a)
-        an_ab = analyze_partial_mtf(pt_mtf_ab)
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
 
     # metric: number of -1s in the second half of the combined code (the one
     # that's being transitioned to)
@@ -168,43 +206,17 @@ def metric_num_chars(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_max_code(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-        an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-        an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the partial mtf codes
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        # get the analyses for the parts
-        an_a = analyze_partial_mtf(pt_mtf_a)
-        an_b = analyze_partial_mtf(pt_mtf_b)
-        an_ab = analyze_partial_mtf(pt_mtf_ab)
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
 
     metric = an_ab.max_code - max(an_a.max_code, an_b.max_code)
     return metric
 
 def metric_median(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-        an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-        an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the partial mtf codes
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        # get the analyses for the parts
-        an_a = analyze_partial_mtf(pt_mtf_a)
-        an_b = analyze_partial_mtf(pt_mtf_b)
-        an_ab = analyze_partial_mtf(pt_mtf_ab)
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
 
     # to avoid division by zero
     if an_ab.length_rec == 0:
@@ -227,22 +239,9 @@ def metric_mean(bw_code, first_symbol_a, first_symbol_b, aux_data):
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
 
-    if aux_data:
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-        an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-        an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the partial mtf codes
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        # get the analyses for the parts
-        an_a = analyze_partial_mtf(pt_mtf_a)
-        an_b = analyze_partial_mtf(pt_mtf_b)
-        an_ab = analyze_partial_mtf(pt_mtf_ab)
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
 
     # to avoid division by zero
     if an_ab.length_rec == 0:
@@ -256,22 +255,9 @@ def metric_mean(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_mean_new_penalty(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-        an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-        an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the partial mtf codes
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        # get the analyses for the parts
-        an_a = analyze_partial_mtf(pt_mtf_a)
-        an_b = analyze_partial_mtf(pt_mtf_b)
-        an_ab = analyze_partial_mtf(pt_mtf_ab)
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
 
     # bytes that will be counted are all non-(-1)s and the -1s from the second
     # half
@@ -288,29 +274,14 @@ def metric_mean_new_penalty(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_mean_right(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-    else:
-        # get the two bw subcodes corresponding to the first symbol
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the partial mtf codes
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        # get the analyses for the parts
-        an_b = analyze_partial_mtf(pt_mtf_b)
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
 
     metric = an_b.mean
     return metric
 
 def metric_chapin_hst_diff(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        hst_a = aux_data.bw_subhistograms[first_symbol_a]
-        hst_b = aux_data.bw_subhistograms[first_symbol_b]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        hst_a = make_histogram(bw_a)
-        hst_b = make_histogram(bw_b)
+    hst_a = aux_data.bw_subhistograms[first_symbol_a]
+    hst_b = aux_data.bw_subhistograms[first_symbol_b]
 
     # CHAPIN: sum of squares of differences of logs
     log_diffs = []
@@ -331,16 +302,8 @@ def metric_chapin_hst_diff(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_chapin_kl(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        hst_a = aux_data.bw_subhistograms[first_symbol_a]
-        hst_b = aux_data.bw_subhistograms[first_symbol_b]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the histograms
-        hst_a = make_histogram(bw_a)
-        hst_b = make_histogram(bw_b)
+    hst_a = aux_data.bw_subhistograms[first_symbol_a]
+    hst_b = aux_data.bw_subhistograms[first_symbol_b]
 
     # CHAPIN: kullback-leibler
     logterms = []
@@ -354,16 +317,8 @@ def metric_chapin_kl(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_chapin_inv(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        hst_a = aux_data.bw_subhistograms[first_symbol_a]
-        hst_b = aux_data.bw_subhistograms[first_symbol_b]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        # make the histograms
-        hst_a = make_histogram(bw_a)
-        hst_b = make_histogram(bw_b)
+    hst_a = aux_data.bw_subhistograms[first_symbol_a]
+    hst_b = aux_data.bw_subhistograms[first_symbol_b]
 
     # CHAPIN: number of inversion between ordered histograms
     # turn the histograms into lists and sort in decreasing order of frequency
@@ -387,14 +342,7 @@ def metric_chapin_inv_log(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_huffman(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a,
-                                                   first_symbol_b)]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
 
     # HUFFMAN ENCODE METRIC
     # TODO -1s in the second part need to be weighted, see todo in mean
@@ -415,15 +363,8 @@ def metric_huffman(bw_code, first_symbol_a, first_symbol_b, aux_data):
 
 def metric_huffman_new_penalty(bw_code, first_symbol_a, first_symbol_b,
                                aux_data):
-    if aux_data:
-        pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a,
-                                                   first_symbol_b)]
-        bw_a = aux_data.bw_subcodes[first_symbol_a]
-    else:
-        # get the two bw subcodes corresponding to the first symbols
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    bw_a = aux_data.bw_subcodes[first_symbol_a]
 
     # replace -1s in the right part of the partial mtf with values that haven't
     # occurred before
@@ -457,18 +398,9 @@ def metric_badness(bw_code, first_symbol_a, first_symbol_b, aux_data):
     greatest compression benefit and gives a badness value for non-ideal
     orderings.
     '''
-    if aux_data:
-        pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-        pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a,
-                                                   first_symbol_b)]
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    else:
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        an_a = analyze_partial_mtf(pt_mtf_a)
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -485,34 +417,24 @@ def metric_badness(bw_code, first_symbol_a, first_symbol_b, aux_data):
     length_left = len(pt_mtf_ab) - len(pt_mtf_b)
     # the minimal possible code for any new symbols in the combined code
     min_possible = an_a.num_chars
-    # note: setting a positive PENALTY seems to decrease performance
-    PENALTY = 0
     # now compare the ideal codes with the actual ones and add the difference
     # to the badness
     for i, ideal in ideal_codes:
         actual = pt_mtf_ab[i + length_left]
         if actual == -1:
             # new symbol in the combined mtf
-            badness += min_possible + PENALTY - ideal
+            badness += min_possible - ideal
             # minimal possible code for new symbols is now increased
             min_possible += 1
         else:
             badness += actual - ideal
     return badness
 
-def metric_badness_log(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    if aux_data:
-        pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-        pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a,
-                                                   first_symbol_b)]
-        an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    else:
-        bw_a = bw_block(bw_code, first_symbol_a)
-        bw_b = bw_block(bw_code, first_symbol_b)
-        pt_mtf_a = cd.mtf_partial_enc(bw_a)
-        pt_mtf_b = cd.mtf_partial_enc(bw_b)
-        pt_mtf_ab = cd.mtf_partial_enc(bw_a + bw_b)
-        an_a = analyze_partial_mtf(pt_mtf_a)
+def metric_badness_weighted(bw_code, first_symbol_a, first_symbol_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -529,16 +451,272 @@ def metric_badness_log(bw_code, first_symbol_a, first_symbol_b, aux_data):
     length_left = len(pt_mtf_ab) - len(pt_mtf_b)
     # the minimal possible code for any new symbols in the combined code
     min_possible = an_a.num_chars
-    PENALTY = 0
     # now compare the ideal codes with the actual ones and add the difference
     # to the badness
     for i, ideal in ideal_codes:
         actual = pt_mtf_ab[i + length_left]
         if actual == -1:
             # new symbol in the combined mtf
-            badness += math.log(min_possible + PENALTY - ideal + 1)
+            badness += min_possible - ideal
             # minimal possible code for new symbols is now increased
             min_possible += 1
         else:
-            badness += math.log(actual - ideal + 1)
+            badness += actual - ideal
+    return badness / an_b.num_chars
+
+def metric_badness_mean_penalty(bw_code, first_symbol_a, first_symbol_b,
+                                aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    mtf_means = aux_data.mtf_mean_steps
+
+    badness = 0
+    # make list of tuples (index in partial mtf of right side, optimal code) for
+    # every new symbol in the partial mtf of the right side
+    ideal_codes = []
+    min_possible = 0
+    for i, s in enumerate(pt_mtf_b):
+        if s != -1:
+            # recurring symbol, ignore
+            continue
+        ideal_codes.append((i, min_possible))
+        min_possible += 1
+    # length of the mtf code of the left side
+    length_left = len(pt_mtf_ab) - len(pt_mtf_b)
+    # the minimal possible code for any new symbols in the combined code
+    min_possible = an_a.num_chars
+    # now compare the ideal codes with the actual ones and add the difference
+    # to the badness
+    for i, ideal in ideal_codes:
+        actual = pt_mtf_ab[i + length_left]
+        if actual == -1:
+            # new symbol in the combined mtf
+            badness += mtf_means[min_possible] - ideal
+            # minimal possible code for new symbols is now increased
+            min_possible += 1
+        else:
+            badness += actual - ideal
     return badness
+
+def metric_badness_weighted_mean_penalty(bw_code, first_symbol_a,
+                                         first_symbol_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    mtf_means = aux_data.mtf_mean_steps
+
+    badness = 0
+    # make list of tuples (index in partial mtf of right side, optimal code) for
+    # every new symbol in the partial mtf of the right side
+    ideal_codes = []
+    min_possible = 0
+    for i, s in enumerate(pt_mtf_b):
+        if s != -1:
+            # recurring symbol, ignore
+            continue
+        ideal_codes.append((i, min_possible))
+        min_possible += 1
+    # length of the mtf code of the left side
+    length_left = len(pt_mtf_ab) - len(pt_mtf_b)
+    # the minimal possible code for any new symbols in the combined code
+    min_possible = an_a.num_chars
+    # now compare the ideal codes with the actual ones and add the difference
+    # to the badness
+    for i, ideal in ideal_codes:
+        actual = pt_mtf_ab[i + length_left]
+        if actual == -1:
+            # new symbol in the combined mtf
+            badness += mtf_means[min_possible] - ideal
+            # minimal possible code for new symbols is now increased
+            min_possible += 1
+        else:
+            badness += actual - ideal
+    return badness / an_b.num_chars
+
+def metric_badness_huff_len(bw_code, first_symbol_a, first_symbol_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    hf_len = aux_data.huffman_codeword_lengths
+
+    badness = 0
+    # make list of tuples (index in partial mtf of right side, optimal code) for
+    # every new symbol in the partial mtf of the right side
+    ideal_codes = []
+    min_possible = 0
+    for i, s in enumerate(pt_mtf_b):
+        if s != -1:
+            # recurring symbol, ignore
+            continue
+        ideal_codes.append((i, min_possible))
+        min_possible += 1
+    # length of the mtf code of the left side
+    length_left = len(pt_mtf_ab) - len(pt_mtf_b)
+    # the minimal possible code for any new symbols in the combined code
+    min_possible = an_a.num_chars
+    # now compare the ideal codes with the actual ones and add the difference
+    # to the badness
+    for i, ideal in ideal_codes:
+        actual = pt_mtf_ab[i + length_left]
+        if actual == -1:
+            # new symbol in the combined mtf
+            huff_dist = hf_len[min_possible] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+            # minimal possible code for new symbols is now increased
+            min_possible += 1
+        else:
+            huff_dist = hf_len[actual] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+    return badness
+
+def metric_badness_huff_len_weighted(bw_code, first_symbol_a, first_symbol_b,
+                                     aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    hf_len = aux_data.huffman_codeword_lengths
+
+    badness = 0
+    # make list of tuples (index in partial mtf of right side, optimal code) for
+    # every new symbol in the partial mtf of the right side
+    ideal_codes = []
+    min_possible = 0
+    for i, s in enumerate(pt_mtf_b):
+        if s != -1:
+            # recurring symbol, ignore
+            continue
+        ideal_codes.append((i, min_possible))
+        min_possible += 1
+    # length of the mtf code of the left side
+    length_left = len(pt_mtf_ab) - len(pt_mtf_b)
+    # the minimal possible code for any new symbols in the combined code
+    min_possible = an_a.num_chars
+    # now compare the ideal codes with the actual ones and add the difference
+    # to the badness
+    for i, ideal in ideal_codes:
+        actual = pt_mtf_ab[i + length_left]
+        if actual == -1:
+            # new symbol in the combined mtf
+            huff_dist = hf_len[min_possible] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+            # minimal possible code for new symbols is now increased
+            min_possible += 1
+        else:
+            huff_dist = hf_len[actual] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+    return badness / an_b.num_chars
+
+def metric_badness_huff_len_mean_penalty(bw_code, first_symbol_a,
+                                         first_symbol_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    hf_len = aux_data.huffman_codeword_lengths
+    mtf_means = aux_data.mtf_mean_steps
+
+    badness = 0
+    # make list of tuples (index in partial mtf of right side, optimal code) for
+    # every new symbol in the partial mtf of the right side
+    ideal_codes = []
+    min_possible = 0
+    for i, s in enumerate(pt_mtf_b):
+        if s != -1:
+            # recurring symbol, ignore
+            continue
+        ideal_codes.append((i, min_possible))
+        min_possible += 1
+    # length of the mtf code of the left side
+    length_left = len(pt_mtf_ab) - len(pt_mtf_b)
+    # the minimal possible code for any new symbols in the combined code
+    min_possible = an_a.num_chars
+    # now compare the ideal codes with the actual ones and add the difference
+    # to the badness
+    for i, ideal in ideal_codes:
+        actual = pt_mtf_ab[i + length_left]
+        if actual == -1:
+            # new symbol in the combined mtf
+            huff_dist = hf_len[int(round(mtf_means[min_possible]))] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+            # minimal possible code for new symbols is now increased
+            min_possible += 1
+        else:
+            huff_dist = hf_len[actual] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+    return badness
+
+def metric_badness_huff_len_weighted_mean_penalty(bw_code, first_symbol_a,
+                                                  first_symbol_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    hf_len = aux_data.huffman_codeword_lengths
+    mtf_means = aux_data.mtf_mean_steps
+
+    badness = 0
+    # make list of tuples (index in partial mtf of right side, optimal code) for
+    # every new symbol in the partial mtf of the right side
+    ideal_codes = []
+    min_possible = 0
+    for i, s in enumerate(pt_mtf_b):
+        if s != -1:
+            # recurring symbol, ignore
+            continue
+        ideal_codes.append((i, min_possible))
+        min_possible += 1
+    # length of the mtf code of the left side
+    length_left = len(pt_mtf_ab) - len(pt_mtf_b)
+    # the minimal possible code for any new symbols in the combined code
+    min_possible = an_a.num_chars
+    # now compare the ideal codes with the actual ones and add the difference
+    # to the badness
+    for i, ideal in ideal_codes:
+        actual = pt_mtf_ab[i + length_left]
+        if actual == -1:
+            # new symbol in the combined mtf
+            huff_dist = hf_len[int(round(mtf_means[min_possible]))] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+            # minimal possible code for new symbols is now increased
+            min_possible += 1
+        else:
+            huff_dist = hf_len[actual] - hf_len[ideal]
+            if huff_dist < 0:
+                # for high code values, higher codes can accidentally be smaller
+                # than lower ones. set to 0 if this happens
+                huff_dist = 0
+            badness += huff_dist
+    return badness / an_b.num_chars

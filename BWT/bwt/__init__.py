@@ -10,4 +10,5 @@ PartialMTFAnalysisResult = namedtuple('PartialMTFAnalysisResult',
 AuxData = namedtuple('AuxData',
                      ['raw', 'bw_code', 'mtf_code', 'bw_subcodes',
                        'partial_mtf_subcodes', 'partial_mtf_analyses',
-                       'bw_subhistograms'])
+                       'bw_subhistograms', 'huffman_codeword_lengths',
+                       'mtf_mean_steps'])
