@@ -42,10 +42,19 @@ def make_aux_data(in_path, out_path=None):
             mtf_mean_steps[n] = np.mean(l)
         else:
             mtf_mean_steps[n] = n
+    freq_lists = {}
+    for f in firsts:
+        # turn the histograms into lists and sort in decreasing order of frequency
+        freq_list = sorted(bw_subhistograms[f].items(),
+                           key=lambda x:x[1], reverse=True)
+        # now just take the corresponding first symbols
+        freq_list = [x[0] for x in freq_list]
+        # add to the dict
+        freq_lists[f] = freq_list
 
     result = AuxData(raw, bw_code, mtf_code, bw_subcodes, partial_mtf_subcodes,
                      partial_mtf_analyses, bw_subhistograms, huffcode_len,
-                     mtf_mean_steps)
+                     mtf_mean_steps, freq_lists)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(result, out_file)
@@ -247,8 +256,8 @@ if __name__ == '__main__':
     in_file_names = ['bib', 'book1', 'book2', 'geo', 'news', 'obj1', 'obj2',
                      'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
                      'paper6', 'pic', 'progc', 'progl', 'progp', 'trans']
-    in_file_names = ['book2', 'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
-                     'paper6']
+    in_file_names = ['book1', 'book2', 'paper1', 'paper2', 'paper3', 'paper4',
+                     'paper5', 'paper6']
     base_work_dir = '/home/dddsnn/tmp/'
     metrics = ['metric_max_code', 'metric_mean', 'metric_mean_right',
                'metric_median', 'metric_num_chars', 'metric_chapin_hst_diff',
@@ -256,11 +265,8 @@ if __name__ == '__main__':
                'metric_chapin_inv_log', 'metric_huffman',
                'metric_huffman_new_penalty', 'metric_mean_new_penalty',
                'metric_badness', 'metric_badness_huff_len']
-    metrics = ['metric_badness', 'metric_badness_weighted',
-               'metric_badness_mean_penalty',
+    metrics = ['metric_chapin_inv', 'metric_chapin_inv_log', 'metric_badness',
                'metric_badness_weighted_mean_penalty',
-               'metric_badness_huff_len', 'metric_badness_huff_len_weighted',
-               'metric_badness_huff_len_mean_penalty',
                'metric_badness_huff_len_weighted_mean_penalty']
 
     # make directories
@@ -275,24 +281,24 @@ if __name__ == '__main__':
         make_aux_data(in_path, wd + 'aux')
 
     # make transitions
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         with open(wd + 'aux', 'rb') as aux_file:
-#             aux_data = pickle.load(aux_file)
-#         for metric in metrics:
-#             make_transitions(in_path, metric, aux_data,
-#                             wd + metric + '.transitions')
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        with open(wd + 'aux', 'rb') as aux_file:
+            aux_data = pickle.load(aux_file)
+        for metric in metrics:
+            make_transitions(in_path, metric, aux_data,
+                            wd + metric + '.transitions')
 
     # write tsplib files
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         for metric in metrics:
-#             with open(wd + metric + '.transitions', 'rb') as trs_file:
-#                 trs = pickle.load(trs_file)
-#             g = make_graph(trs)
-#             write_tsplib_files(g, wd, metric)
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        for metric in metrics:
+            with open(wd + metric + '.transitions', 'rb') as trs_file:
+                trs = pickle.load(trs_file)
+            g = make_graph(trs)
+            write_tsplib_files(g, wd, metric)
 
     # simulate compression
 #     for in_file_name in in_file_names:

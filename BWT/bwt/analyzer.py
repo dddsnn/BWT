@@ -317,16 +317,10 @@ def metric_chapin_kl(bw_code, first_symbol_a, first_symbol_b, aux_data):
     return metric
 
 def metric_chapin_inv(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    hst_a = aux_data.bw_subhistograms[first_symbol_a]
-    hst_b = aux_data.bw_subhistograms[first_symbol_b]
+    freq_list_a = aux_data.freq_lists[first_symbol_a]
+    freq_list_b = aux_data.freq_lists[first_symbol_b]
 
     # CHAPIN: number of inversion between ordered histograms
-    # turn the histograms into lists and sort in decreasing order of frequency
-    freq_list_a = sorted(hst_a.items(), key=lambda x:x[1], reverse=True)
-    freq_list_b = sorted(hst_b.items(), key=lambda x:x[1], reverse=True)
-    # now just take the corresponding first symbols
-    freq_list_a = [x[0] for x in freq_list_a]
-    freq_list_b = [x[0] for x in freq_list_b]
     # metric is the number of inversions between the two lists
     metric = num_inversions(freq_list_a, freq_list_b)
     return metric
