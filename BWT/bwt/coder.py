@@ -41,31 +41,53 @@ def bw_encode(bytes_, order=None):
     '''BW encode a string of bytes.'''
     # if no order was given, go with natural
     if not order:
-        order = list(range(256))
+        order = [[x] for x in range(256)]
     # turn the order list of characters into a dict {byte: value} for ordering
     order_dict = {}
-    for i, b in enumerate(order):
+    for i, s in enumerate(order):
         # ignore multiple occurrences, count the first one
-        if not b in order_dict:
-            order_dict[b] = i
+        if not s in order_dict:
+            order_dict[s] = i
             max_order = i
         else:
-            warnings.warn('multiple occurence of symbol {0} in order.'
-                          ' ignoring.'.format(b))
+            warnings.warn('multiple occurence of symbol or sequence {0} in '
+                          'order. ignoring.'.format(s))
     # check that order is complete (all bytes from bytes_ are in it)
     for b in bytes_:
-        if not b in order_dict:
-            warnings.warn('symbol {0} not in the custom order but in the '
-                          'bytes_.  appending'.format(b))
+        if not [b] in order_dict:
+            warnings.warn('symbol or sequence {0} not in the custom order but '
+                          'in the bytes_.  appending'.format(b))
             # append any missing bytes
             order_dict[b] = max_order + 1
             max_order += 1
+    # dict with all keys in order_dict that lists more specific keys
+    # (e.g. s'a' -> [s'as', s'adf']
+    spec_dict = {s:[] for s in order_dict}
+    for s1 in spec_dict:
+        for s2 in spec_dict:
+            if s1 != s2 and len(s2) > len(s1) and s2[:len(s1)] == s1:
+                # more specific sequence found, add to dict
+                spec_dict[s1].append(s2)
+    # sort the lists in spec_dict from most specific to most general
+    for s in spec_dict:
+        spec_dict[s].sort(key=lambda x:len(x), reverse=True)
+    # make a list by which the strings will be sorted
+    order_list = []
+    for i, b in enumerate(bytes_ + bytes_):
+        # in case there is a more specific sequence
+        for s in spec_dict[[b]]:
+            if bytes_[i:i + len(s)] == s:
+                # more specific sequence has been found, append the order for
+                # that sequence and break (so we don't get into the else)
+                order_list.append(order_dict[s])
+                break
+        else:
+            order_list.append(order_dict[[b]])
+    # take it twice so we can get long substrings from the end
+    order_list = order_list + order_list
 
     NUM_CHARS = 25  # number of characters to save for ordering
     l = len(bytes_)
-    # make a list by which the strings will be sorted
-    # use bytes_ + bytes_ so we can get long substrings from the end
-    order_list = [order_dict[b] for b in bytes_ + bytes_]
     # make tuples (pos in the table, first byte, last byte)
     tuples = []
     for i in range(l):
