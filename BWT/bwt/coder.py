@@ -41,7 +41,7 @@ def bw_encode(bytes_, order=None):
     '''BW encode a string of bytes.'''
     # if no order was given, go with natural
     if not order:
-        order = [[x] for x in range(256)]
+        order = [bytes([x]) for x in range(256)]
     # turn the order list of characters into a dict {byte: value} for ordering
     order_dict = {}
     for i, s in enumerate(order):
@@ -54,14 +54,14 @@ def bw_encode(bytes_, order=None):
                           'order. ignoring.'.format(s))
     # check that order is complete (all bytes from bytes_ are in it)
     for b in bytes_:
-        if not [b] in order_dict:
+        if not bytes([b]) in order_dict:
             warnings.warn('symbol or sequence {0} not in the custom order but '
                           'in the bytes_.  appending'.format(b))
             # append any missing bytes
-            order_dict[b] = max_order + 1
+            order_dict[bytes([b])] = max_order + 1
             max_order += 1
     # dict with all keys in order_dict that lists more specific keys
-    # (e.g. s'a' -> [s'as', s'adf']
+    # (e.g. b'a' -> [b'adf', b'as']
     spec_dict = {s:[] for s in order_dict}
     for s1 in spec_dict:
         for s2 in spec_dict:
@@ -75,14 +75,14 @@ def bw_encode(bytes_, order=None):
     order_list = []
     for i, b in enumerate(bytes_ + bytes_):
         # in case there is a more specific sequence
-        for s in spec_dict[[b]]:
+        for s in spec_dict[bytes([b])]:
             if bytes_[i:i + len(s)] == s:
                 # more specific sequence has been found, append the order for
                 # that sequence and break (so we don't get into the else)
                 order_list.append(order_dict[s])
                 break
         else:
-            order_list.append(order_dict[[b]])
+            order_list.append(order_dict[bytes([b])])
     # take it twice so we can get long substrings from the end
     order_list = order_list + order_list
 

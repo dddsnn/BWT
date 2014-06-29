@@ -191,7 +191,7 @@ def analyze_transitions(bytes_, metric, aux_data):
     an_func = getattr(sys.modules[__name__], metric)
     bw_code = aux_data.bw_code
     firsts = set(bw_code.firsts)
-    transitions = {(a, b): an_func(bw_code, a, b, aux_data)
+    transitions = {(bytes([a]), bytes([b])): an_func(bw_code, a, b, aux_data)
                    for a in firsts
                    for b in firsts if a != b}
     return transitions
