@@ -11,11 +11,34 @@ import bwt.coder as cd
 import math
 import warnings
 
-def bw_block(bw_code, first_symbol):
-    '''Get the BW code corresponding to a specific symbol in the first column.
+def select_sequences(bytes_, max_len):
+    '''Select sequences from a file that could benefit from being ordered more
+    specially than by the same order for all characters.
     '''
-    left = bw_code.firsts.index(first_symbol)
-    right = bw_code.firsts.rindex(first_symbol)
+    # TODO this is a primitive placeholder and needs to be replaced by a
+    # function that's aware of the quality of the transitions of each
+    # possible sequence when it's not specially reordered
+
+    # make histograms for sequences of length up to max_len
+    hst = {}
+    for l in range(2, max_len + 1):
+        for i in range(len(bytes_) - l):
+            if bytes_[i:i + l] in hst:
+                hst[bytes_[i:i + l]] += 1
+            else:
+                hst[bytes_[i:i + l]] = 1
+    # make a list of all sequences found and sort by number of occurrences
+    seq = [s for s in hst]
+    seq.sort(key=lambda x:hst[x], reverse=True)
+    # select the first 255 and return
+    return seq[:255]
+
+def bw_block(bw_code, seq):
+    '''Get the block of BW code corresponding to a specific sequence at the
+    beginning of the line.
+    '''
+    left = bw_code.firsts.index(seq)
+    right = bw_code.firsts.rindex(seq)
     bw_block = bw_code.encoded[left:right + 1]
     return bw_block
 
@@ -191,32 +214,32 @@ def analyze_transitions(bytes_, metric, aux_data):
     an_func = getattr(sys.modules[__name__], metric)
     bw_code = aux_data.bw_code
     firsts = set(bw_code.firsts)
-    transitions = {(bytes([a]), bytes([b])): an_func(bw_code, a, b, aux_data)
-                   for a in firsts
-                   for b in firsts if a != b}
+    transitions = {(a, b): an_func(bw_code, a, b, aux_data)
+                   for a in [bytes([x]) for x in firsts]
+                   for b in [bytes([x]) for x in firsts] if a != b}
     return transitions
 
-def metric_num_chars(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
+def metric_num_chars(bw_code, first_seq_a, first_seq_b, aux_data):
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_ab = aux_data.partial_mtf_analyses[(first_seq_a, first_seq_b)]
 
     # metric: number of -1s in the second half of the combined code (the one
     # that's being transitioned to)
     metric = an_ab.num_chars - an_a.num_chars
     return metric
 
-def metric_max_code(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
+def metric_max_code(bw_code, first_seq_a, first_seq_b, aux_data):
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_seq_a, first_seq_b)]
 
     metric = an_ab.max_code - max(an_a.max_code, an_b.max_code)
     return metric
 
-def metric_median(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
+def metric_median(bw_code, first_seq_a, first_seq_b, aux_data):
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_seq_a, first_seq_b)]
 
     # to avoid division by zero
     if an_ab.length_rec == 0:
@@ -229,7 +252,7 @@ def metric_median(bw_code, first_symbol_a, first_symbol_b, aux_data):
                        / ab_length_rec) - an_ab.median
     return metric
 
-def metric_mean(bw_code, first_symbol_a, first_symbol_b, aux_data):
+def metric_mean(bw_code, first_seq_a, first_seq_b, aux_data):
     # TODO by ignoring new characters (-1s) in the mean, good transitions get an_a
     # penalty, because a character that was already there before the transition
     # probably affects the mean in a bad way, while an entirely new character
@@ -239,9 +262,9 @@ def metric_mean(bw_code, first_symbol_a, first_symbol_b, aux_data):
     # source don't mean anything bad)
     # or maybe an entirely new metric that takes this into account
 
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_seq_a, first_seq_b)]
 
     # to avoid division by zero
     if an_ab.length_rec == 0:
@@ -254,10 +277,10 @@ def metric_mean(bw_code, first_symbol_a, first_symbol_b, aux_data):
                      / ab_length_rec) - an_ab.mean
     return metric
 
-def metric_mean_new_penalty(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
-    an_ab = aux_data.partial_mtf_analyses[(first_symbol_a, first_symbol_b)]
+def metric_mean_new_penalty(bw_code, first_seq_a, first_seq_b, aux_data):
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
+    an_ab = aux_data.partial_mtf_analyses[(first_seq_a, first_seq_b)]
 
     # bytes that will be counted are all non-(-1)s and the -1s from the second
     # half
@@ -273,15 +296,15 @@ def metric_mean_new_penalty(bw_code, first_symbol_a, first_symbol_b, aux_data):
                + new_in_right * penalty) / length)
     return metric
 
-def metric_mean_right(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+def metric_mean_right(bw_code, first_seq_a, first_seq_b, aux_data):
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
 
     metric = an_b.mean
     return metric
 
-def metric_chapin_hst_diff(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    hst_a = aux_data.bw_subhistograms[first_symbol_a]
-    hst_b = aux_data.bw_subhistograms[first_symbol_b]
+def metric_chapin_hst_diff(bw_code, first_seq_a, first_seq_b, aux_data):
+    hst_a = aux_data.bw_subhistograms[first_seq_a]
+    hst_b = aux_data.bw_subhistograms[first_seq_b]
 
     # CHAPIN: sum of squares of differences of logs
     log_diffs = []
@@ -301,9 +324,9 @@ def metric_chapin_hst_diff(bw_code, first_symbol_a, first_symbol_b, aux_data):
     metric = sum([d ** 2 for d in log_diffs])
     return metric
 
-def metric_chapin_kl(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    hst_a = aux_data.bw_subhistograms[first_symbol_a]
-    hst_b = aux_data.bw_subhistograms[first_symbol_b]
+def metric_chapin_kl(bw_code, first_seq_a, first_seq_b, aux_data):
+    hst_a = aux_data.bw_subhistograms[first_seq_a]
+    hst_b = aux_data.bw_subhistograms[first_seq_b]
 
     # CHAPIN: kullback-leibler
     logterms = []
@@ -316,17 +339,17 @@ def metric_chapin_kl(bw_code, first_symbol_a, first_symbol_b, aux_data):
     metric = sum(logterms)
     return metric
 
-def metric_chapin_inv(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    freq_list_a = aux_data.freq_lists[first_symbol_a]
-    freq_list_b = aux_data.freq_lists[first_symbol_b]
+def metric_chapin_inv(bw_code, first_seq_a, first_seq_b, aux_data):
+    freq_list_a = aux_data.freq_lists[first_seq_a]
+    freq_list_b = aux_data.freq_lists[first_seq_b]
 
     # CHAPIN: number of inversion between ordered histograms
     # metric is the number of inversions between the two lists
     metric = num_inversions(freq_list_a, freq_list_b)
     return metric
 
-def metric_chapin_inv_log(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    inv_metric = metric_chapin_inv(bw_code, first_symbol_a, first_symbol_b,
+def metric_chapin_inv_log(bw_code, first_seq_a, first_seq_b, aux_data):
+    inv_metric = metric_chapin_inv(bw_code, first_seq_a, first_seq_b,
                                    aux_data)
     # CHAPIN: log of previous
     if inv_metric == 0:
@@ -335,8 +358,8 @@ def metric_chapin_inv_log(bw_code, first_symbol_a, first_symbol_b, aux_data):
         metric = math.log(inv_metric)
     return metric
 
-def metric_huffman(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
+def metric_huffman(bw_code, first_seq_a, first_seq_b, aux_data):
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
 
     # HUFFMAN ENCODE METRIC
     # TODO -1s in the second part need to be weighted, see todo in mean
@@ -355,10 +378,10 @@ def metric_huffman(bw_code, first_symbol_a, first_symbol_b, aux_data):
         metric = huffman_length / len(stripped_partial_mtf)
     return metric
 
-def metric_huffman_new_penalty(bw_code, first_symbol_a, first_symbol_b,
+def metric_huffman_new_penalty(bw_code, first_seq_a, first_seq_b,
                                aux_data):
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    bw_a = aux_data.bw_subcodes[first_symbol_a]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    bw_a = aux_data.bw_subcodes[first_seq_a]
 
     # replace -1s in the right part of the partial mtf with values that haven't
     # occurred before
@@ -386,15 +409,15 @@ def metric_huffman_new_penalty(bw_code, first_symbol_a, first_symbol_b,
         metric = huffman_length / len(stripped_pt_mtf)
     return metric
 
-def metric_badness(bw_code, first_symbol_a, first_symbol_b, aux_data):
+def metric_badness(bw_code, first_seq_a, first_seq_b, aux_data):
     '''Compares the ordering of the MTF alphabet the left side of the transition
     "leaves" for the right side with the ideal ordering that would yield the
     greatest compression benefit and gives a badness value for non-ideal
     orderings.
     '''
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -424,11 +447,11 @@ def metric_badness(bw_code, first_symbol_a, first_symbol_b, aux_data):
             badness += actual - ideal
     return badness
 
-def metric_badness_weighted(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+def metric_badness_weighted(bw_code, first_seq_a, first_seq_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -458,12 +481,12 @@ def metric_badness_weighted(bw_code, first_symbol_a, first_symbol_b, aux_data):
             badness += actual - ideal
     return badness / an_b.num_chars
 
-def metric_badness_mean_penalty(bw_code, first_symbol_a, first_symbol_b,
+def metric_badness_mean_penalty(bw_code, first_seq_a, first_seq_b,
                                 aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     mtf_means = aux_data.mtf_mean_steps
 
     badness = 0
@@ -494,12 +517,12 @@ def metric_badness_mean_penalty(bw_code, first_symbol_a, first_symbol_b,
             badness += actual - ideal
     return badness
 
-def metric_badness_weighted_mean_penalty(bw_code, first_symbol_a,
-                                         first_symbol_b, aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+def metric_badness_weighted_mean_penalty(bw_code, first_seq_a,
+                                         first_seq_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     mtf_means = aux_data.mtf_mean_steps
 
     badness = 0
@@ -530,11 +553,11 @@ def metric_badness_weighted_mean_penalty(bw_code, first_symbol_a,
             badness += actual - ideal
     return badness / an_b.num_chars
 
-def metric_badness_huff_len(bw_code, first_symbol_a, first_symbol_b, aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+def metric_badness_huff_len(bw_code, first_seq_a, first_seq_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     hf_len = aux_data.huffman_codeword_lengths
 
     badness = 0
@@ -575,12 +598,12 @@ def metric_badness_huff_len(bw_code, first_symbol_a, first_symbol_b, aux_data):
             badness += huff_dist
     return badness
 
-def metric_badness_huff_len_weighted(bw_code, first_symbol_a, first_symbol_b,
+def metric_badness_huff_len_weighted(bw_code, first_seq_a, first_seq_b,
                                      aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     hf_len = aux_data.huffman_codeword_lengths
 
     badness = 0
@@ -621,12 +644,12 @@ def metric_badness_huff_len_weighted(bw_code, first_symbol_a, first_symbol_b,
             badness += huff_dist
     return badness / an_b.num_chars
 
-def metric_badness_huff_len_mean_penalty(bw_code, first_symbol_a,
-                                         first_symbol_b, aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+def metric_badness_huff_len_mean_penalty(bw_code, first_seq_a,
+                                         first_seq_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     hf_len = aux_data.huffman_codeword_lengths
     mtf_means = aux_data.mtf_mean_steps
 
@@ -668,12 +691,12 @@ def metric_badness_huff_len_mean_penalty(bw_code, first_symbol_a,
             badness += huff_dist
     return badness
 
-def metric_badness_huff_len_weighted_mean_penalty(bw_code, first_symbol_a,
-                                                  first_symbol_b, aux_data):
-    pt_mtf_b = aux_data.partial_mtf_subcodes[first_symbol_b]
-    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_symbol_a, first_symbol_b)]
-    an_a = aux_data.partial_mtf_analyses[first_symbol_a]
-    an_b = aux_data.partial_mtf_analyses[first_symbol_b]
+def metric_badness_huff_len_weighted_mean_penalty(bw_code, first_seq_a,
+                                                  first_seq_b, aux_data):
+    pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
+    pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
+    an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     hf_len = aux_data.huffman_codeword_lengths
     mtf_means = aux_data.mtf_mean_steps
 
