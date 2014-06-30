@@ -31,15 +31,60 @@ def select_sequences(bytes_, max_len):
     seq = [s for s in hst]
     seq.sort(key=lambda x:hst[x], reverse=True)
     # select the first 255 and return
+    return []  # TODO
     return seq[:255]
 
-def bw_block(bw_code, seq):
+def bw_block(bw_code, seq, specializations):
     '''Get the block of BW code corresponding to a specific sequence at the
-    beginning of the line.
+    beginning of the line. Exclude symbols in the BW code belonging to a more
+    special sequence indicated in the specializations dictionary.
     '''
-    left = bw_code.firsts.index(seq)
-    right = bw_code.firsts.rindex(seq)
-    bw_block = bw_code.encoded[left:right + 1]
+    # first index matching seq
+    left = next(i for i, s in enumerate(bw_code.firsts) if s[:len(seq)] == seq)
+    if not specializations[seq]:
+        # no specializaions for this sequence, straightforward
+        right = left + 1
+        while right < len(bw_code.firsts) and bw_code.firsts[right][:len(seq)] == seq:
+            right += 1
+        bw_block = bw_code.encoded[left:right]
+        return bw_block
+
+    # reverse specializations so they're sorted from most general to most
+    # specific
+    spec = reversed(specializations[seq])
+    # find the first occurrence of seq in firsts that isn't a specialization
+    while left < len(bw_code.firsts) and bw_code.firsts[left][:len(seq)] == seq:
+        for sp in spec:
+            if bw_code.firsts[left][:len(sp)] == sp:
+                # this line is a specialization, so increment left and break to
+                # find another beginning
+                left += 1
+                break
+        else:
+            # no break, so this line is not a specialization, break out of the
+            # while and keep the value of left
+            break
+    if not left < len(bw_code.firsts) or bw_code.firsts[left][:len(seq)] != seq:
+        # this means that all elements in firsts starting with seq were
+        # specializations, so return an empty bytes object as the bw block
+        return b''
+
+    # start the bw block
+    bw_block = bytes([bw_code.encoded[left]])
+
+    # now find the end of the bw block
+    right = left + 1
+    while right < len(bw_code.firsts) and bw_code.firsts[right][:len(seq)] == seq:
+        for sp in spec:
+            if bw_code.firsts[right][:len(sp)] == sp:
+                # this line is a specialization, so increment right and break
+                right += 1
+                break
+        else:
+            # no break, so this line is not a specialization, append to the
+            # result and increment right
+            bw_block += bytes([bw_code.encoded[right]])
+            right += 1
     return bw_block
 
 def analyze_partial_mtf(code):
@@ -213,7 +258,7 @@ def analyze_transitions(bytes_, metric, aux_data):
 
     an_func = getattr(sys.modules[__name__], metric)
     bw_code = aux_data.bw_code
-    firsts = set(bw_code.firsts)
+    firsts = aux_data.firsts
     transitions = {(a, b): an_func(bw_code, a, b, aux_data)
                    for a in [bytes([x]) for x in firsts]
                    for b in [bytes([x]) for x in firsts] if a != b}

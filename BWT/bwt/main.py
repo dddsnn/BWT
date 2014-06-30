@@ -19,8 +19,10 @@ def make_aux_data(in_path, out_path=None):
     raw = bytes_
     bw_code = cd.bw_encode(bytes_)
     mtf_code = cd.mtf_enc(bw_code.encoded)
-    firsts = set(bw_code.firsts)
-    bw_subcodes = {bytes([x]):an.bw_block(bw_code, x) for x in firsts}
+    firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
+    firsts.extend(an.select_sequences(bytes_, 2))
+    specializations = cd.specializations(firsts)
+    bw_subcodes = {x:an.bw_block(bw_code, x, specializations) for x in firsts}
     # first add subcodes for individual bytes
     partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
                             for x in bw_subcodes}
@@ -52,7 +54,8 @@ def make_aux_data(in_path, out_path=None):
         # add to the dict
         freq_lists[f] = freq_list
 
-    result = AuxData(raw, bw_code, mtf_code, bw_subcodes, partial_mtf_subcodes,
+    result = AuxData(raw, firsts, bw_code, mtf_code, bw_subcodes,
+                     partial_mtf_subcodes,
                      partial_mtf_analyses, bw_subhistograms, huffcode_len,
                      mtf_mean_steps, freq_lists)
     if out_path:
@@ -275,10 +278,10 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         make_aux_data(in_path, wd + 'aux')
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        make_aux_data(in_path, wd + 'aux')
 
     # make transitions
 #     for in_file_name in in_file_names:
@@ -301,20 +304,20 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, metric)
 
     # simulate compression
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-        handpicked_order = [bytes([c]) for c in handpicked_str]
-        simulate_compression(in_path, 'aeiou...', handpicked_order)
-        simulate_compression(in_path, 'standard')
-
-        for metric in metrics:
-            tsplib_tour = read_tsplib_files(wd + metric + '.tour',
-                                     wd + metric + '.nodenames')
-            with open(wd + metric + '.transitions', 'rb') as trs_file:
-                trs = pickle.load(trs_file)
-            very_greedy_tour = very_greedy_tsp(trs)
-            simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
-            simulate_compression(in_path, metric + ' very greedy',
-                                 very_greedy_tour)
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+#         handpicked_order = [bytes([c]) for c in handpicked_str]
+#         simulate_compression(in_path, 'aeiou...', handpicked_order)
+#         simulate_compression(in_path, 'standard')
+#
+#         for metric in metrics:
+#             tsplib_tour = read_tsplib_files(wd + metric + '.tour',
+#                                      wd + metric + '.nodenames')
+#             with open(wd + metric + '.transitions', 'rb') as trs_file:
+#                 trs = pickle.load(trs_file)
+#             very_greedy_tour = very_greedy_tsp(trs)
+#             simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
+#             simulate_compression(in_path, metric + ' very greedy',
+#                                  very_greedy_tour)

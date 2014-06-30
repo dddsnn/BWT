@@ -32,10 +32,25 @@ def print_demo(text):
 
     for row in table:
         print(row)
-        print()
     print()
     print(firsts)
     print(encoded)
+
+def specializations(string_list):
+    '''Make a dictionary containing, for every element in the list, other
+    elements in the list that are specializations of that element, i.e. that
+    start with the same symbols, but are longer.
+    '''
+    spec_dict = {s:[] for s in string_list}
+    for s1 in spec_dict:
+        for s2 in spec_dict:
+            if s1 != s2 and len(s2) > len(s1) and s2[:len(s1)] == s1:
+                # more specific sequence found, add to dict
+                spec_dict[s1].append(s2)
+    # sort the lists in spec_dict from most specific to most general
+    for s in spec_dict:
+        spec_dict[s].sort(key=lambda x:len(x), reverse=True)
+    return spec_dict
 
 def bw_encode(bytes_, order=None):
     '''BW encode a string of bytes.'''
@@ -62,15 +77,7 @@ def bw_encode(bytes_, order=None):
             max_order += 1
     # dict with all keys in order_dict that lists more specific keys
     # (e.g. b'a' -> [b'adf', b'as']
-    spec_dict = {s:[] for s in order_dict}
-    for s1 in spec_dict:
-        for s2 in spec_dict:
-            if s1 != s2 and len(s2) > len(s1) and s2[:len(s1)] == s1:
-                # more specific sequence found, add to dict
-                spec_dict[s1].append(s2)
-    # sort the lists in spec_dict from most specific to most general
-    for s in spec_dict:
-        spec_dict[s].sort(key=lambda x:len(x), reverse=True)
+    spec_dict = specializations(order_dict)
     # make a list by which the strings will be sorted
     order_list = []
     for i, b in enumerate(bytes_ + bytes_):
@@ -83,23 +90,27 @@ def bw_encode(bytes_, order=None):
                 break
         else:
             order_list.append(order_dict[bytes([b])])
-    # take it twice so we can get long substrings from the end
-    order_list = order_list + order_list
+
+    l = len(bytes_)
+    # take the bytes_  twice so we can get long substrings from the end
+    # (order list is already twice as long)
+    bytes_ = bytes_ + bytes_
 
     NUM_CHARS = 25  # number of characters to save for ordering
-    l = len(bytes_)
-    # make tuples (pos in the table, first byte, last byte)
+    # make tuples (pos in the table, ordering first bytes, last byte,
+    # actual first bytes)
     tuples = []
     for i in range(l):
-        tuples.append((i, order_list[i:i + NUM_CHARS], bytes_[i - 1]))
+        tuples.append((i, order_list[i:i + NUM_CHARS], bytes_[i - 1],
+                       bytes_[i:i + NUM_CHARS]))
     tuples.sort(key=lambda x: x[1])
     # check for duplicate first bytes and compare longer strings
     for i in range(len(tuples) - 1):
-        if tuples[i][1] == tuples[i + 1][1]:
+        if tuples[i][3] == tuples[i + 1][3]:
             num_affected = 2
             # there might be more
             if i + 2 < len(tuples):
-                while tuples[i + num_affected][1] == tuples[i][1]:
+                while tuples[i + num_affected][3] == tuples[i][3]:
                     num_affected += 1
                     # break if we reach the end of the list
                     if not i + num_affected < len(tuples):
@@ -116,17 +127,18 @@ def bw_encode(bytes_, order=None):
                 # long tuples
                 for j in range(NUM_CHARS, l):
                     # make a list of chars the other strings have a position j
-                    other_chars = [order_list[o[0] + j] for o in others]
+                    other_chars = [bytes_[o[0] + j] for o in others]
                     # if the current string's char doesn't appear in it,
                     # j characters are enough
-                    if not order_list[t[0] + j] in other_chars:
+                    if not bytes_[t[0] + j] in other_chars:
                         long_tuples.append((t[0], order_list[t[0]:t[0] + j + 1],
-                                            bytes_[t[0] - 1]))
+                                            bytes_[t[0] - 1],
+                                            bytes_[t[0]:t[0] + j + 1]))
                         break
             long_tuples.sort(key=lambda x: x[1])
             # replace the short tuples in the original list
             tuples[i:i + num_affected] = long_tuples
-    firsts = bytes([t[1][0] for t in tuples])
+    firsts = [t[3] for t in tuples]
     encoded = bytes([t[2] for t in tuples])
     result = BWEncodeResult(firsts, encoded)
     return result
