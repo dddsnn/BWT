@@ -259,7 +259,7 @@ if __name__ == '__main__':
     in_file_names = ['bib', 'book1', 'book2', 'geo', 'news', 'obj1', 'obj2',
                      'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
                      'paper6', 'pic', 'progc', 'progl', 'progp', 'trans']
-    in_file_names = ['book1']
+    in_file_names = ['book2']
     base_work_dir = '/home/dddsnn/tmp/'
     metrics = ['metric_max_code', 'metric_mean', 'metric_mean_right',
                'metric_median', 'metric_num_chars', 'metric_chapin_hst_diff',
@@ -267,10 +267,11 @@ if __name__ == '__main__':
                'metric_chapin_inv_log', 'metric_huffman',
                'metric_huffman_new_penalty', 'metric_mean_new_penalty',
                'metric_badness', 'metric_badness_huff_len']
-    metrics = ['metric_chapin_inv', 'metric_chapin_inv_log', 'metric_badness',
-               'metric_badness_weighted_mean_penalty',
-               'metric_badness_huff_len_weighted_mean_penalty']
-    metrics = ['metric_badness_weighted_mean_penalty']
+    metrics = ['metric_chapin_hst_diff',
+               'metric_chapin_kl', 'metric_chapin_inv',
+                'metric_badness',
+               'metric_badness_weighted_mean_penalty']
+    metrics = ['metric_chapin_inv', 'metric_badness_weighted_mean_penalty']
 
     # make directories
     for in_file_name in in_file_names:
@@ -278,10 +279,10 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        make_aux_data(in_path, wd + 'aux')
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         make_aux_data(in_path, wd + 'aux')
 
     # make transitions
 #     for in_file_name in in_file_names:
@@ -304,20 +305,20 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, metric)
 
     # simulate compression
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-#         handpicked_order = [bytes([c]) for c in handpicked_str]
-#         simulate_compression(in_path, 'aeiou...', handpicked_order)
-#         simulate_compression(in_path, 'standard')
-#
-#         for metric in metrics:
-#             tsplib_tour = read_tsplib_files(wd + metric + '.tour',
-#                                      wd + metric + '.nodenames')
-#             with open(wd + metric + '.transitions', 'rb') as trs_file:
-#                 trs = pickle.load(trs_file)
-#             very_greedy_tour = very_greedy_tsp(trs)
-#             simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
-#             simulate_compression(in_path, metric + ' very greedy',
-#                                  very_greedy_tour)
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+        handpicked_order = [bytes([c]) for c in handpicked_str]
+        simulate_compression(in_path, 'aeiou...', handpicked_order)
+        simulate_compression(in_path, 'standard')
+
+        for metric in metrics:
+            tsplib_tour = read_tsplib_files(wd + metric + '.tour',
+                                     wd + metric + '.nodenames')
+            with open(wd + metric + '.transitions', 'rb') as trs_file:
+                trs = pickle.load(trs_file)
+            very_greedy_tour = very_greedy_tsp(trs)
+            simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
+            simulate_compression(in_path, metric + ' very greedy',
+                                very_greedy_tour)

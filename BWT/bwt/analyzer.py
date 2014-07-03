@@ -31,8 +31,8 @@ def select_sequences(bytes_, max_len):
     seq = [s for s in hst]
     seq.sort(key=lambda x:hst[x], reverse=True)
     # select the first 255 and return
-    return []  # TODO
-    return seq[:255]
+    return []
+    return seq[:20]  # TODO
 
 def bw_block(bw_code, seq, specializations):
     '''Get the block of BW code corresponding to a specific sequence at the
@@ -260,8 +260,8 @@ def analyze_transitions(bytes_, metric, aux_data):
     bw_code = aux_data.bw_code
     firsts = aux_data.firsts
     transitions = {(a, b): an_func(bw_code, a, b, aux_data)
-                   for a in [bytes([x]) for x in firsts]
-                   for b in [bytes([x]) for x in firsts] if a != b}
+                   for a in firsts
+                   for b in firsts if a != b}
     return transitions
 
 def metric_num_chars(bw_code, first_seq_a, first_seq_b, aux_data):
@@ -460,6 +460,8 @@ def metric_badness(bw_code, first_seq_a, first_seq_b, aux_data):
     greatest compression benefit and gives a badness value for non-ideal
     orderings.
     '''
+    # TODO not taken into account that not only the first byte will be affected
+    # by a new order
     pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
     pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
