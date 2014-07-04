@@ -52,44 +52,53 @@ def specializations(string_list):
         spec_dict[s].sort(key=lambda x:len(x), reverse=True)
     return spec_dict
 
-def bw_encode(bytes_, order=None):
+def bw_encode(bytes_, orders=None):
     '''BW encode a string of bytes.'''
     # if no order was given, go with natural
-    if not order:
-        order = [bytes([x]) for x in range(256)]
-    # turn the order list of characters into a dict {byte: value} for ordering
-    order_dict = {}
-    for i, s in enumerate(order):
-        # ignore multiple occurrences, count the first one
-        if not s in order_dict:
-            order_dict[s] = i
-            max_order = i
-        else:
-            warnings.warn('multiple occurence of symbol or sequence {0} in '
-                          'order. ignoring.'.format(s))
-    # check that order is complete (all bytes from bytes_ are in it)
-    for b in bytes_:
-        if not bytes([b]) in order_dict:
-            warnings.warn('symbol or sequence {0} not in the custom order but '
-                          'in the bytes_.  appending'.format(b))
-            # append any missing bytes
-            order_dict[bytes([b])] = max_order + 1
-            max_order += 1
-    # dict with all keys in order_dict that lists more specific keys
-    # (e.g. b'a' -> [b'adf', b'as']
-    spec_dict = specializations(order_dict)
-    # make a list by which the strings will be sorted
-    order_list = []
-    for i, b in enumerate(bytes_ + bytes_):
-        # in case there is a more specific sequence
-        for s in spec_dict[bytes([b])]:
-            if bytes_[i:i + len(s)] == s:
-                # more specific sequence has been found, append the order for
-                # that sequence and break (so we don't get into the else)
-                order_list.append(order_dict[s])
-                break
-        else:
-            order_list.append(order_dict[bytes([b])])
+    if not orders:
+        orders = [[bytes([x]) for x in range(256)]]
+    # turn the order lists of bytes objects into dicts {byte: value} for
+    # ordering
+    order_dicts = []
+    for order in orders:
+        order_dict = {}
+        for i, s in enumerate(order):
+            # ignore multiple occurrences, count the first one
+            if not s in order_dict:
+                order_dict[s] = i
+                max_order = i
+            else:
+                warnings.warn('multiple occurence of symbol or sequence {0} in '
+                              'order. ignoring.'.format(s))
+        # check that order is complete (all bytes from bytes_ are in it)
+        for b in bytes_:
+            if not bytes([b]) in order_dict:
+                warnings.warn('symbol or sequence {0} not in the custom order but '
+                              'in the bytes_.  appending'.format(b))
+                # append any missing bytes
+                order_dict[bytes([b])] = max_order + 1
+                max_order += 1
+        # append the order dict to the list
+        order_dicts.append(order_dict)
+    # make lists by which the strings will be sorted
+    order_lists = []
+    for order_dict in order_dicts:
+        order_list = []
+        # dict with all keys in order_dict that lists more specific keys
+        # (e.g. b'a' -> [b'adf', b'as']
+        spec_dict = specializations(order_dict)
+        for i, b in enumerate(bytes_ + bytes_):
+            # in case there is a more specific sequence
+            for s in spec_dict[bytes([b])]:
+                if bytes_[i:i + len(s)] == s:
+                    # more specific sequence has been found, append the order for
+                    # that sequence and break (so we don't get into the else)
+                    order_list.append(order_dict[s])
+                    break
+            else:
+                order_list.append(order_dict[bytes([b])])
+        # append this list to the list of order lists
+        order_lists.append(order_list)
 
     l = len(bytes_)
     # take the bytes_  twice so we can get long substrings from the end
@@ -101,7 +110,16 @@ def bw_encode(bytes_, order=None):
     # actual first bytes)
     tuples = []
     for i in range(l):
-        tuples.append((i, order_list[i:i + NUM_CHARS], bytes_[i - 1],
+        # make the list the tuple will be sorted by, according to the order
+        # lists for the appropriate columns
+        order_firsts = []
+        # first the columns for which there is a special ordering
+        for j in range(min(NUM_CHARS, len(order_lists))):
+            order_firsts.append(order_lists[j][i + j])
+        # now use the last ordering for the rest
+        order_firsts.extend(order_lists[-1][i + min(NUM_CHARS,
+                                                len(order_lists)):i + NUM_CHARS])
+        tuples.append((i, order_firsts, bytes_[i - 1],
                        bytes_[i:i + NUM_CHARS]))
     tuples.sort(key=lambda x: x[1])
     # check for duplicate first bytes and compare longer strings
@@ -131,7 +149,14 @@ def bw_encode(bytes_, order=None):
                     # if the current string's char doesn't appear in it,
                     # j characters are enough
                     if not bytes_[t[0] + j] in other_chars:
-                        long_tuples.append((t[0], order_list[t[0]:t[0] + j + 1],
+                        # make the list the tuple will be sorted by, see above
+                        order_firsts = []
+                        num_chars = j + 1
+                        for k in range(min(num_chars, len(order_lists))):
+                            order_firsts.append(order_lists[k][t[0] + k])
+                        order_firsts.extend(order_lists[-1][t[0] + min(num_chars, len(order_lists)):
+                                             t[0] + num_chars])
+                        long_tuples.append((t[0], order_firsts,
                                             bytes_[t[0] - 1],
                                             bytes_[t[0]:t[0] + j + 1]))
                         break

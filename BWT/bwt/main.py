@@ -259,7 +259,7 @@ if __name__ == '__main__':
     in_file_names = ['bib', 'book1', 'book2', 'geo', 'news', 'obj1', 'obj2',
                      'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
                      'paper6', 'pic', 'progc', 'progl', 'progp', 'trans']
-    in_file_names = ['book2']
+    in_file_names = ['book1']
     base_work_dir = '/home/dddsnn/tmp/'
     metrics = ['metric_max_code', 'metric_mean', 'metric_mean_right',
                'metric_median', 'metric_num_chars', 'metric_chapin_hst_diff',
@@ -309,16 +309,16 @@ if __name__ == '__main__':
         in_path = in_dir + in_file_name
         wd = base_work_dir + in_file_name + '/'
         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-        handpicked_order = [bytes([c]) for c in handpicked_str]
+        handpicked_order = [[bytes([c]) for c in handpicked_str]]
         simulate_compression(in_path, 'aeiou...', handpicked_order)
         simulate_compression(in_path, 'standard')
 
         for metric in metrics:
-            tsplib_tour = read_tsplib_files(wd + metric + '.tour',
-                                     wd + metric + '.nodenames')
+            tsplib_tour = [read_tsplib_files(wd + metric + '.tour',
+                                     wd + metric + '.nodenames')]
             with open(wd + metric + '.transitions', 'rb') as trs_file:
                 trs = pickle.load(trs_file)
-            very_greedy_tour = very_greedy_tsp(trs)
+            very_greedy_tour = [very_greedy_tsp(trs)]
             simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
             simulate_compression(in_path, metric + ' very greedy',
                                 very_greedy_tour)
