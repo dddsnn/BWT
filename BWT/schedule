@@ -1,0 +1,76 @@
+MISC STUFF == 12-14 days
+- docstrings for existing code
+	== < 1 day
+- remove unused metrics
+	== < 1 day
+- remove unused data from aux data
+	== < 1 day
+- multithreading for computing aux data and transitions
+	== 1 day
+- determine bounds for error when scaling floats to int for tsplib
+	== 1 day
+- reimplement huffman (static and adaptive) in python
+	== 2 days
+- static and adaptive arithmetic coding (low priority, kind of optional)
+	== 3 days
+- make it possible to pass metric-specific parameters to the metrics and pass
+	flags to the badness metrics to turn variants on/off instead of having 8
+	different functions
+	== < 1 day
+- understand the TSP solver parameters better
+	== 1-2 days
+- visualize mtf code (character index of bw code on x axis, mtf on y)
+	== 1 day
+- UI
+	== 1-2 days
+
+SIMPLE SORTING == 3-8 days
+- any previous work (besides chapin) similar?
+	== 0-2 days
+- is it possible to get better approximations for the new char penalty in the
+	badness? e.g. with different approximations for different contexts
+	== 1-2 days
+- is it possible/useful to get better approximations for the huffman code length
+	in the badness? e.g. with multiple passes of reordering and estimation
+	== 1-2 days
+- argument why the badness is a good metric; theoretically ideal?
+	== 1-2 days
+
+SORTING COLUMNS WITH DIFFERENT ORDERS == 2 days
+- what's the impact on the result if you only sort the first column with the
+	computed order? is badness with all variants enabled the ideal metric?
+	== 1 day
+- is there a benefit in computing different orders for the first few columns
+	successively?
+	== 1 day
+
+SORTING BY LONGER SEQUENCES == 7-11 days
+- are there any restrictions on the sequences in the order for maintaining
+	correct decompressibility? (proof)
+	== 2-3 days
+- find a method to select sequences that don't fit in with their context and
+	should be treated separately
+	== 2-3 days
+- does this method yield any significant additional compression advantage?
+	examples and explanation why or why not
+	== 1-2 days
+- define a file format to store all the needed overhead data and write a
+	decompression function
+	== 2-3 days
+
+SKIPPING MTF FOR CERTAIN CONTEXTS == 5-9 days
+- any previous work about or similar to this?
+	== 0-2 days
+- find a metric or metrics for how well a block contextualizes
+	== 2-3 days
+- find a method to select blocks that should skip the mtf phase
+	== 1-2 days
+- adapt the compression function to leave the selected blocks out of the mtf
+	== 1 day
+- file format for overhead and decompression function
+	== 1 day
+
+WRITE THE WHOLE THING DOWN == 14 days
+in parallel, and a few days dedicated
+
+overall 43-58 days
