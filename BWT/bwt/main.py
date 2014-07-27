@@ -1,41 +1,70 @@
-'''
+"""
 Created on 10.05.2014
 
 @author: dddsnn
-'''
+"""
 
 from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
+import multiprocessing
 import os.path
 import networkx as nx
 import pickle
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
+from itertools import repeat
+import time
 
 def make_aux_data(in_path, out_path=None):
-    '''Create data commonly used in transition analysis.'''
+    """Create data commonly used in transition analysis."""
     with open(in_path, 'rb') as in_file:
-        bytes_ = in_file.read()
-    raw = bytes_
-    bw_code = cd.bw_encode(bytes_)
+        bs = in_file.read()
+    raw = bs
+    bw_code = cd.bw_encode(bs)
     mtf_code = cd.mtf_enc(bw_code.encoded)
     firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
-    firsts.extend(an.select_sequences(bytes_, 2))
+    firsts.extend(an.select_sequences(bs, 2))
     specializations = cd.specializations(firsts)
-    bw_subcodes = {x:an.bw_block(bw_code, x, specializations) for x in firsts}
-    # first add subcodes for individual bytes
-    partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
-                            for x in bw_subcodes}
-    # now make and add the transitions
-    partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
-                                                         + bw_subcodes[b])
-                               for a in bw_subcodes for b in bw_subcodes
-                               if a != b}
-    partial_mtf_subcodes.update(partial_mtf_transitions)
-    partial_mtf_analyses = {x:an.analyze_partial_mtf(partial_mtf_subcodes[x])
-                            for x in partial_mtf_subcodes}
-    bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
-                        for x in bw_subcodes}
+    # get number of cpus to determine number of threads
+    try:
+        num_cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        num_cpus = 10
+    with ThreadPoolExecutor(max_workers=num_cpus) as ex:
+#         bw_subcodes = {x:an.bw_block(bw_code, x, specializations) for x in firsts}
+        tmp_values = ex.map(an.bw_block, list(repeat(bw_code,
+                                              times=len(firsts))), firsts,
+                        list(repeat(specializations, times=len(firsts))))
+        bw_subcodes = dict(zip(firsts, tmp_values))
+        # first add subcodes for individual bytes
+#         partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
+#                                 for x in bw_subcodes}
+        tmp_values = ex.map(cd.mtf_partial_enc, [bw_subcodes[x]
+                                                 for x in bw_subcodes])
+        partial_mtf_subcodes = dict(zip(bw_subcodes, tmp_values))
+        # now make and add the transitions
+#         partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
+#                                                              + bw_subcodes[b])
+#                                    for a in bw_subcodes for b in bw_subcodes
+#                                    if a != b}
+        tmp_pairs = [(a, b) for a in bw_subcodes for b in bw_subcodes if a != b]
+        tmp_values = ex.map(cd.mtf_partial_enc,
+                            [bw_subcodes[a] + bw_subcodes[b]
+                            for (a, b) in tmp_pairs])
+        partial_mtf_transitions = dict(zip(tmp_pairs, tmp_values))
+        partial_mtf_subcodes.update(partial_mtf_transitions)
+#         partial_mtf_analyses = {x:an.analyze_partial_mtf(partial_mtf_subcodes[x])
+#                                 for x in partial_mtf_subcodes}
+        tmp_values = ex.map(an.analyze_partial_mtf,
+                            [partial_mtf_subcodes[x]
+                             for x in partial_mtf_subcodes])
+        partial_mtf_analyses = dict(zip(partial_mtf_subcodes, tmp_values))
+#         bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
+#                             for x in bw_subcodes}
+        tmp_values = ex.map(an.make_histogram, [bw_subcodes[x]
+                                                for x in bw_subcodes])
+        bw_subhistograms = dict(zip(bw_subcodes, tmp_values))
     huffcode_len = an.huffman_codeword_lengths(mtf_code)
     mtf_mean_steps = {}
     for n in range(256):
@@ -55,19 +84,18 @@ def make_aux_data(in_path, out_path=None):
         freq_lists[f] = freq_list
 
     result = AuxData(raw, firsts, bw_code, mtf_code, bw_subcodes,
-                     partial_mtf_subcodes,
-                     partial_mtf_analyses, bw_subhistograms, huffcode_len,
-                     mtf_mean_steps, freq_lists)
+                     partial_mtf_subcodes, partial_mtf_analyses,
+                     bw_subhistograms, huffcode_len, mtf_mean_steps, freq_lists)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(result, out_file)
     return result
 
 def make_transitions(in_path, metric, aux_data, out_path=None):
-    '''Create the transition analysis for a file.'''
+    """Create the transition analysis for a file."""
     with open(in_path, 'rb') as in_file:
-        bytes_ = in_file.read()
-    trs = an.analyze_transitions(bytes_, metric, aux_data)
+        bs = in_file.read()
+    trs = an.analyze_transitions(bs, metric, aux_data)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(trs, out_file)
@@ -85,8 +113,8 @@ def make_graph(transitions, out_path=None):
     return g
 
 def write_tsplib_files(graph, out_dir_path, file_name):
-    '''Create and write the .tsp and .par files for the LKH program as well as
-    the file mapping the LKH node ids back to the node names.'''
+    """Create and write the .tsp and .par files for the LKH program as well as
+    the file mapping the LKH node ids back to the node names."""
     num_nodes = len(graph.nodes())
     # name mapping part
     # make dicts nodename->number and number->nodename for the tsp file
@@ -239,22 +267,23 @@ def very_greedy_tsp(transitions):
     return parts[0]
 
 def simulate_compression(in_path, title, order=None):
-    '''Simulate compression of a file and print achieved compression ratio.'''
+    """Simulate compression of a file and print achieved compression ratio."""
     with open(in_path, 'rb') as in_file:
-        bytes_ = in_file.read()
-    bw_code = cd.bw_encode(bytes_, order)
+        bs = in_file.read()
+    bw_code = cd.bw_encode(bs, order)
     mtf_code = cd.mtf_enc(bw_code.encoded)
     huff_code = cd.huffman_enc(mtf_code)
     res_text = '======================================\n'
     res_text += title + '\n'
     res_text += 'file: {0}\n'.format(in_path)
-    res_text += 'in size: {0}\n'.format(len(bytes_))
+    res_text += 'in size: {0}\n'.format(len(bs))
     res_text += 'out_size: {0}\n'.format(len(huff_code))
-    res_text += 'ratio: {0}\n'.format(len(huff_code) / len(bytes_))
+    res_text += 'ratio: {0}\n'.format(len(huff_code) / len(bs))
     res_text += '======================================\n'
     print(res_text)
 
 if __name__ == '__main__':
+    start_time = time.time()
     in_dir = '/home/dddsnn/Downloads/calgary/'
     in_file_names = ['bib', 'book1', 'book2', 'geo', 'news', 'obj1', 'obj2',
                      'paper1', 'paper2', 'paper3', 'paper4', 'paper5',
@@ -279,10 +308,10 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         make_aux_data(in_path, wd + 'aux')
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        make_aux_data(in_path, wd + 'aux')
 
     # make transitions
 #     for in_file_name in in_file_names:
@@ -305,20 +334,22 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, metric)
 
     # simulate compression
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-        handpicked_order = [[bytes([c]) for c in handpicked_str]]
-        simulate_compression(in_path, 'aeiou...', handpicked_order)
-        simulate_compression(in_path, 'standard')
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+#         handpicked_order = [[bytes([c]) for c in handpicked_str]]
+#         simulate_compression(in_path, 'aeiou...', handpicked_order)
+#         simulate_compression(in_path, 'standard')
+#
+#         for metric in metrics:
+#             tsplib_tour = [read_tsplib_files(wd + metric + '.tour',
+#                                      wd + metric + '.nodenames')]
+#             with open(wd + metric + '.transitions', 'rb') as trs_file:
+#                 trs = pickle.load(trs_file)
+#             very_greedy_tour = [very_greedy_tsp(trs)]
+#             simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
+#             simulate_compression(in_path, metric + ' very greedy',
+#                                 very_greedy_tour)
 
-        for metric in metrics:
-            tsplib_tour = [read_tsplib_files(wd + metric + '.tour',
-                                     wd + metric + '.nodenames')]
-            with open(wd + metric + '.transitions', 'rb') as trs_file:
-                trs = pickle.load(trs_file)
-            very_greedy_tour = [very_greedy_tsp(trs)]
-            simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
-            simulate_compression(in_path, metric + ' very greedy',
-                                very_greedy_tour)
+    print('time: {0}s'.format(time.time() - start_time))

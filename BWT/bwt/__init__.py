@@ -5,8 +5,7 @@ BWEncodeResult = namedtuple('BWEncodeResult', ['firsts', 'encoded'])
 
 PartialMTFAnalysisResult = namedtuple('PartialMTFAnalysisResult',
                                           ['raw', 'length', 'length_rec',
-                                           'num_chars', 'max_code', 'median',
-                                           'mean'])
+                                           'num_chars', 'max_code'])
 AuxData = namedtuple('AuxData',
                      ['raw', 'firsts', 'bw_code', 'mtf_code', 'bw_subcodes',
                        'partial_mtf_subcodes', 'partial_mtf_analyses',
