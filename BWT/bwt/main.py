@@ -12,34 +12,59 @@ import os.path
 import networkx as nx
 import pickle
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from itertools import repeat
 import time
 
 def make_aux_data(in_path, out_path=None):
     """Create data commonly used in transition analysis."""
     with open(in_path, 'rb') as in_file:
-        bytes_ = in_file.read()
-    raw = bytes_
-    bw_code = cd.bw_encode(bytes_)
+        bs = in_file.read()
+    raw = bs
+    bw_code = cd.bw_encode(bs)
     mtf_code = cd.mtf_enc(bw_code.encoded)
     firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
-    firsts.extend(an.select_sequences(bytes_, 2))
+    firsts.extend(an.select_sequences(bs, 2))
     specializations = cd.specializations(firsts)
-    bw_subcodes = {x:an.bw_block(bw_code, x, specializations) for x in firsts}
-    # first add subcodes for individual bytes
-    partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
-                            for x in bw_subcodes}
-    # now make and add the transitions
-    partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
-                                                         + bw_subcodes[b])
-                               for a in bw_subcodes for b in bw_subcodes
-                               if a != b}
-    partial_mtf_subcodes.update(partial_mtf_transitions)
-    partial_mtf_analyses = {x:an.analyze_partial_mtf(partial_mtf_subcodes[x])
-                            for x in partial_mtf_subcodes}
-    bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
-                        for x in bw_subcodes}
+    # get number of cpus to determine number of threads
+    try:
+        num_cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        num_cpus = 10
+    with ProcessPoolExecutor(max_workers=num_cpus) as ex:
+#         bw_subcodes = {x:an.bw_block(bw_code, x, specializations) for x in firsts}
+        tmp_values = ex.map(an.bw_block, list(repeat(bw_code,
+                                              times=len(firsts))), firsts,
+                        list(repeat(specializations, times=len(firsts))))
+        bw_subcodes = dict(zip(firsts, tmp_values))
+        # first add subcodes for individual bytes
+#         partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
+#                                 for x in bw_subcodes}
+        tmp_values = ex.map(cd.mtf_partial_enc, [bw_subcodes[x]
+                                                 for x in bw_subcodes])
+        partial_mtf_subcodes = dict(zip(bw_subcodes, tmp_values))
+        # now make and add the transitions
+#         partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
+#                                                              + bw_subcodes[b])
+#                                    for a in bw_subcodes for b in bw_subcodes
+#                                    if a != b}
+        tmp_pairs = [(a, b) for a in bw_subcodes for b in bw_subcodes if a != b]
+        tmp_values = ex.map(cd.mtf_partial_enc,
+                            [bw_subcodes[a] + bw_subcodes[b]
+                            for (a, b) in tmp_pairs])
+        partial_mtf_transitions = dict(zip(tmp_pairs, tmp_values))
+        partial_mtf_subcodes.update(partial_mtf_transitions)
+#         partial_mtf_analyses = {x:an.analyze_partial_mtf(partial_mtf_subcodes[x])
+#                                 for x in partial_mtf_subcodes}
+        tmp_values = ex.map(an.analyze_partial_mtf,
+                            [partial_mtf_subcodes[x]
+                             for x in partial_mtf_subcodes])
+        partial_mtf_analyses = dict(zip(partial_mtf_subcodes, tmp_values))
+#         bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
+#                             for x in bw_subcodes}
+        tmp_values = ex.map(an.make_histogram, [bw_subcodes[x]
+                                                for x in bw_subcodes])
+        bw_subhistograms = dict(zip(bw_subcodes, tmp_values))
     huffcode_len = an.huffman_codeword_lengths(mtf_code)
     mtf_mean_steps = {}
     for n in range(256):
