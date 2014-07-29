@@ -304,10 +304,12 @@ def decode_from_bits_static(bits):
     return decode_data(bits, cb)
 
 if __name__ == '__main__':
+    with open('/home/dddsnn/Downloads/calgary/book1', 'rb') as file:
+        bs = file.read(10000)
     s = b'aaaaaaaaaaaaaaaaab'
-    enc = encode_to_bits_static(s)
+    enc = encode_to_bits_static(bs)
     dec = decode_from_bits_static(enc)
-    print(s == dec)
+    print(bs == dec)
 
 #     weights = symbol_frequencies(s)
 #     lengths = codeword_lengths(weights)

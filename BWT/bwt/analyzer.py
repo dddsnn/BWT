@@ -1,15 +1,7 @@
-"""
-Created on 28.05.2014
-
-@author: dddsnn
-"""
-
 import sys
 import queue
 from bwt import *
-import bwt.coder as cd
 import math
-import warnings
 
 def select_sequences(bs, max_len):
     """Select sequences from a file that could benefit from being ordered more
@@ -383,7 +375,6 @@ def metric_badness_mean_penalty(bw_code, first_seq_a, first_seq_b,
     pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
     pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
-    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     mtf_means = aux_data.mtf_mean_steps
 
     badness = 0
@@ -454,7 +445,6 @@ def metric_badness_huff_len(bw_code, first_seq_a, first_seq_b, aux_data):
     pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
     pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
-    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     hf_len = aux_data.huffman_codeword_lengths
 
     badness = 0
@@ -546,7 +536,6 @@ def metric_badness_huff_len_mean_penalty(bw_code, first_seq_a,
     pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
     pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
-    an_b = aux_data.partial_mtf_analyses[first_seq_b]
     hf_len = aux_data.huffman_codeword_lengths
     mtf_means = aux_data.mtf_mean_steps
 

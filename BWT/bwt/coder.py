@@ -1,4 +1,3 @@
-import ctypes as ct
 import warnings
 from bwt import BWEncodeResult
 
@@ -236,43 +235,3 @@ def mtf_enc(bs):
         else:
             raise ValueError(str(byte) + ' is not a byte.')
     return result
-
-def huffman_enc(bs):
-    """Huffman encode a list of bytes."""
-    lib = ct.cdll.LoadLibrary('../libhuffman.so')
-    enc_in_len = len(bs)
-    if enc_in_len == 0:
-        # the library segfaults for length 0. just return empty list
-        return []
-    enc_in = ct.create_string_buffer(enc_in_len)
-    enc_in = ct.cast(enc_in, ct.POINTER(ct.c_ubyte))
-    for i in range(enc_in_len):
-        if bs[i] > 256 or bs[i] < 0:
-            raise ValueError('Byte value not between 0 and 256')
-        enc_in[i] = bs[i]
-    enc_out = ct.pointer(ct.c_ubyte())
-    enc_out_len = ct.c_uint()
-    lib.huffman_encode_memory(enc_in, ct.c_uint(enc_in_len), ct.byref(enc_out),
-                              ct.byref(enc_out_len))
-    result = []
-    for i in range(enc_out_len.value):
-        result.append(enc_out[i])
-    return bytes(result)
-
-def huffman_dec(bs):
-    lib = ct.cdll.LoadLibrary('../libhuffman.so')
-    dec_in_len = len(bs)
-    dec_in = ct.create_string_buffer(dec_in_len)
-    dec_in = ct.cast(dec_in, ct.POINTER(ct.c_ubyte))
-    for i in range(dec_in_len):
-        if bs[i] > 256 or bs[i] < 0:
-            raise ValueError('Byte value not between 0 and 256')
-        dec_in[i] = bs[i]
-    dec_out = ct.pointer(ct.c_ubyte())
-    dec_out_len = ct.c_uint()
-    lib.huffman_decode_memory(dec_in, ct.c_uint(dec_in_len), ct.byref(dec_out),
-                              ct.byref(dec_out_len))
-    result = []
-    for i in range(dec_out_len.value):
-        result.append(dec_out[i])
-    return bytes(result)

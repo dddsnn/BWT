@@ -1,19 +1,11 @@
-"""
-Created on 10.05.2014
-
-@author: dddsnn
-"""
-
 from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
-import multiprocessing
+import bwt.huffman as hf
 import os.path
 import networkx as nx
 import pickle
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
-from itertools import repeat
 import time
 
 def make_aux_data(in_path, out_path=None):
@@ -247,13 +239,13 @@ def simulate_compression(in_path, title, order=None):
         bs = in_file.read()
     bw_code = cd.bw_encode(bs, order)
     mtf_code = cd.mtf_enc(bw_code.encoded)
-    huff_code = cd.huffman_enc(mtf_code)
+    huff_code = hf.encode_to_bits_static(mtf_code)
     res_text = '======================================\n'
     res_text += title + '\n'
     res_text += 'file: {0}\n'.format(in_path)
-    res_text += 'in size: {0}\n'.format(len(bs))
+    res_text += 'in size: {0}\n'.format(len(bs) * 8)
     res_text += 'out_size: {0}\n'.format(len(huff_code))
-    res_text += 'ratio: {0}\n'.format(len(huff_code) / len(bs))
+    res_text += 'ratio: {0}\n'.format(len(huff_code) / (len(bs) * 8))
     res_text += '======================================\n'
     print(res_text)
 
@@ -273,7 +265,7 @@ if __name__ == '__main__':
                'metric_badness', 'metric_badness_huff_len']
     metrics = ['metric_chapin_hst_diff',
                'metric_chapin_kl', 'metric_chapin_inv',
-                'metric_badness',
+               'metric_badness',
                'metric_badness_weighted_mean_penalty']
     metrics = ['metric_chapin_inv', 'metric_badness_weighted_mean_penalty']
 
@@ -283,10 +275,10 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        make_aux_data(in_path, wd + 'aux')
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         make_aux_data(in_path, wd + 'aux')
 
     # make transitions
 #     for in_file_name in in_file_names:
@@ -297,7 +289,7 @@ if __name__ == '__main__':
 #         for metric in metrics:
 #             make_transitions(in_path, metric, aux_data,
 #                             wd + metric + '.transitions')
-#
+
 #     # write tsplib files
 #     for in_file_name in in_file_names:
 #         in_path = in_dir + in_file_name
@@ -309,21 +301,21 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, metric)
 
     # simulate compression
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-#         handpicked_order = [[bytes([c]) for c in handpicked_str]]
-#         simulate_compression(in_path, 'aeiou...', handpicked_order)
-#         simulate_compression(in_path, 'standard')
-#
-#         for metric in metrics:
-#             tsplib_tour = [read_tsplib_files(wd + metric + '.tour',
-#                                      wd + metric + '.nodenames')]
-#             with open(wd + metric + '.transitions', 'rb') as trs_file:
-#                 trs = pickle.load(trs_file)
-#             very_greedy_tour = [very_greedy_tsp(trs)]
-#             simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+        handpicked_order = [[bytes([c]) for c in handpicked_str]]
+        simulate_compression(in_path, 'aeiou...', handpicked_order)
+        simulate_compression(in_path, 'standard')
+
+        for metric in metrics:
+            tsplib_tour = [read_tsplib_files(wd + metric + '.tour',
+                                     wd + metric + '.nodenames')]
+            with open(wd + metric + '.transitions', 'rb') as trs_file:
+                trs = pickle.load(trs_file)
+            very_greedy_tour = [very_greedy_tsp(trs)]
+            simulate_compression(in_path, metric + ' tsplib', tsplib_tour)
 #             simulate_compression(in_path, metric + ' very greedy',
 #                                 very_greedy_tour)
 
