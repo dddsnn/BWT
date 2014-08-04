@@ -247,6 +247,7 @@ def decode_data(bits, codebook):
     # codebook
     current_word = bitstring.Bits()
     while True:
+        # TODO this is inefficient and slow
         while current_word not in cb_inv:
             try:
                 new_bit = bits.read(1)

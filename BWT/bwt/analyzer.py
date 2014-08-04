@@ -216,13 +216,16 @@ def huffman_codeword_lengths(mtf_code):
             tuples.append(NodeDepthTuple(t.node.right, t.depth + 1))
     return lengths
 
-def analyze_transitions(bs, metric, aux_data):
+def analyze_transitions(bs, aux_data, metric, **metric_opts):
     """Analyze all possible transitions between values of a byte string.
 
     Args:
         bs: The input bytes object.
-        metric: The name of the metric function to be used.
         aux_data: The bwt.AuxData object corresponding to bs.
+        metric: The name of the metric to be used. The string 'metric_' will
+            be prepended to this name to get the actual function.
+        metric_opts: A dictionary of options to be passed to the metric function
+            as keyword arguments.
 
     Returns:
         A dictionary mapping each pair of byte values from bs to that
@@ -232,15 +235,16 @@ def analyze_transitions(bs, metric, aux_data):
         # not the correct data
         raise ValueError('Not the correct aux data.')
 
-    an_func = getattr(sys.modules[__name__], metric)
+    an_func = getattr(sys.modules[__name__], 'metric_' + metric)
     bw_code = aux_data.bw_code
     firsts = aux_data.firsts
-    transitions = {(a, b): an_func(bw_code, a, b, aux_data)
+    transitions = {(a, b): an_func(bw_code, a, b, aux_data, **metric_opts)
                    for a in firsts
                    for b in firsts if a != b}
     return transitions
 
-def metric_chapin_hst_diff(bw_code, first_seq_a, first_seq_b, aux_data):
+def metric_chapin_hst_diff(bw_code, first_seq_a, first_seq_b, aux_data,
+                           **kwargs):
     hst_a = aux_data.bw_subhistograms[first_seq_a]
     hst_b = aux_data.bw_subhistograms[first_seq_b]
 
@@ -262,7 +266,7 @@ def metric_chapin_hst_diff(bw_code, first_seq_a, first_seq_b, aux_data):
     metric = sum([d ** 2 for d in log_diffs])
     return metric
 
-def metric_chapin_kl(bw_code, first_seq_a, first_seq_b, aux_data):
+def metric_chapin_kl(bw_code, first_seq_a, first_seq_b, aux_data, **kwargs):
     hst_a = aux_data.bw_subhistograms[first_seq_a]
     hst_b = aux_data.bw_subhistograms[first_seq_b]
 
@@ -277,7 +281,7 @@ def metric_chapin_kl(bw_code, first_seq_a, first_seq_b, aux_data):
     metric = sum(logterms)
     return metric
 
-def metric_chapin_inv(bw_code, first_seq_a, first_seq_b, aux_data):
+def metric_chapin_inv(bw_code, first_seq_a, first_seq_b, aux_data, **kwargs):
     freq_list_a = aux_data.freq_lists[first_seq_a]
     freq_list_b = aux_data.freq_lists[first_seq_b]
 
@@ -286,7 +290,7 @@ def metric_chapin_inv(bw_code, first_seq_a, first_seq_b, aux_data):
     metric = num_inversions(freq_list_a, freq_list_b)
     return metric
 
-def metric_chapin_inv_log(bw_code, first_seq_a, first_seq_b, aux_data):
+def metric_chapin_inv_log(bw_code, first_seq_a, first_seq_b, aux_data, **kwargs):
     inv_metric = metric_chapin_inv(bw_code, first_seq_a, first_seq_b,
                                    aux_data)
     # CHAPIN: log of previous
@@ -296,17 +300,35 @@ def metric_chapin_inv_log(bw_code, first_seq_a, first_seq_b, aux_data):
         metric = math.log(inv_metric)
     return metric
 
-def metric_badness(bw_code, first_seq_a, first_seq_b, aux_data):
+def metric_badness(bw_code, first_seq_a, first_seq_b, aux_data, **kwargs):
     """Compares the ordering of the MTF alphabet the left side of the transition
     "leaves" for the right side with the ideal ordering that would yield the
     greatest compression benefit and gives a badness value for non-ideal
     orderings.
+
+    entropy_code_len assumes lower mtfs get shorter entropy codes (at least for
+    low values)
     """
-    # TODO not taken into account that not only the first byte will be affected
-    # by a new order
     pt_mtf_b = aux_data.partial_mtf_subcodes[first_seq_b]
     pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
+    an_b = aux_data.partial_mtf_analyses[first_seq_b]
+    mtf_means = aux_data.mtf_mean_steps
+    hf_len = aux_data.huffman_codeword_lengths
+
+    # get options from kwargs
+    if 'weighted' in kwargs:
+        weighted = kwargs['weighted']
+    else:
+        weighted = False
+    if 'new_penalty' in kwargs:
+        new_penalty = kwargs['new_penalty']
+    else:
+        new_penalty = False
+    if 'entropy_code_len' in kwargs:
+        entropy_code_len = kwargs['entropy_code_len']
+    else:
+        entropy_code_len = False
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -321,7 +343,8 @@ def metric_badness(bw_code, first_seq_a, first_seq_b, aux_data):
         min_possible += 1
     # length of the mtf code of the left side
     length_left = len(pt_mtf_ab) - len(pt_mtf_b)
-    # the minimal possible code for any new symbols in the combined code
+    # the minimal possible code for any new symbols in the right side of the
+    # combined code
     min_possible = an_a.num_chars
     # now compare the ideal codes with the actual ones and add the difference
     # to the badness
@@ -329,11 +352,40 @@ def metric_badness(bw_code, first_seq_a, first_seq_b, aux_data):
         actual = pt_mtf_ab[i + length_left]
         if actual == -1:
             # new symbol in the combined mtf
-            badness += min_possible - ideal
+            if new_penalty:
+                # give a penalty for a new symbol, if this was requested in the
+                # options
+                assumed_actual = mtf_means[min_possible]
+            else:
+                # otherwise, assume the best possible
+                assumed_actual = min_possible
+            if entropy_code_len:
+                # add the approximation of the actual number of bits this
+                # transition will cost in the entropy coder, if requested in
+                # the options
+                huff_dist = hf_len[assumed_actual] - hf_len[ideal]
+                if huff_dist < 0:
+                    # for high code values, higher codes can accidentally be
+                    # smaller than lower ones. set to 0 if this happens
+                    huff_dist = 0
+                badness += huff_dist
+            else:
+                # otherwise just add the distance
+                badness += assumed_actual - ideal
             # minimal possible code for new symbols is now increased
             min_possible += 1
         else:
-            badness += actual - ideal
+            if entropy_code_len:
+                huff_dist = hf_len[actual] - hf_len[ideal]
+                if huff_dist < 0:
+                    huff_dist = 0
+                badness += huff_dist
+            else:
+                badness += actual - ideal
+    if weighted:
+        # weight the result by the number of symbols in the right side, if this
+        # was requested in the options
+        badness /= an_b.num_chars
     return badness
 
 def metric_badness_weighted(bw_code, first_seq_a, first_seq_b, aux_data):
@@ -390,7 +442,8 @@ def metric_badness_mean_penalty(bw_code, first_seq_a, first_seq_b,
         min_possible += 1
     # length of the mtf code of the left side
     length_left = len(pt_mtf_ab) - len(pt_mtf_b)
-    # the minimal possible code for any new symbols in the combined code
+    # the minimal possible code for any new symbols in the right side of the
+    # combined code
     min_possible = an_a.num_chars
     # now compare the ideal codes with the actual ones and add the difference
     # to the badness
