@@ -1,0 +1,71 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass[a4paper]{scrreprt}
+
+\begin{document}
+
+\chapter{Intro}
+
+-def compression (decompression necessary)
+-explain bw-mtf-entropy, mtf can be skipped
+-explain simple version of bw used here, no rle
+-definitions: context block, symbol (byte in this thesis)
+
+\chapter{Simple Sorting}
+
+\section{Presious Work}
+
+chapin original \cite{chapin1998sort,chapin2001diss}
+
+\section{Intro}
+
+-overwork in context transitions
+-metrics to rank transitions, tsp to find a tour
+-problem finding atsp heuristic, only one i found only supports ints, give 
+	error bounds for the scaling
+-chapins metrics work on the bw code
+-badness works on the mtf of the bw, with modifications attempts to give the
+	number of bits a transition costs:
+	-make a list of the best possible alphabet the left side of a transition
+		can leave for the right side
+	-compare those with the actual codes you get when you mtf encode the left
+		and right side together
+	-the sum of all the differences is the badness
+	-variants:
+		-weighting: divide the badness by the number of new symbols on the right
+			side, so transitions to a larger context don't get a massive
+			penalty
+		-new penalty: new symbols in the right side that didn't appear in the
+			left side need to receive a penalty instead of assuming the minimum
+			possible (mean mtf code for mtf codes of at least the min possible,
+			symbol specific)
+		-entropy code len: don't take the plain difference but the difference
+			between the number of bits the entropy coder will use. this can
+			give you the exact number of bits this transition costs 
+	-describe things needed for an ideal badness metric (new penalty,entropy
+		len, weighting?), then give approximations
+	-another point of non-optimality: which transition to choose as a starting
+		point? need to break up the baddest transition
+	-need need a new penalty dict that is specific for the symbol being encoded
+		i.e. what is the average code for e.g. 'a' given that the minimum
+		possible is n
+
+
+\section{Further Work}
+
+sorting more useful if using a different list update algo? (with slower
+convergence)
+
+\chapter{Exceptions to MTF}
+
+\section{Previous Work}
+
+chapin tried using two list update algos
+\cite{chapin2000switching,chapin2001diss}. also assumes that one algo isn't
+universally the best
+
+wirth, moffat, altered or no list update \cite{wirth2001ranks}
+
+\bibliographystyle{plain}
+\bibliography{bib}
+\end{document}
