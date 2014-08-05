@@ -258,8 +258,18 @@ if __name__ == '__main__':
     in_file_names = ['book1']
     base_work_dir = '/home/dddsnn/tmp/'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-               ('chapin_inv_log', {}), ('badness', {})]
-    metrics = [('badness', {}), ('badness', {'weighted':True})]
+               ('chapin_inv', {'log':True}), ('badness', {}),
+               ('badness', {'weighted':True}),
+               ('badness', {'new_penalty':True}),
+               ('badness', {'weighted':True, 'new_penalty':True}),
+               ('badness', {'entropy_code_len':True}),
+               ('badness', {'entropy_code_len':True, 'weighted':True}),
+               ('badness', {'entropy_code_len':True, 'new_penalty':True}),
+               ('badness', {'entropy_code_len':True, 'weighted':True,
+                            'new_penalty':True})]
+#     metrics = [('badness', {'entropy_code_len':True, 'new_penalty':True}),
+#                ('badness', {'entropy_code_len':True, 'weighted':True,
+#                             'new_penalty':True})]
 
     # make directories
     for in_file_name in in_file_names:
@@ -273,16 +283,16 @@ if __name__ == '__main__':
 #         make_aux_data(in_path, wd + 'aux')
 
     # make transitions
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        with open(wd + 'aux', 'rb') as aux_file:
-            aux_data = pickle.load(aux_file)
-        for metric in metrics:
-            file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
-                                                       if metric[1][arg]]))
-            make_transitions(in_path, aux_data, metric[0],
-                            wd + file_name + '.transitions', **metric[1])
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         with open(wd + 'aux', 'rb') as aux_file:
+#             aux_data = pickle.load(aux_file)
+#         for metric in metrics:
+#             file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
+#                                                        if metric[1][arg]]))
+#             make_transitions(in_path, aux_data, metric[0],
+#                             wd + file_name + '.transitions', **metric[1])
 
 #     # write tsplib files
 #     for in_file_name in in_file_names:
@@ -297,23 +307,23 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, file_name)
 
     # simulate compression
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-#         handpicked_order = [[bytes([c]) for c in handpicked_str]]
-#         simulate_compression(in_path, 'aeiou...', handpicked_order)
-#         simulate_compression(in_path, 'standard')
-#
-#         for metric in metrics:
-#             file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
-#                                                        if metric[1][arg]]))
-#             tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
-#                                      wd + file_name + '.nodenames')]
-#             with open(wd + file_name + '.transitions', 'rb') as trs_file:
-#                 trs = pickle.load(trs_file)
-#             very_greedy_tour = [very_greedy_tsp(trs)]
-#             simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+        handpicked_order = [[bytes([c]) for c in handpicked_str]]
+        simulate_compression(in_path, 'aeiou...', handpicked_order)
+        simulate_compression(in_path, 'standard')
+
+        for metric in metrics:
+            file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
+                                                       if metric[1][arg]]))
+            tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
+                                     wd + file_name + '.nodenames')]
+            with open(wd + file_name + '.transitions', 'rb') as trs_file:
+                trs = pickle.load(trs_file)
+            very_greedy_tour = [very_greedy_tsp(trs)]
+            simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
 #             simulate_compression(in_path, file_name + ' very greedy',
 #                                 very_greedy_tour)
 
