@@ -11,12 +11,12 @@ import time
 def make_aux_data(in_path, out_path=None):
     """Create data commonly used in transition analysis."""
     with open(in_path, 'rb') as in_file:
-        bytes_ = in_file.read()
-    raw = bytes_
-    bw_code = cd.bw_encode(bytes_)
+        bs = in_file.read()
+    raw = bs
+    bw_code = cd.bw_encode(bs)
     mtf_code = cd.mtf_enc(bw_code.encoded)
     firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
-    firsts.extend(an.select_sequences(bytes_, 2))
+    firsts.extend(an.select_sequences(bs, 2))
     specializations = cd.specializations(firsts)
     bw_subcodes = {x:an.bw_block(bw_code, x, specializations) for x in firsts}
     # first add subcodes for individual bytes
@@ -34,13 +34,7 @@ def make_aux_data(in_path, out_path=None):
                         for x in bw_subcodes}
     huffcode_len_complete = an.huffman_codeword_lengths(mtf_code, 'complete')
     huffcode_len_sparse = an.huffman_codeword_lengths(mtf_code, 'sparse')
-    mtf_mean_steps = {}
-    for n in range(256):
-        l = [x for x in mtf_code if x >= n]
-        if l:
-            mtf_mean_steps[n] = np.mean(l)
-        else:
-            mtf_mean_steps[n] = n
+    mtf_mean_steps = an.mtf_mean_steps(bw_code.encoded, mtf_code)
     freq_lists = {}
     for f in bw_subhistograms:
         # turn the histograms into lists and sort in decreasing order of frequency
@@ -268,18 +262,43 @@ if __name__ == '__main__':
     in_file_names = ['book1']
     base_work_dir = '/home/dddsnn/tmp/'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-               ('chapin_inv', {'log':True}), ('badness', {}),
-               ('badness', {'weighted':True}),
-               ('badness', {'new_penalty':True}),
-               ('badness', {'weighted':True, 'new_penalty':True}),
-               ('badness', {'entropy_code_len':True}),
-               ('badness', {'entropy_code_len':True, 'weighted':True}),
-               ('badness', {'entropy_code_len':True, 'new_penalty':True}),
-               ('badness', {'entropy_code_len':True, 'weighted':True,
-                            'new_penalty':True})]
-#     metrics = [('badness', {'entropy_code_len':True, 'new_penalty':True}),
-#                ('badness', {'entropy_code_len':True, 'weighted':True,
-#                             'new_penalty':True})]
+               ('chapin_inv', {'log':True}),
+               ('badness', {'weighted':False, 'new_penalty':False,
+                            'entropy_code_len':False}),
+               ('badness', {'weighted':False, 'new_penalty':False,
+                            'entropy_code_len':'complete'}),
+               ('badness', {'weighted':False, 'new_penalty':False,
+                            'entropy_code_len':'sparse'}),
+               ('badness', {'weighted':False, 'new_penalty':'generic',
+                            'entropy_code_len':False}),
+               ('badness', {'weighted':False, 'new_penalty':'generic',
+                            'entropy_code_len':'complete'}),
+               ('badness', {'weighted':False, 'new_penalty':'generic',
+                            'entropy_code_len':'sparse'}),
+               ('badness', {'weighted':False, 'new_penalty':'specific',
+                            'entropy_code_len':False}),
+               ('badness', {'weighted':False, 'new_penalty':'specific',
+                            'entropy_code_len':'complete'}),
+               ('badness', {'weighted':False, 'new_penalty':'specific',
+                            'entropy_code_len':'sparse'}),
+               ('badness', {'weighted':True, 'new_penalty':False,
+                            'entropy_code_len':False}),
+               ('badness', {'weighted':True, 'new_penalty':False,
+                            'entropy_code_len':'complete'}),
+               ('badness', {'weighted':True, 'new_penalty':False,
+                            'entropy_code_len':'sparse'}),
+               ('badness', {'weighted':True, 'new_penalty':'generic',
+                            'entropy_code_len':False}),
+               ('badness', {'weighted':True, 'new_penalty':'generic',
+                            'entropy_code_len':'complete'}),
+               ('badness', {'weighted':True, 'new_penalty':'generic',
+                            'entropy_code_len':'sparse'}),
+               ('badness', {'weighted':True, 'new_penalty':'specific',
+                            'entropy_code_len':False}),
+               ('badness', {'weighted':True, 'new_penalty':'specific',
+                            'entropy_code_len':'complete'}),
+               ('badness', {'weighted':True, 'new_penalty':'specific',
+                            'entropy_code_len':'sparse'}), ]
 
     # make directories
     for in_file_name in in_file_names:
@@ -287,51 +306,51 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        make_aux_data(in_path, wd + 'aux')
+
+    # make transitions
 #     for in_file_name in in_file_names:
 #         in_path = in_dir + in_file_name
 #         wd = base_work_dir + in_file_name + '/'
-#         make_aux_data(in_path, wd + 'aux')
-
-    # make transitions
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        with open(wd + 'aux', 'rb') as aux_file:
-            aux_data = pickle.load(aux_file)
-        for metric in metrics:
-            file_name = metric_file_name(metric)
-            make_transitions(in_path, aux_data, metric[0],
-                            wd + file_name + '.transitions', **metric[1])
-
-#     # write tsplib files
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        for metric in metrics:
-            file_name = metric_file_name(metric)
-            with open(wd + file_name + '.transitions', 'rb') as trs_file:
-                trs = pickle.load(trs_file)
-            g = make_graph(trs)
-            write_tsplib_files(g, wd, file_name)
-
-    # simulate compression
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-        handpicked_order = [[bytes([c]) for c in handpicked_str]]
-        simulate_compression(in_path, 'aeiou...', handpicked_order)
-        simulate_compression(in_path, 'standard')
-
-        for metric in metrics:
-            file_name = metric_file_name(metric)
-            tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
-                                     wd + file_name + '.nodenames')]
-            with open(wd + file_name + '.transitions', 'rb') as trs_file:
-                trs = pickle.load(trs_file)
-            very_greedy_tour = [very_greedy_tsp(trs)]
-            simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
-#             simulate_compression(in_path, file_name + ' very greedy',
-#                                 very_greedy_tour)
+#         with open(wd + 'aux', 'rb') as aux_file:
+#             aux_data = pickle.load(aux_file)
+#         for metric in metrics:
+#             file_name = metric_file_name(metric)
+#             make_transitions(in_path, aux_data, metric[0],
+#                             wd + file_name + '.transitions', **metric[1])
+#
+# #     # write tsplib files
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         for metric in metrics:
+#             file_name = metric_file_name(metric)
+#             with open(wd + file_name + '.transitions', 'rb') as trs_file:
+#                 trs = pickle.load(trs_file)
+#             g = make_graph(trs)
+#             write_tsplib_files(g, wd, file_name)
+#
+#     # simulate compression
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+#         handpicked_order = [[bytes([c]) for c in handpicked_str]]
+#         simulate_compression(in_path, 'aeiou...', handpicked_order)
+#         simulate_compression(in_path, 'standard')
+#
+#         for metric in metrics:
+#             file_name = metric_file_name(metric)
+#             tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
+#                                      wd + file_name + '.nodenames')]
+#             with open(wd + file_name + '.transitions', 'rb') as trs_file:
+#                 trs = pickle.load(trs_file)
+#             very_greedy_tour = [very_greedy_tsp(trs)]
+#             simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
+# #             simulate_compression(in_path, file_name + ' very greedy',
+# #                                 very_greedy_tour)
 
     print('time: {0}s'.format(time.time() - start_time))

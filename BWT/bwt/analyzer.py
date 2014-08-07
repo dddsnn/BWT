@@ -3,6 +3,7 @@ import sys
 import queue
 from bwt import *
 import math
+import numpy as np
 
 def select_sequences(bs, max_len):
     """Select sequences from a file that could benefit from being ordered more
@@ -201,6 +202,41 @@ def huffman_codeword_lengths(mtf_code, zero_compensation):
                          ' be one of False, \'complete\' or \'sparse\'.'
                          .format(zero_compensation))
 
+def mtf_mean_steps(bw_code, mtf_code):
+    """Make a dictionary of average MTF codes of a minimum value.
+
+    Args:
+        bw_code: BW code as a bytes object.
+        mtf_code: The MTF code of bw_code, a list of integers between 0 and 255.
+
+    Returns:
+        A dictionary containing, for every integer n between 0 and 255, the
+        average of all values in mtf_code that are greater or equal than n.
+        The dictionary also maps tuples (sym, n) to the average of all values
+        in mtf_code that encode the symbol sym from bw_code and are greater or
+        equal than n.
+    """
+    def mean_steps_generic(mtf_code):
+        result = {}
+        for n in range(256):
+            l = [x for x in mtf_code if x >= n]
+            if l:
+                result[n] = np.mean(l)
+            else:
+                result[n] = n
+        return result
+    # first the generic means, not taking into account the underlying symbol
+    result = mean_steps_generic(mtf_code)
+    # now for every underlying symbol, for every mtf code
+    symbol_mtf_dict = {s:[] for s in set(bw_code)}
+    for sym, mtf in zip(bw_code, mtf_code):
+        symbol_mtf_dict[sym].append(mtf)
+    # make the generic means dict for every symbol's list of mtf codes
+    for sym in symbol_mtf_dict:
+        for n, mean in mean_steps_generic(symbol_mtf_dict[sym]).items():
+            result[(sym, n)] = mean
+    return result
+
 def analyze_transitions(bs, aux_data, metric, **metric_opts):
     """Analyze all possible transitions between values of a byte string.
 
@@ -327,6 +363,12 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         weighted = False
     if 'new_penalty' in kwargs:
         new_penalty = kwargs['new_penalty']
+        if new_penalty not in [False, 'generic', 'specific']:
+            raise ValueError('{0} is not a valid value for new_penalty. Must be'
+                             ' one of False, \'generic\' or \'specific\'.'
+                             .format(new_penalty))
+        if new_penalty == 'specific':
+            bw_subcode_b = aux_data.bw_subcodes(first_seq_b)
     else:
         new_penalty = False
     if 'entropy_code_len' in kwargs:
@@ -364,10 +406,14 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         actual = pt_mtf_ab[i + length_left]
         if actual == -1:
             # new symbol in the combined mtf
-            if new_penalty:
-                # give a penalty for a new symbol, if this was requested in the
-                # options
+            if new_penalty == 'generic':
+                # give a generic penalty for a new symbol, if this was requested
+                # in the options
                 assumed_actual = mtf_means[min_possible]
+            elif new_penalty == 'specific':
+                # give a penalty specific to the underlying symbol from the
+                # bw code
+                assumed_actual = mtf_means[(bw_subcode_b[i], min_possible)]
             else:
                 # otherwise, assume the best possible
                 assumed_actual = min_possible
