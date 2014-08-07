@@ -41,7 +41,19 @@ chapin original \cite{chapin1998sort,chapin2001diss}
 			symbol specific)
 		-entropy code len: don't take the plain difference but the difference
 			between the number of bits the entropy coder will use. this can
-			give you the exact number of bits this transition costs 
+			give you the exact number of bits this transition costs
+			approximation with const values for zeros: zeros will all get the
+			same (longest possible) code length, other rare symbols may be
+			affected
+			approximation with curve fitting: zeros will get about the same
+			code lengths as the surrounding symbols, but all of the rarer
+			symbols (>10?) will have (significantly) longer codes as there are
+			more symbols to encode. higher value mtf codes are usually sparse,
+			but can't be sure how many zeros will remain after reordering
+			curve fitting sparse: assume there will be the same amount of
+			zeros after reordering. give zeros the same length as their
+			neighbors, even though there can't be a huffman code with those
+			code lengths and that many symbols 
 	-describe things needed for an ideal badness metric (new penalty,entropy
 		len, weighting?), then give approximations
 	-another point of non-optimality: which transition to choose as a starting

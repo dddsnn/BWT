@@ -32,7 +32,8 @@ def make_aux_data(in_path, out_path=None):
                             for x in partial_mtf_subcodes}
     bw_subhistograms = {x:an.make_histogram(bw_subcodes[x])
                         for x in bw_subcodes}
-    huffcode_len = an.huffman_codeword_lengths(mtf_code)
+    huffcode_len_complete = an.huffman_codeword_lengths(mtf_code, 'complete')
+    huffcode_len_sparse = an.huffman_codeword_lengths(mtf_code, 'sparse')
     mtf_mean_steps = {}
     for n in range(256):
         l = [x for x in mtf_code if x >= n]
@@ -52,7 +53,8 @@ def make_aux_data(in_path, out_path=None):
 
     result = AuxData(raw, firsts, bw_code, mtf_code, bw_subcodes,
                      partial_mtf_subcodes, partial_mtf_analyses,
-                     bw_subhistograms, huffcode_len, mtf_mean_steps, freq_lists)
+                     bw_subhistograms, huffcode_len_complete,
+                     huffcode_len_sparse, mtf_mean_steps, freq_lists)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(result, out_file)
@@ -250,6 +252,14 @@ def simulate_compression(in_path, title, order=None):
     print(res_text)
 
 if __name__ == '__main__':
+    def metric_file_name(metric):
+        elems = [metric[0]]
+        for opt in metric[1]:
+            elems.append(opt)
+            if opt != True:
+                elems.append(metric[1][opt])
+        return '_'.join(elems)
+
     start_time = time.time()
     in_dir = '/home/dddsnn/Dokumente/Studium/BA/calgary/'
     in_file_names = ['bib', 'book1', 'book2', 'geo', 'news', 'obj1', 'obj2',
@@ -283,28 +293,26 @@ if __name__ == '__main__':
 #         make_aux_data(in_path, wd + 'aux')
 
     # make transitions
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         with open(wd + 'aux', 'rb') as aux_file:
-#             aux_data = pickle.load(aux_file)
-#         for metric in metrics:
-#             file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
-#                                                        if metric[1][arg]]))
-#             make_transitions(in_path, aux_data, metric[0],
-#                             wd + file_name + '.transitions', **metric[1])
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        with open(wd + 'aux', 'rb') as aux_file:
+            aux_data = pickle.load(aux_file)
+        for metric in metrics:
+            file_name = metric_file_name(metric)
+            make_transitions(in_path, aux_data, metric[0],
+                            wd + file_name + '.transitions', **metric[1])
 
 #     # write tsplib files
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         for metric in metrics:
-#             file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
-#                                                        if metric[1][arg]]))
-#             with open(wd + file_name + '.transitions', 'rb') as trs_file:
-#                 trs = pickle.load(trs_file)
-#             g = make_graph(trs)
-#             write_tsplib_files(g, wd, file_name)
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        for metric in metrics:
+            file_name = metric_file_name(metric)
+            with open(wd + file_name + '.transitions', 'rb') as trs_file:
+                trs = pickle.load(trs_file)
+            g = make_graph(trs)
+            write_tsplib_files(g, wd, file_name)
 
     # simulate compression
     for in_file_name in in_file_names:
@@ -316,8 +324,7 @@ if __name__ == '__main__':
         simulate_compression(in_path, 'standard')
 
         for metric in metrics:
-            file_name = '_'.join([metric[0]] + sorted([arg for arg in metric[1]
-                                                       if metric[1][arg]]))
+            file_name = metric_file_name(metric)
             tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
                                      wd + file_name + '.nodenames')]
             with open(wd + file_name + '.transitions', 'rb') as trs_file:

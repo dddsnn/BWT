@@ -1,3 +1,4 @@
+import bwt.huffman as hf
 import sys
 import queue
 from bwt import *
@@ -160,7 +161,7 @@ def make_histogram(bs):
         histogram[b] += 1
     return histogram
 
-def huffman_codeword_lengths(mtf_code):
+def huffman_codeword_lengths(mtf_code, zero_compensation):
     """Estimate huffman code word lengths for data similar to the input.
 
     For each byte value, give an estimate of the length in bit of the huffman
@@ -168,53 +169,37 @@ def huffman_codeword_lengths(mtf_code):
     values that usually wouldn't be encoded because they don't occur. Use for
     MTF codes.
     """
-    all_counts = {n:mtf_code.count(n) for n in range(256)}
-    # remove trailing zeroes (not occuring values) and set intermediate zeroes
-    # to 0.2 (to make sure they get longer codes)
-    last = max([n for n in range(256) if all_counts[n] != 0])
-    counts = {k:v for k, v in all_counts.items() if k <= last}
-    # TODO this is ugly
-    Node = namedtuple('Node', ['weight', 'inner', 'left', 'right', 'value'])
-    q = queue.PriorityQueue()
-    for n in range(256):
-        # replace zeroes coming after the last non-zero with 1/1000000 so they
-        # get the longest codes
-        if not n in counts:
-            counts[n] = 0.000001
-        # replace other zeroes with 1/5 so they usually get longer codes than
-        # non-zeroes but shorter ones than the trailing zeroes
-        if counts[n] == 0:
-            counts[n] = 0.2
-        q.put(Node(counts[n], False, (), (), n))
-    while q.qsize() > 1:
-        # get the two lowest items from the queue, make them into a node and put
-        # the node back into the queue with appropriate weight
-        left = q.get()
-        right = q.get()
-        weight = left.weight + right.weight
-        q.put(Node(weight, True, left, right, -1))
-    # now that the queue has only one element, it must be the root of the tree
-    NodeDepthTuple = namedtuple('NodeDepthTuple', ['node', 'depth'])
-    root = q.get()
-    root_tuple = NodeDepthTuple(root, 0)
-    tuples = [root_tuple]
-    lengths = {}
-    # go through the tree from the root and write the lengths for each value
-    # to the dict
-    while tuples:
-        t = tuples.pop()
-        if not t.node.inner:
-            # leaf node: write length into dict and continue
-            lengths[t.node.value] = t.depth
-            if t.depth == 0:
-                # just to make sure there isn't just one value that gets length
-                # zero (that's impossible)
-                lengths[t.node.value] = 1
-        else:
-            # inner node: put children into tuples and increment depth
-            tuples.append(NodeDepthTuple(t.node.left, t.depth + 1))
-            tuples.append(NodeDepthTuple(t.node.right, t.depth + 1))
-    return lengths
+    freqs = hf.symbol_frequencies(mtf_code)
+    if zero_compensation == 'complete':
+        # find the highest value symbol that appears in the mtf code
+        max_nonzero = max(freqs)
+        # give all mtf codes that don't appear in mtf_code and are lower than
+        # max_nonzero weight 1/256, so they get a longer code than any of the
+        # ones actually appearing
+        for i in range(max_nonzero):
+            if i not in freqs:
+                freqs[i] = 1 / 256
+        # give all mtf codes that don't appear and are higher than max_nonzero
+        # weight 1/256**2 so they get even longer codes
+        for i in range(max_nonzero + 1, 256):
+            if i not in freqs:
+                freqs[i] = 1 / (256 ** 2)
+        return hf.codeword_lengths(freqs)
+    elif zero_compensation == 'sparse':
+        cw_lengths = hf.codeword_lengths(freqs)
+        # go through the dict and give each non-occurring symbol the same
+        # codeword length as its predecessor
+        last_len = cw_lengths[min(cw_lengths)]
+        for i in range(256):
+            if i not in cw_lengths:
+                cw_lengths[i] = last_len
+            else:
+                last_len = cw_lengths[i]
+        return cw_lengths
+    else:
+        raise ValueError('{0} is not a valid value for zero_compensation. Must'
+                         ' be one of False, \'complete\' or \'sparse\'.'
+                         .format(zero_compensation))
 
 def analyze_transitions(bs, aux_data, metric, **metric_opts):
     """Analyze all possible transitions between values of a byte string.
@@ -334,7 +319,6 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
     an_b = aux_data.partial_mtf_analyses[first_seq_b]
     mtf_means = aux_data.mtf_mean_steps
-    hf_len = aux_data.huffman_codeword_lengths
 
     # get options from kwargs
     if 'weighted' in kwargs:
@@ -347,6 +331,14 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         new_penalty = False
     if 'entropy_code_len' in kwargs:
         entropy_code_len = kwargs['entropy_code_len']
+        if kwargs['entropy_code_len'] == 'complete':
+            hf_len = aux_data.huffman_codeword_lengths_complete
+        elif kwargs['entropy_code_len'] == 'sparse':
+            hf_len = aux_data.huffman_codeword_lengths_sparse
+        else:
+            raise ValueError('{0} is not a valid value for entropy_code_len. '
+                             'Must be one of False, \'complete\' or \'sparse\'.'
+                             .format(kwargs['entropy_code_len']))
     else:
         entropy_code_len = False
 
