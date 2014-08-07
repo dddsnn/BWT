@@ -259,7 +259,7 @@ def analyze_transitions(bs, aux_data, metric, **metric_opts):
     an_func = getattr(sys.modules[__name__], 'metric_' + metric)
     bw_code = aux_data.bw_code
     firsts = aux_data.firsts
-    transitions = {(a, b): an_func(bw_code, a, b, aux_data, **metric_opts)
+    transitions = {(a, b): an_func(a, b, aux_data, **metric_opts)
                    for a in firsts
                    for b in firsts if a != b}
     return transitions
@@ -368,19 +368,19 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
                              ' one of False, \'generic\' or \'specific\'.'
                              .format(new_penalty))
         if new_penalty == 'specific':
-            bw_subcode_b = aux_data.bw_subcodes(first_seq_b)
+            bw_subcode_b = aux_data.bw_subcodes[first_seq_b]
     else:
         new_penalty = False
     if 'entropy_code_len' in kwargs:
         entropy_code_len = kwargs['entropy_code_len']
+        if entropy_code_len not in [False, 'complete', 'sparse']:
+            raise ValueError('{0} is not a valid value for entropy_code_len. '
+                             'Must be one of False, \'complete\' or \'sparse\'.'
+                             .format(kwargs['entropy_code_len']))
         if kwargs['entropy_code_len'] == 'complete':
             hf_len = aux_data.huffman_codeword_lengths_complete
         elif kwargs['entropy_code_len'] == 'sparse':
             hf_len = aux_data.huffman_codeword_lengths_sparse
-        else:
-            raise ValueError('{0} is not a valid value for entropy_code_len. '
-                             'Must be one of False, \'complete\' or \'sparse\'.'
-                             .format(kwargs['entropy_code_len']))
     else:
         entropy_code_len = False
 

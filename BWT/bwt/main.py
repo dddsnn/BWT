@@ -248,10 +248,11 @@ def simulate_compression(in_path, title, order=None):
 if __name__ == '__main__':
     def metric_file_name(metric):
         elems = [metric[0]]
-        for opt in metric[1]:
+        opts = metric[1]
+        for opt in sorted([o for o in opts if opts[o]]):
             elems.append(opt)
-            if opt != True:
-                elems.append(metric[1][opt])
+            if opts[opt] != True:
+                elems.append(opts[opt])
         return '_'.join(elems)
 
     start_time = time.time()
@@ -298,7 +299,9 @@ if __name__ == '__main__':
                ('badness', {'weighted':True, 'new_penalty':'specific',
                             'entropy_code_len':'complete'}),
                ('badness', {'weighted':True, 'new_penalty':'specific',
-                            'entropy_code_len':'sparse'}), ]
+                            'entropy_code_len':'sparse'})]
+#     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
+#                ('chapin_inv', {'log':True})]
 
     # make directories
     for in_file_name in in_file_names:
@@ -306,10 +309,10 @@ if __name__ == '__main__':
             os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-    for in_file_name in in_file_names:
-        in_path = in_dir + in_file_name
-        wd = base_work_dir + in_file_name + '/'
-        make_aux_data(in_path, wd + 'aux')
+#     for in_file_name in in_file_names:
+#         in_path = in_dir + in_file_name
+#         wd = base_work_dir + in_file_name + '/'
+#         make_aux_data(in_path, wd + 'aux')
 
     # make transitions
 #     for in_file_name in in_file_names:
@@ -334,23 +337,23 @@ if __name__ == '__main__':
 #             write_tsplib_files(g, wd, file_name)
 #
 #     # simulate compression
-#     for in_file_name in in_file_names:
-#         in_path = in_dir + in_file_name
-#         wd = base_work_dir + in_file_name + '/'
-#         handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-#         handpicked_order = [[bytes([c]) for c in handpicked_str]]
-#         simulate_compression(in_path, 'aeiou...', handpicked_order)
-#         simulate_compression(in_path, 'standard')
-#
-#         for metric in metrics:
-#             file_name = metric_file_name(metric)
-#             tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
-#                                      wd + file_name + '.nodenames')]
-#             with open(wd + file_name + '.transitions', 'rb') as trs_file:
-#                 trs = pickle.load(trs_file)
-#             very_greedy_tour = [very_greedy_tsp(trs)]
-#             simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
-# #             simulate_compression(in_path, file_name + ' very greedy',
-# #                                 very_greedy_tour)
+    for in_file_name in in_file_names:
+        in_path = in_dir + in_file_name
+        wd = base_work_dir + in_file_name + '/'
+        handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+        handpicked_order = [[bytes([c]) for c in handpicked_str]]
+        simulate_compression(in_path, 'aeiou...', handpicked_order)
+        simulate_compression(in_path, 'standard')
+
+        for metric in metrics:
+            file_name = metric_file_name(metric)
+            tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
+                                     wd + file_name + '.nodenames')]
+            with open(wd + file_name + '.transitions', 'rb') as trs_file:
+                trs = pickle.load(trs_file)
+            very_greedy_tour = [very_greedy_tsp(trs)]
+            simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
+#             simulate_compression(in_path, file_name + ' very greedy',
+#                                 very_greedy_tour)
 
     print('time: {0}s'.format(time.time() - start_time))
