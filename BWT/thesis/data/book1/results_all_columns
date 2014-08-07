@@ -1,0 +1,254 @@
+output for simulating compression of calgary/book1 for all metrics and sorting
+all columns with the computed order
+version from commit a77d165ee31a98867991510b2f61d3fbd8cbe3ff
+
+
+
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 60 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 32 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 49 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 56 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 55 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 52 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 62 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 10 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 46 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 40 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 57 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 41 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 53 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 45 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 44 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 58 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 43 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 59 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 39 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 50 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 51 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 34 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 54 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 63 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 33 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 48 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 61 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 26 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 0 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 38 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+/home/dddsnn/Code/eclipse_workspace/BWT/BWT/bwt/coder.py:94: UserWarning: symbol or sequence 42 not in the custom order but in the bs.  appending
+  'in the bs.  appending'.format(b))
+======================================
+aeiou...
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2133488
+ratio: 0.34689914161694446
+======================================
+
+======================================
+standard
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2136995
+ratio: 0.34746936994241456
+======================================
+
+======================================
+chapin_hst_diff tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2135934
+ratio: 0.3472968543298329
+======================================
+
+======================================
+chapin_inv tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2135348
+ratio: 0.3472015723798114
+======================================
+
+======================================
+chapin_inv_log tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2135042
+ratio: 0.3471518176414043
+======================================
+
+======================================
+badness tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2139515
+ratio: 0.347879114846944
+======================================
+
+======================================
+badness_entropy_code_len_complete tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2138687
+ratio: 0.3477444843783129
+======================================
+
+======================================
+badness_entropy_code_len_sparse tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2138687
+ratio: 0.3477444843783129
+======================================
+
+======================================
+badness_new_penalty_generic tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2136392
+ratio: 0.3473713238402593
+======================================
+
+======================================
+badness_entropy_code_len_complete_new_penalty_generic tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2133449
+ratio: 0.3468928003267553
+======================================
+
+======================================
+badness_entropy_code_len_sparse_new_penalty_generic tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2133565
+ratio: 0.3469116616001384
+======================================
+
+======================================
+badness_new_penalty_specific tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2133790
+ratio: 0.3469482459666142
+======================================
+
+======================================
+badness_entropy_code_len_complete_new_penalty_specific tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2136202
+ratio: 0.34734043037523527
+======================================
+
+======================================
+badness_entropy_code_len_sparse_new_penalty_specific tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2136155
+ratio: 0.3473327883075714
+======================================
+
+======================================
+badness_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2134629
+ratio: 0.34708466500427304
+======================================
+
+======================================
+badness_entropy_code_len_complete_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2135789
+ratio: 0.34727327773810407
+======================================
+
+======================================
+badness_entropy_code_len_sparse_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2135789
+ratio: 0.34727327773810407
+======================================
+
+======================================
+badness_new_penalty_generic_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2133241
+ratio: 0.3468589801124132
+======================================
+
+======================================
+badness_entropy_code_len_complete_new_penalty_generic_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2131657
+ratio: 0.34660142617242323
+======================================
+
+======================================
+badness_entropy_code_len_sparse_new_penalty_generic_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2135097
+ratio: 0.3471607604865428
+======================================
+
+======================================
+badness_new_penalty_specific_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2132011
+ratio: 0.3466589855756786
+======================================
+
+======================================
+badness_entropy_code_len_complete_new_penalty_specific_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2134804
+ratio: 0.34711311951153206
+======================================
+
+======================================
+badness_entropy_code_len_sparse_new_penalty_specific_weighted tsplib
+file: /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+in size: 6150168
+out_size: 2136358
+ratio: 0.34736579553599184
+======================================
+
+time: 530.353814125061s
+
