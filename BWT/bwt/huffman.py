@@ -206,12 +206,12 @@ def deserialize_codebook(bits):
     for _ in range(num_symbols):
         symbols_list.append(bits.read('uint:8'))
     # make codeword length dict
-    cw_lengths = {}
+    hf_len = {}
     sym_iter = iter(symbols_list)
     for length, num in enumerate(lengths, start=1):
         for _ in range(num):
-            cw_lengths[next(sym_iter)] = length
-    return canonical_codebook(cw_lengths)
+            hf_len[next(sym_iter)] = length
+    return canonical_codebook(hf_len)
 
 def encode_data(bs, codebook):
     """Encode data with a given codebook.

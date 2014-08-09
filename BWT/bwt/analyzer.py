@@ -1,6 +1,5 @@
 import bwt.huffman as hf
 import sys
-import queue
 from bwt import *
 import math
 import numpy as np
@@ -187,16 +186,16 @@ def huffman_codeword_lengths(mtf_code, zero_compensation):
                 freqs[i] = 1 / (256 ** 2)
         return hf.codeword_lengths(freqs)
     elif zero_compensation == 'sparse':
-        cw_lengths = hf.codeword_lengths(freqs)
+        hf_len = hf.codeword_lengths(freqs)
         # go through the dict and give each non-occurring symbol the same
         # codeword length as its predecessor
-        last_len = cw_lengths[min(cw_lengths)]
+        last_len = hf_len[min(hf_len)]
         for i in range(256):
-            if i not in cw_lengths:
-                cw_lengths[i] = last_len
+            if i not in hf_len:
+                hf_len[i] = last_len
             else:
-                last_len = cw_lengths[i]
-        return cw_lengths
+                last_len = hf_len[i]
+        return hf_len
     else:
         raise ValueError('{0} is not a valid value for zero_compensation. Must'
                          ' be one of False, \'complete\' or \'sparse\'.'
@@ -257,7 +256,6 @@ def analyze_transitions(bs, aux_data, metric, **metric_opts):
         raise ValueError('Not the correct aux data.')
 
     an_func = getattr(sys.modules[__name__], 'metric_' + metric)
-    bw_code = aux_data.bw_code
     firsts = aux_data.firsts
     transitions = {(a, b): an_func(a, b, aux_data, **metric_opts)
                    for a in firsts
@@ -346,6 +344,11 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
                 bits used by the entropy coder should be used to compute the
                 badness, rather than the plain difference between the codes.
                 Defaults to False.
+            new_penalty_log: A dictionary to which the predictions of mtf codes
+                that aren't know are written. If it doesn't exist, a new key
+                (first_seq_a, first_seq_b) is created and a dictionary is
+                stored, mapping the position in the block of the right side to
+                the prediction of the mtf code at that position.
 
     Returns:
         A number denoting how "bad" the given transition is.
@@ -383,6 +386,10 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
             hf_len = aux_data.huffman_codeword_lengths_sparse
     else:
         entropy_code_len = False
+    if 'new_penalty_log' in kwargs:
+        new_penalty_log = kwargs['new_penalty_log']
+    else:
+        new_penalty_log = False
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -417,6 +424,11 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
             else:
                 # otherwise, assume the best possible
                 assumed_actual = min_possible
+            # write to the new penalty log if it exists
+            if new_penalty_log != False:
+                if (first_seq_a, first_seq_b) not in new_penalty_log:
+                    new_penalty_log[(first_seq_a, first_seq_b)] = {}
+                new_penalty_log[(first_seq_a, first_seq_b)][i] = assumed_actual
             if entropy_code_len:
                 # add the approximation of the actual number of bits this
                 # transition will cost in the entropy coder, if requested in
