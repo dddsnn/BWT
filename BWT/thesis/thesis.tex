@@ -143,9 +143,73 @@ not handle floating point input, so I have to do some ugly scaling.
 
 %-describe and give error bounds
 
-\subsection{Partial MTF}
+\subsection{Basic Operation}
 
-\subsection{Badness theoretically ideal}
+To explain the badness metric, I need to introduce the partial MTF code that
+will be used on appropriate parts of the BW code. This is not absolutely
+necessary to get the actual badness value, but useful to understand why the
+metric does what it does.
+
+The partial MTF differs from the regular MTF code only in that you start with an
+empty alphabet and encode an escape code (I will use -1) anytime a symbol
+appears that isn't already in the alphabet.
+E.g., the ASCII encoded string ``aabcab'' encoded (byte-wise) with regular MTF
+would yield \([97, 0, 98, 99, 2, 2]\), encoded with partial MTF it would be
+\([-1, 0, -1, -1, 2, 2]\).
+
+Of course this means that it can't be decoded anymore, but we only need it to
+illustrate the operation of the metric.
+
+To compute the badness value of a transition, the metric needs the context
+blocks for both sides of the transition, i.e. the BW code belonging to the
+symbol that's being transitioned from or to, respectively.
+
+It then produces the partial MTF code of the destination block (the right
+side), and of the concatenation of the source and destination block (combined
+partial MTF).
+So it  basically pretends that the two blocks were sorted one after the other,
+and then attempts to give an indication of how bad this would be for the
+compression.
+
+Looking at the partial MTF code of the destination side of the transition, the
+metric assumes that all recurring codes (i.e. those that aren't escape codes)
+are not interesting for the purposes of ranking transitions, as they would be
+the same no matter what comes before or after.\footnote{This assumtion is not
+actually correct, as I will explain in the next section.}
+
+What is of interest, are the escape codes on the right side of the transition,
+because this is where what has previously been encoded can influence the MTF
+codes in the final result. When the input file is finally encoded with the
+(full) MTF, each of the escape symbols will be replaced by an actual code. How
+high those codes are, determines the compression lost by the transition between
+contexts.
+
+The metric compiles the ideal MTF alphabet the left side can ``leave'' for the
+right side.
+
+E.g., the first code in the partial MTF of the right side is necessarily an
+escape code. It would be ideal, if the last symbol of the left side were the
+first symbol of the right side. That would mean that it is at the front of the
+alphabet when the transition occurrs, and so that first escape code would, in
+the full MTF be encoded as a 0 (and smaller codes are better). The ideal full
+MTF code for the next escape code is 1 (since the code 0 in the alphabet has
+already been taken by whatever symbol came before it) etc.
+%example? pseudo code?
+
+The metric can then compare the ideal codes with the actual codes in the
+combined partial MTF at the positions where the escape symbols are in the
+partial MTF of just the right side. The differences between actual code and
+ideal code are summed up to form the badness of the transition.
+
+What can also happen is that the part of the combined partial MTF belonging to
+the right side still contains escape codes. This means that the symbols encoded
+by them do not appear in the left side of the transition at all. In this case,
+the metric assumes the best possible code for that symbol, which is equal to the
+number of escape symbols in the combined partial MTF up to that point (i.e. the
+metric assumes that whatever context block ends up preceding this transition
+will leave an ideal alphabet).
+
+\subsection{Ideality, under some circumstances}
 
 \subsection{Variants}
 
@@ -154,6 +218,10 @@ not handle floating point input, so I have to do some ugly scaling.
 \subsubsection{Predicting MTF codes for new symbols}
 
 \subsubsection{Predicting code lengths of the entropy coder}
+
+\subsection{Results}
+
+%-first column only, all columns, compare
 
 \section{Further Work}
 
