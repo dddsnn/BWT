@@ -1,73 +1,167 @@
-%%This is a very basic article template.
-%%There is just one section and two subsections.
 \documentclass[a4paper]{scrreprt}
 
 \begin{document}
 
 \chapter{Intro}
 
--def compression (decompression necessary)
--explain bw-mtf-entropy, mtf can be skipped
--explain simple version of bw used here, no rle
--definitions: context block, symbol (byte in this thesis)
+%-def compression (decompression necessary)
+%-explain bw-mtf-entropy, mtf can be skipped
+%-explain simple version of bw used here, no rle
+%-definitions: context block, symbol (byte in this thesis)
 
 \chapter{Simple Sorting}
+
+%-overwork in context transitions
+%-metrics to rank transitions, tsp to find a tour
+%-problem finding atsp heuristic, only one i found only supports ints, give 
+%	error bounds for the scaling
+%-chapins metrics work on the bw code
+%-badness works on the mtf of the bw, with modifications attempts to give the
+%	number of bits a transition costs:
+%	-make a list of the best possible alphabet the left side of a transition
+%		can leave for the right side
+%	-compare those with the actual codes you get when you mtf encode the left
+%		and right side together
+%	-the sum of all the differences is the badness
+%	-variants:
+%		-weighting: divide the badness by the number of new symbols on the right
+%			side, so transitions to a larger context don't get a massive
+%			penalty
+%		-new penalty: new symbols in the right side that didn't appear in the
+%			left side need to receive a penalty instead of assuming the minimum
+%			possible (mean mtf code for mtf codes of at least the min possible,
+%			symbol specific)
+%			prediction for the block that ends up as the first will be way off
+%		-entropy code len: don't take the plain difference but the difference
+%			between the number of bits the entropy coder will use. this can
+%			give you the exact number of bits this transition costs
+%			approximation with const values for zeros: zeros will all get the
+%			same (longest possible) code length, other rare symbols may be
+%			affected
+%			approximation with curve fitting: zeros will get about the same
+%			code lengths as the surrounding symbols, but all of the rarer
+%			symbols (>10?) will have (significantly) longer codes as there are
+%			more symbols to encode. higher value mtf codes are usually sparse,
+%			but can't be sure how many zeros will remain after reordering
+%			curve fitting sparse: assume there will be the same amount of
+%			zeros after reordering. give zeros the same length as their
+%			neighbors, even though there can't be a huffman code with those
+%			code lengths and that many symbols 
+%	-describe things needed for an ideal badness metric (new penalty,entropy
+%		len, weighting?), then give approximations
+%	-another point of non-optimality: which transition to choose as a starting
+%		point? need to break up the baddest transition
+%	-need need a new penalty dict that is specific for the symbol being encoded
+%		i.e. what is the average code for e.g. 'a' given that the minimum
+%		possible is n
+%	-new penalty predictor that gives the average code for a specific symbol
+% 		that is new in the block, with a given mimimum
+%	-much higher compression benefit when sorting all columns instead of just
+%		the first one -> a lot of the compression benefit comes from the higher
+% 		order transitions
+%	-after comparing predictions with actual values, do another pass of
+%		calculating transitions, but pass a compensation summand that will be
+%		added to every prediction, so that the average is 0
+
+The reason Burrows-Wheeler based compression algorithms are so effective is that
+the Burrows-Wheeler Transform (BWT) creates sequences of symbols that appear in
+the same context. If the input file is suitable for context-based
+compression, these sequences will consist of only a few distinct symbols with
+lots of repetition, leading to many small numbers in the MTF code.
+
+But any time the context changes, in the Burrows-Wheeler code a new sequence
+begins that is in general not related to the previous one. This incurs some
+overwork\cite{bitner1979heuristics} for the MTF coder as it has to adapt to the
+new context, resulting in larger codes for symbols that were not requested in
+the previous sequence.
+
+The idea behind using different sort orders is to order the contexts in a way
+that reduces the overwork caused by a transition from one context to the next,
+resulting in lower MTF codes and higher compression.
+
+In order to find a suitable reordering, you need to do the BWT on the input data
+to get the context blocks, rank all possible transitions between blocks with a
+cost metric and find a sort order based on the costs. Finding the ordering with
+given costs is an instance of the traveling salesman problem, where the nodes
+are the context blocks and the distances between them are the cost of the
+transition.
 
 \section{Presious Work}
 
 chapin original \cite{chapin1998sort,chapin2001diss}
+merge with next section unless there's more
 
-\section{Intro}
+\section{Chapin's Metrics}
 
--overwork in context transitions
--metrics to rank transitions, tsp to find a tour
--problem finding atsp heuristic, only one i found only supports ints, give 
-	error bounds for the scaling
--chapins metrics work on the bw code
--badness works on the mtf of the bw, with modifications attempts to give the
-	number of bits a transition costs:
-	-make a list of the best possible alphabet the left side of a transition
-		can leave for the right side
-	-compare those with the actual codes you get when you mtf encode the left
-		and right side together
-	-the sum of all the differences is the badness
-	-variants:
-		-weighting: divide the badness by the number of new symbols on the right
-			side, so transitions to a larger context don't get a massive
-			penalty
-		-new penalty: new symbols in the right side that didn't appear in the
-			left side need to receive a penalty instead of assuming the minimum
-			possible (mean mtf code for mtf codes of at least the min possible,
-			symbol specific)
-			prediction for the block that ends up as the first will be way off
-		-entropy code len: don't take the plain difference but the difference
-			between the number of bits the entropy coder will use. this can
-			give you the exact number of bits this transition costs
-			approximation with const values for zeros: zeros will all get the
-			same (longest possible) code length, other rare symbols may be
-			affected
-			approximation with curve fitting: zeros will get about the same
-			code lengths as the surrounding symbols, but all of the rarer
-			symbols (>10?) will have (significantly) longer codes as there are
-			more symbols to encode. higher value mtf codes are usually sparse,
-			but can't be sure how many zeros will remain after reordering
-			curve fitting sparse: assume there will be the same amount of
-			zeros after reordering. give zeros the same length as their
-			neighbors, even though there can't be a huffman code with those
-			code lengths and that many symbols 
-	-describe things needed for an ideal badness metric (new penalty,entropy
-		len, weighting?), then give approximations
-	-another point of non-optimality: which transition to choose as a starting
-		point? need to break up the baddest transition
-	-need need a new penalty dict that is specific for the symbol being encoded
-		i.e. what is the average code for e.g. 'a' given that the minimum
-		possible is n
+aeiou
 
+Chapin uses four different cost metrics, three of which I have reimplemented for
+comparison with my own metric.\footnote{The fourth uses the Kullback-Leibler
+distance, but is unclear about how to deal with zeros in the PMF.} All of them
+analyze the histograms of symbol appearances for every context block and try to
+give a measure of how similar they are. That means: For each context block, make
+a histogram of the number of symbol appearances in that block, i.e. a mapping
+from each possible symbol to the number of times it appears in that block.
+
+In Chapin's first metric, two histograms are compared by taking the
+logarithm\footnote{Chapin doesn't specify to which base. In my implementation,
+I use the natural logarithm.} of all of the symbol counts, calculating, for each
+symbol, the differences between the logarithms in both histograms and summing up
+the squares of all of the differences. The result is used as a measure of
+similarity between the two contexts.
+
+For the second metric, the symbol counts from the histograms are written to a
+list in decreasing order. The cost of a transition is the number of
+inversions\cite{sleator1985amortized} between the two corresponding lists.
+
+The third metric is just the logarithm of the second metric.\footnote{Again, no
+base was specified, I use the natural logarithm.}
+
+-not comparable with my data because of variations in tsp and the actual
+compression algo
+
+\section{The Badness Metric}
+
+My own metric attempts to give a value denoting how bad any given transition is
+and is hence called the badness metric.\footnote{Only after I had given it that
+name and used it all over my code did it come to my mind that assigning a
+badness value is really the purpose of any such metric.} Other than Chapin's
+metrics, it doesn't operate on the BW code, but on the MTF code it generates
+and so, in a sense, is ``closer to the compression''.
+
+
+\subsection{Ugly LKH}
+
+The badness values generated are not necessarily symmetric, i.e. the badness of
+the transition from context x to y is not necessarily the badness of y to x.
+This has the unfortunate consequence that I now need a heuristic solver for the
+asymmetrical traveling salesman problem, which is much harder to find than a
+heuristic for the ``ordinary'' symmetrical TSP. I finally found
+LKH\cite{helsgaun2000lkh}\footnote{http://www.akira.ruc.dk/~keld/research/LKH/},
+which can approximate solutions to the asymmetrical TSP. Unfortunately, it can
+not handle floating point input, so I have to do some ugly scaling.
+
+%-describe and give error bounds
+
+\subsection{Partial MTF}
+
+\subsection{Badness theoretically ideal}
+
+\subsection{Variants}
+
+\subsubsection{Weighting by number of symbols}
+
+\subsubsection{Predicting MTF codes for new symbols}
+
+\subsubsection{Predicting code lengths of the entropy coder}
 
 \section{Further Work}
 
--sorting more useful if using a different list update algo? (with slower
-convergence)
+%-sorting more useful if using a different list update algo? (with slower
+%	convergence)
+%-analyze longer transitions, i.e. not all a->b, a!=b, but all a->b->c, a!=b!=c
+%	etc. reduces necessity for predictions, extreme case: try all possible
+%	orders
 
 \chapter{Exceptions to MTF}
 

@@ -27,7 +27,7 @@ def select_sequences(bs, max_len):
     return []
     return seq[:20]  # TODO
 
-def bw_block(bw_code, seq, specializations):
+def bw_block(code, firsts, seq, specializations):
     """Get a specific BW block.
 
     Gets the block of BW code corresponding to a specific sequence at the
@@ -35,7 +35,10 @@ def bw_block(bw_code, seq, specializations):
     special sequence indicated in the specializations dictionary.
 
     Args:
-        bw_code: The BWEncodeResult to use as a source.
+        code: An iterable from which the result will be selected.
+        firsts: The sequences at the beginning of the BW table. Must have the
+            same length as code and correspond to it. At least one element must
+            contain seq as a substring.
         seq: The sequence at the beginning of the line whose block should be
             returned.
         specializations: A dictionary listing specializations of seq as returned
@@ -46,22 +49,22 @@ def bw_block(bw_code, seq, specializations):
         beginning with any of specializations[seq].
     """
     # first index matching seq
-    left = next(i for i, s in enumerate(bw_code.firsts) if s[:len(seq)] == seq)
+    left = next(i for i, s in enumerate(firsts) if s[:len(seq)] == seq)
     if not specializations[seq]:
         # no specializations for this sequence, straightforward
         right = left + 1
-        while right < len(bw_code.firsts) and bw_code.firsts[right][:len(seq)] == seq:
+        while right < len(firsts) and firsts[right][:len(seq)] == seq:
             right += 1
-        bw_block = bw_code.encoded[left:right]
+        bw_block = code[left:right]
         return bw_block
 
     # reverse specializations so they're sorted from most general to most
     # specific
     spec = reversed(specializations[seq])
     # find the first occurrence of seq in firsts that isn't a specialization
-    while left < len(bw_code.firsts) and bw_code.firsts[left][:len(seq)] == seq:
+    while left < len(firsts) and firsts[left][:len(seq)] == seq:
         for sp in spec:
-            if bw_code.firsts[left][:len(sp)] == sp:
+            if firsts[left][:len(sp)] == sp:
                 # this line is a specialization, so increment left and break to
                 # find another beginning
                 left += 1
@@ -70,26 +73,26 @@ def bw_block(bw_code, seq, specializations):
             # no break, so this line is not a specialization, break out of the
             # while and keep the value of left
             break
-    if not left < len(bw_code.firsts) or bw_code.firsts[left][:len(seq)] != seq:
+    if not left < len(firsts) or firsts[left][:len(seq)] != seq:
         # this means that all elements in firsts starting with seq were
         # specializations, so return an empty bytes object as the bw block
         return b''
 
     # start the bw block
-    bw_block = bytes([bw_code.encoded[left]])
+    bw_block = bytes([code[left]])
 
     # now find the end of the bw block
     right = left + 1
-    while right < len(bw_code.firsts) and bw_code.firsts[right][:len(seq)] == seq:
+    while right < len(firsts) and firsts[right][:len(seq)] == seq:
         for sp in spec:
-            if bw_code.firsts[right][:len(sp)] == sp:
+            if firsts[right][:len(sp)] == sp:
                 # this line is a specialization, so increment right and break
                 right += 1
                 break
         else:
             # no break, so this line is not a specialization, append to the
             # result and increment right
-            bw_block += bytes([bw_code.encoded[right]])
+            bw_block += bytes([code[right]])
             right += 1
     return bw_block
 
@@ -232,8 +235,8 @@ def mtf_mean_steps(bw_code, mtf_code):
         symbol_mtf_dict[sym].append(mtf)
     # make the generic means dict for every symbol's list of mtf codes
     for sym in symbol_mtf_dict:
-        for n, mean in mean_steps_generic(symbol_mtf_dict[sym]).items():
-            result[(sym, n)] = mean
+        for n, mean_dev in mean_steps_generic(symbol_mtf_dict[sym]).items():
+            result[(sym, n)] = mean_dev
     return result
 
 def analyze_transitions(bs, aux_data, metric, **metric_opts):
@@ -347,8 +350,8 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
             new_penalty_log: A dictionary to which the predictions of mtf codes
                 that aren't know are written. If it doesn't exist, a new key
                 (first_seq_a, first_seq_b) is created and a dictionary is
-                stored, mapping the position in the block of the right side to
-                the prediction of the mtf code at that position.
+                stored, mapping the underlying symbol of the BW code for which
+                the MTF code is predicted to the prediction.
 
     Returns:
         A number denoting how "bad" the given transition is.
@@ -388,6 +391,7 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         entropy_code_len = False
     if 'new_penalty_log' in kwargs:
         new_penalty_log = kwargs['new_penalty_log']
+        bw_subcode_b = aux_data.bw_subcodes[first_seq_b]
     else:
         new_penalty_log = False
 
@@ -428,7 +432,8 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
             if new_penalty_log != False:
                 if (first_seq_a, first_seq_b) not in new_penalty_log:
                     new_penalty_log[(first_seq_a, first_seq_b)] = {}
-                new_penalty_log[(first_seq_a, first_seq_b)][i] = assumed_actual
+                new_penalty_log[(first_seq_a,
+                                 first_seq_b)][bw_subcode_b[i]] = assumed_actual
             if entropy_code_len:
                 # add the approximation of the actual number of bits this
                 # transition will cost in the entropy coder, if requested in
