@@ -462,6 +462,8 @@ if __name__ == '__main__':
         freqs = hf.symbol_frequencies(mtf_code)
         hf_len = hf.codeword_lengths(freqs)
 
+        # TODO mean deviation etc for guesses that were larger than the actual
+        # value/smaller than the actual value
         diffs = [c[1] - c[2] for c in comp]
         print('mean differences: {0}'.format(np.mean(diffs)))
         diffs_no_new = [c[1] - c[2] for c in comp
