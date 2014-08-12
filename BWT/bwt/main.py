@@ -182,60 +182,6 @@ def read_tsplib_files(in_path_tour, in_path_names):
             tour.append(names_dict[number])
     return tour
 
-def very_greedy_tsp(transitions):
-    # length of the tour is the number of different symbols
-    length = len(set([x[0]for x in transitions.keys()]))
-    # make a list of transitions from lowest cost to highest
-    sorted_transitions = sorted(transitions.keys(),
-                                key=lambda k: transitions[k])
-    # list of subtours (lists of nodes)
-    parts = []
-    for t in sorted_transitions:
-        # check that neither source nor destination of the transition are
-        # already part of a partial tour
-        inner_nodes = [n for p in parts for n in p[1:-1]]
-        sources = [p[0] for p in parts]
-        dests = [p[-1] for p in parts]
-        # dicts mapping the source of a part to its destination
-        source_dest = {p[0]:p[-1] for p in parts}
-        if t[0] in inner_nodes or t[1] in inner_nodes or t[0] in sources \
-                or t[1] in dests:
-            # already part of a tour, continue
-            continue
-        # transitions are allowed to build onto existing parts, but only in the
-        # right order
-        # two parts being linked together
-        if t[0] in dests and t[1] in sources:
-            # check that it's not making a cycle
-            if t[0] == source_dest[t[1]]:
-                # cycle, continue
-                continue
-            left = next(p for p in parts if p[-1] == t[0])
-            right = next(p for p in parts if p[0] == t[1])
-            left.extend(right)
-            parts.remove(right)
-            continue
-
-        # just one append/prepend to an existing part
-        if t[0] in dests:
-            # find the part and append
-            part = next(p for p in parts if p[-1] == t[0])
-            part.append(t[1])
-            continue
-        if t[1] in sources:
-            # find the part and prepend
-            part = next(p for p in parts if p[0] == t[1])
-            part.insert(0, t[0])
-            continue
-
-        # transition not part of anything, make a new part
-        parts.append([t[0], t[1]])
-
-        # if all the symbols are in parts[0], we're done
-        if len(parts[0]) == length:
-            break
-    return parts[0]
-
 def simulate_compression(in_path, title, orders=None):
     """Simulate compression of a file and print achieved compression ratio."""
     with open(in_path, 'rb') as in_file:
@@ -433,12 +379,7 @@ if __name__ == '__main__':
         file_name = metric_unique_name(metric)
         tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
                                  wd + file_name + '.nodenames')]
-#         with open(wd + file_name + '.transitions', 'rb') as trs_file:
-#             trs = pickle.load(trs_file)
-#         very_greedy_tour = [very_greedy_tsp(trs)]
         simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
-#         simulate_compression(in_path, file_name + ' very greedy',
-#                             very_greedy_tour)
 
     # compare new penalty predictions with actual values
     print('evaluating new symbol penalties for file {0}'.format(in_file_name))
