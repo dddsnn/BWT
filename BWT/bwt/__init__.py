@@ -12,4 +12,4 @@ AuxData = namedtuple('AuxData',
                       'partial_mtf_subcodes', 'partial_mtf_analyses',
                       'bw_subhistograms', 'huffman_codeword_lengths_complete',
                       'huffman_codeword_lengths_sparse', 'mtf_mean_steps',
-                      'freq_lists'])
+                      'mtf_median_steps', 'freq_lists'])

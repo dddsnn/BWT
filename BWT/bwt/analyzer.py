@@ -204,16 +204,19 @@ def huffman_codeword_lengths(mtf_code, zero_compensation):
                          ' be one of False, \'complete\' or \'sparse\'.'
                          .format(zero_compensation))
 
-def mtf_mean_steps(bw_code, mtf_code):
+def mtf_avg_steps(bw_code, mtf_code, avg_func):
     """Make a dictionary of average MTF codes of a minimum value.
 
     Args:
         bw_code: BW code as a bytes object.
         mtf_code: The MTF code of bw_code, a list of integers between 0 and 255.
+        avg_func: The function to be used for averaging the list, e.g. mean or
+            median.
 
     Returns:
         A dictionary containing, for every integer n between 0 and 255, the
-        average of all values in mtf_code that are greater or equal than n.
+        average of all values in mtf_code that are greater or equal than n,
+        averaged by the given function.
         The dictionary also maps tuples (sym, n) to the average of all values
         in mtf_code that encode the symbol sym from bw_code and are greater or
         equal than n.
@@ -223,7 +226,7 @@ def mtf_mean_steps(bw_code, mtf_code):
         for n in range(256):
             l = [x for x in mtf_code if x >= n]
             if l:
-                result[n] = np.mean(l)
+                result[n] = avg_func(l)
             else:
                 result[n] = n
         return result
@@ -360,7 +363,7 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
     pt_mtf_ab = aux_data.partial_mtf_subcodes[(first_seq_a, first_seq_b)]
     an_a = aux_data.partial_mtf_analyses[first_seq_a]
     an_b = aux_data.partial_mtf_analyses[first_seq_b]
-    mtf_means = aux_data.mtf_mean_steps
+    mtf_steps = aux_data.mtf_mean_steps
 
     # get options from kwargs
     if 'weighted' in kwargs:
@@ -369,12 +372,18 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         weighted = False
     if 'new_penalty' in kwargs:
         new_penalty = kwargs['new_penalty']
-        if new_penalty not in [False, 'generic', 'specific']:
+        if new_penalty not in [False, 'generic_mean', 'generic_median',
+                               'specific_mean', 'specific_median']:
             raise ValueError('{0} is not a valid value for new_penalty. Must be'
-                             ' one of False, \'generic\' or \'specific\'.'
+                             ' one of False, \'generic_mean\', \'generic_median'
+                             '\', \'specific_mean\' or \'specific_median\'.'
                              .format(new_penalty))
-        if new_penalty == 'specific':
+        if new_penalty in ['specific_mean', 'specific_median']:
             bw_subcode_b = aux_data.bw_subcodes[first_seq_b]
+        if new_penalty in ['generic_mean', 'specific_mean']:
+            mtf_steps = aux_data.mtf_mean_steps
+        if new_penalty in ['generic_median', 'specific_median']:
+            mtf_steps = aux_data.mtf_median_steps
     else:
         new_penalty = False
     if 'entropy_code_len' in kwargs:
@@ -417,14 +426,14 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         actual = pt_mtf_ab[i + length_left]
         if actual == -1:
             # new symbol in the combined mtf
-            if new_penalty == 'generic':
+            if new_penalty in ['generic_mean', 'generic_median']:
                 # give a generic penalty for a new symbol, if this was requested
                 # in the options
-                assumed_actual = mtf_means[min_possible]
-            elif new_penalty == 'specific':
+                assumed_actual = mtf_steps[min_possible]
+            elif new_penalty in ['specific_mean', 'specific_median']:
                 # give a penalty specific to the underlying symbol from the
                 # bw code
-                assumed_actual = mtf_means[(bw_subcode_b[i], min_possible)]
+                assumed_actual = mtf_steps[(bw_subcode_b[i], min_possible)]
             else:
                 # otherwise, assume the best possible
                 assumed_actual = min_possible

@@ -7,7 +7,7 @@
 %-def compression (decompression necessary)
 %-explain bw-mtf-entropy, mtf can be skipped
 %-explain simple version of bw used here, no rle
-%-definitions: context block, symbol (byte in this thesis)
+%-definitions: context block, symbol (byte in this thesis), natural sort order
 
 \chapter{Simple Sorting}
 
@@ -261,7 +261,7 @@ transition (a,c) is used, the result will be m bits larger than if the
 transition (a,b) was used.
 
 If the badness values of all possible transitions are provided as input to an
-exact TSP solver, it will generate the best possible reordering, for only the
+exact TSP solver, it will generate the best possible reordering for only the
 first column of the BW table.
 
 \subsection{Variants}
@@ -271,15 +271,107 @@ approximate the predictions of the oracles from the previous section.
 
 \subsubsection{Weighting by number of symbols}
 
-
-
-\subsubsection{Predicting MTF codes for new symbols}
+The computed badness value is divided by the number of distinct symbols in the
+right side of the transition (i.e. the number of escape codes in the partial
+MTF). This is supposed to counteract the effect where transitions whose right
+side has many differenct symbols get a much worse rating than if they have less,
+because every escape code leads to some badness being added to the total value.
+The resulting value can be characterized as badness per distinct symbol.
 
 \subsubsection{Predicting code lengths of the entropy coder}
 
+%TODO: arithmetic coding? otherwise just call it Huffman coding
+This modification tries to approximate the behavior of the oracle predicting the
+code lengths of the entropy coder.
+
+When adding to the badness value, instead of adding the difference between the
+actual and the ideal MTF codes, the difference between a prediction of the
+entropy code lengths of the actual and ideal MTF codes is added.
+
+Getting pretty good predictions for a static entropy coder is relatively easy:
+since different reorderings only has a little effect on the produced MTF code,
+the entropy code lengths for any reordering should be within a small margin of
+error of each other. In the case of static Huffman coding, many of the codes for
+low MTF codes may not change at all.
+
+So in order to get the predictions, the input file is simply BW- and MTF encoded
+with the natural sort order and the lengths of the codewords are recorded that
+the entropy coder would use for each MTF code.
+
+There is a problem with this simple method when not all possible MTF codes
+appear in the code that is used to make the predictions. This is usually the
+case with e.g. ASCII text files, which tend to use less than 100 distinct
+symbols\footnote{book1 from the calgary corpus uses 82 different characters:
+upper- and lowercase alphabet, 10 digits and some punctuation and control
+characters.}, so MTF codes above that number only occur once when that symbol is
+fetched to the front of the MTF alphabet, and may not occur at all.
+When a different reordering is chosen, a different MTF alphabet will probably be
+in place at the time such a symbol is requested, and the resulting MTF code may
+be shifted a little. That means that an MTF code for which a prediction exists
+may not be requested at all, but a code that is requested has no prediction.
+
+To solve this, I have developed two strategies, ``complete'' and ``sparse''
+predictions.
+The ``complete'' method modifies the symbol frequencies of the MTF code that are
+used as weights by the entropy coder. Every MTF code that doesn't appear but is
+smaller than the maximum code that does gets the weight \(\frac{1}{256}\). In
+the case of Huffman coding this means that all these codes get a longer or
+equally long entropy code than the codes that actually appear.
+
+All other MTF codes that don't appear, but are greater than the maximum code
+that does get weight \(\frac{1}{256^2}\), so their entropy codes are guaranteed
+to be longer or equal to the ones with weight \(\frac{1}{256}\). The reasoning
+behind this is that these codes are unlikely to appear in any reordering, e.g.
+when encoding an ASCII text file, no codes above 127 will appear.
+
+The ``sparse'' method assumes that no matter the reordering, there will always
+be (high) MTF codes that don't appear (the histogram of MTF codes will be
+sparse for high values).
+It lets the entropy coder compute the codeword lengths with unaltered weights,
+but inserts entropy code lengths for the missing MTF codes manually afterwards.
+Each missing MTF code is assigned the same code length as the next smaller MTF
+code that does appear. The reasoning is that, when MTF codes appear for one
+reordering that didn't for another, they're just shifted around from codes that
+don't appear anymore. Of course this means that there isn't actually an entropy
+code with the code lengths that were predicted (since the predictor has
+manually introduced collisions).
+
+\subsubsection{Predicting MTF codes for new symbols}
+
+This modification aims at approximating the oracle that can predict MTF codes of
+escape codes in the right side of the combined partial MTF of a transition. When
+the metric encounters an escape code, instead of assuming that whatever
+context came before left an ideal alphabet, it can use the prediction, which is
+hopefully more accurate.
+
+Making these predictions is more complicated than those for the entropy code
+lengths. I have again developed two strategies, ``generic'' and ``specific'',
+which assume that the distribution of MTF codes will be similar no matter the
+order.
+
+The generic predictor does a BW encode on the input file with the natural order,
+then encodes this with MTF. It then records, for every possible MTF code, the
+average value of all MTF codes that are greater or equal to it.
+
+The specific predictor also takes into account the underlying BW code. So it
+records, for every possible MTF code and every possible symbol, the average
+value of the MTF codes that are greater or equal to it and that encode the
+underlying symbol.
+
+The averaging function for both predictors can be the arithmetic mean or the
+median.
+
+\subsection{Evaluating the performance of the predictors}
+
+%-for only first col and for all cols
+
+\subsubsection{Feeding back correction values}
+
 \subsection{Results}
 
-%-first column only, all columns, compare
+%-first column only, all columns, with feedback corrections, compare
+
+TODO update in case parameters to LKH change
 
 \section{Further Work}
 

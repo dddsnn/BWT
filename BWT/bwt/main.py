@@ -37,7 +37,8 @@ def make_aux_data(in_path, out_path=None):
                         for x in bw_subcodes}
     huffcode_len_complete = an.huffman_codeword_lengths(mtf_code, 'complete')
     huffcode_len_sparse = an.huffman_codeword_lengths(mtf_code, 'sparse')
-    mtf_mean_steps = an.mtf_mean_steps(bw_code.encoded, mtf_code)
+    mtf_mean_steps = an.mtf_avg_steps(bw_code.encoded, mtf_code, np.mean)
+    mtf_median_steps = an.mtf_avg_steps(bw_code.encoded, mtf_code, np.median)
     freq_lists = {}
     for f in bw_subhistograms:
         # turn the histograms into lists and sort in decreasing order of frequency
@@ -51,7 +52,8 @@ def make_aux_data(in_path, out_path=None):
     result = AuxData(raw, num_symbols, firsts, bw_code, mtf_code, bw_subcodes,
                      partial_mtf_subcodes, partial_mtf_analyses,
                      bw_subhistograms, huffcode_len_complete,
-                     huffcode_len_sparse, mtf_mean_steps, freq_lists)
+                     huffcode_len_sparse, mtf_mean_steps, mtf_median_steps,
+                     freq_lists)
     if out_path:
         with open(out_path, 'xb') as out_file:
             pickle.dump(result, out_file)
@@ -283,59 +285,85 @@ if __name__ == '__main__':
     in_dir = '/home/dddsnn/Dokumente/Studium/BA/calgary/'
     in_file_name = 'book1'
     base_work_dir = '/home/dddsnn/tmp/'
-    metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-               ('chapin_inv', {'log':True})]
+#     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
+#                ('chapin_inv', {'log':True})]
+    metrics = []
     for w in [True, False]:
         for entr_len in [False, 'complete', 'sparse']:
-            for new_pen in [False, 'generic', 'specific']:
+            for new_pen in [False, 'generic_mean', 'generic_median',
+                            'specific_mean', 'specific_median']:
                 opts = {'weighted':w, 'entropy_code_len':entr_len,
                         'new_penalty':new_pen}
                 if new_pen != False:
                     opts['new_penalty_log'] = {}
                 metrics.append(('badness', opts))
-    metrics = [('badness', {'weighted':False, 'new_penalty':False,
-                            'entropy_code_len':False, 'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':False,
-                            'entropy_code_len':'complete', 'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':False,
-                            'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':'generic',
-                            'entropy_code_len':False, 'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':'generic',
-                            'entropy_code_len':'complete',
-                            'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':'generic',
-                            'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':'specific',
-                            'entropy_code_len':False, 'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':'specific',
-                            'entropy_code_len':'complete',
-                            'new_penalty_log':{}}),
-               ('badness', {'weighted':False, 'new_penalty':'specific',
-                            'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':False,
-                            'entropy_code_len':False, 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':False,
-                            'entropy_code_len':'complete', 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':False,
-                            'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':'generic',
-                            'entropy_code_len':False, 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':'generic',
-                            'entropy_code_len':'complete',
-                            'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':'generic',
-                            'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':'specific',
-                            'entropy_code_len':False, 'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':'specific',
-                            'entropy_code_len':'complete',
-                            'new_penalty_log':{}}),
-               ('badness', {'weighted':True, 'new_penalty':'specific',
-                            'entropy_code_len':'sparse', 'new_penalty_log':{}})]
 #     metrics = [('badness', {'weighted':False, 'new_penalty':False,
 #                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':False,
+#                             'entropy_code_len':'complete', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':False,
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'generic',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'generic',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'generic',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'specific',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'specific',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'specific',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':False,
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':False,
+#                             'entropy_code_len':'complete', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':False,
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
 #                ('badness', {'weighted':True, 'new_penalty':'generic',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'generic',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'generic',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'specific',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'specific',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'specific',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}})]
+#     metrics = [('badness', {'weighted':False, 'new_penalty':'generic',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'generic',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'generic',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'specific',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'specific',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':False, 'new_penalty':'specific',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'generic',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'generic',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'generic',
+#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'specific',
+#                             'entropy_code_len':False, 'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'specific',
+#                             'entropy_code_len':'complete',
+#                             'new_penalty_log':{}}),
+#                ('badness', {'weighted':True, 'new_penalty':'specific',
 #                             'entropy_code_len':'sparse', 'new_penalty_log':{}})]
 
     # make directories
@@ -343,43 +371,43 @@ if __name__ == '__main__':
         os.mkdir(base_work_dir + in_file_name)
 
     # make aux data
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    make_aux_data(in_path, wd + 'aux')
+#     in_path = in_dir + in_file_name
+#     wd = base_work_dir + in_file_name + '/'
+#     make_aux_data(in_path, wd + 'aux')
 
     # make transitions
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    with open(wd + 'aux', 'rb') as aux_file:
-        aux_data = pickle.load(aux_file)
-    for metric in metrics:
-        file_name = metric_unique_name(metric)
-        make_transitions(in_path, aux_data, metric[0],
-                        wd + file_name, **metric[1])
-
-    # write tsplib files
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    for metric in metrics:
-        file_name = metric_unique_name(metric)
-        with open(wd + file_name + '.transitions', 'rb') as trs_file:
-            trs = pickle.load(trs_file)
-        g = make_graph(trs)
-        write_tsplib_files(g, wd, file_name)
+#     in_path = in_dir + in_file_name
+#     wd = base_work_dir + in_file_name + '/'
+#     with open(wd + 'aux', 'rb') as aux_file:
+#         aux_data = pickle.load(aux_file)
+#     for metric in metrics:
+#         file_name = metric_unique_name(metric)
+#         make_transitions(in_path, aux_data, metric[0],
+#                         wd + file_name, **metric[1])
+#
+#     # write tsplib files
+#     in_path = in_dir + in_file_name
+#     wd = base_work_dir + in_file_name + '/'
+#     for metric in metrics:
+#         file_name = metric_unique_name(metric)
+#         with open(wd + file_name + '.transitions', 'rb') as trs_file:
+#             trs = pickle.load(trs_file)
+#         g = make_graph(trs)
+#         write_tsplib_files(g, wd, file_name)
 
     # simulate compression
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-    handpicked_order = [[bytes([c]) for c in handpicked_str]]
-    simulate_compression(in_path, 'aeiou...', handpicked_order)
-    simulate_compression(in_path, 'standard')
-
-    for metric in metrics:
-        file_name = metric_unique_name(metric)
-        tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
-                                 wd + file_name + '.nodenames')]
-        simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
+#     in_path = in_dir + in_file_name
+#     wd = base_work_dir + in_file_name + '/'
+#     handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+#     handpicked_order = [[bytes([c]) for c in handpicked_str]]
+#     simulate_compression(in_path, 'aeiou...', handpicked_order)
+#     simulate_compression(in_path, 'standard')
+#
+#     for metric in metrics:
+#         file_name = metric_unique_name(metric)
+#         tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
+#                                  wd + file_name + '.nodenames')]
+#         simulate_compression(in_path, file_name + ' tsplib', tsplib_tour)
 
     # compare new penalty predictions with actual values
     print('evaluating new symbol penalties for file {0}'.format(in_file_name))
@@ -388,7 +416,7 @@ if __name__ == '__main__':
     wd = base_work_dir + in_file_name + '/'
     with open(wd + 'aux', 'rb') as aux_file:
         aux_data = pickle.load(aux_file)
-    for metric in metrics:
+    for metric in [m for m in metrics if 'new_penalty_log' in m[1]]:
         file_name = metric_unique_name(metric)
         with open(wd + file_name + '.new_penalty_log', 'rb') as in_file:
             new_penalty_log = pickle.load(in_file)
@@ -403,85 +431,182 @@ if __name__ == '__main__':
         freqs = hf.symbol_frequencies(mtf_code)
         hf_len = hf.codeword_lengths(freqs)
 
-        # TODO mean deviation etc for guesses that were larger than the actual
-        # value/smaller than the actual value
         diffs = [c[1] - c[2] for c in comp]
+        diffs_ge = [c[1] - c[2] for c in comp if c[2] >= c[1]]
+        diffs_lt = [c[1] - c[2] for c in comp if c[2] < c[1]]
         print('mean differences: {0}'.format(np.mean(diffs)))
+        print('mean differences of pred >= actual: {0}'
+              .format(np.mean(diffs_ge)))
+        print('mean differences of pred < actual: {0}'.format(np.mean(diffs)))
         diffs_no_new = [c[1] - c[2] for c in comp
                         if c[1] < aux_data.num_symbols]
+        diffs_no_new_ge = [c[1] - c[2] for c in comp
+                           if c[1] < aux_data.num_symbols and c[2] >= c[1]]
+        diffs_no_new_lt = [c[1] - c[2] for c in comp
+                           if c[1] < aux_data.num_symbols and c[2] < c[1]]
         print('mean differences w/o new symbols: {0}'
               .format(np.mean(diffs_no_new)))
-        devs = map(abs, diffs)
+        print('mean differences of pred >= actual w/o new symbols: {0}'
+              .format(np.mean(diffs_no_new_ge)))
+        print('mean differences of pred < actual w/o new symbols: {0}'
+              .format(np.mean(diffs_no_new)))
+        devs = list(map(abs, diffs))
+        devs_ge = list(map(abs, diffs_ge))
+        devs_lt = list(map(abs, diffs_lt))
         print('mean deviation: {0}'.format(np.mean(devs)))
-        devs_no_new = map(abs, diffs_no_new)
+        print('mean deviation of pred >= actual: {0}'.format(np.mean(devs_ge)))
+        print('mean deviation of pred < actual: {0}'.format(np.mean(devs_lt)))
+        devs_no_new = list(map(abs, diffs_no_new))
+        devs_no_new_ge = list(map(abs, diffs_no_new_ge))
+        devs_no_new_lt = list(map(abs, diffs_no_new_lt))
         print('mean deviation w/o new symbols: {0}'
               .format(np.mean(devs_no_new)))
-        variance = np.mean(map(lambda x:x ** 2, diffs))
-        variance_no_new = np.mean(map(lambda x:x ** 2, diffs_no_new))
+        print('mean deviation of pred >= actual w/o new symbols: {0}'
+              .format(np.mean(devs_no_new_ge)))
+        print('mean deviation of pred < actual w/o new symbols: {0}'
+              .format(np.mean(devs_no_new_lt)))
+        variance = np.mean(list(map(lambda x:x ** 2, diffs)))
+        variance_ge = np.mean(list(map(lambda x:x ** 2, diffs_ge)))
+        variance_lt = np.mean(list(map(lambda x:x ** 2, diffs_lt)))
+        variance_no_new = np.mean(list(map(lambda x:x ** 2, diffs_no_new)))
+        variance_no_new_ge = np.mean(list(map(lambda x:x ** 2,
+                                              diffs_no_new_ge)))
+        variance_no_new_lt = np.mean(list(map(lambda x:x ** 2,
+                                              diffs_no_new_lt)))
         std_deviation = math.sqrt(variance)
+        std_deviation_ge = math.sqrt(variance_ge)
+        std_deviation_lt = math.sqrt(variance_lt)
         std_deviation_no_new = math.sqrt(variance_no_new)
+        std_deviation_no_new_ge = math.sqrt(variance_no_new_ge)
+        std_deviation_no_new_lt = math.sqrt(variance_no_new_lt)
         print('standard deviation: {0}'.format(std_deviation))
+        print('standard deviation of pred >= actual: {0}'
+              .format(std_deviation_ge))
+        print('standard deviation of pred < actual: {0}'
+              .format(std_deviation_lt))
         print('standard deviation w/o new symbols: {0}'
               .format(std_deviation_no_new))
+        print('standard deviation of pred >= actual w/o new symbols: {0}'
+              .format(std_deviation_no_new_ge))
+        print('standard deviation of pred < actual w/o new symbols: {0}'
+              .format(std_deviation_no_new_lt))
 
         # take huffman codeword length of the closest mtf code to the
         # predicted one
         hf_diffs = [hf_len[c[1]] - hf_len[min(hf_len.keys(),
                                               key=lambda x:abs(x - c[2]))]
                     for c in comp]
+        hf_diffs_ge = [hf_len[c[1]] - hf_len[min(hf_len.keys(),
+                                              key=lambda x:abs(x - c[2]))]
+                    for c in comp if c[2] >= c[1]]
+        hf_diffs_lt = [hf_len[c[1]] - hf_len[min(hf_len.keys(),
+                                              key=lambda x:abs(x - c[2]))]
+                    for c in comp if c[2] < c[1]]
         print('mean differences of entropy codes: {0}'.
               format(np.mean(hf_diffs)))
+        print('mean differences of entropy codes for pred >= actual: {0}'.
+              format(np.mean(hf_diffs_ge)))
+        print('mean differences of entropy codes for pred < actual: {0}'.
+              format(np.mean(hf_diffs_lt)))
         hf_diffs_no_new = [hf_len[c[1]] -
                             hf_len[min(hf_len.keys(),
                                        key=lambda x:abs(x - c[2]))]
                                      for c in comp
                                      if c[1] < aux_data.num_symbols]
+        hf_diffs_no_new_ge = [hf_len[c[1]] -
+                            hf_len[min(hf_len.keys(),
+                                       key=lambda x:abs(x - c[2]))]
+                                     for c in comp
+                                     if c[1] < aux_data.num_symbols
+                                     and c[2] >= c[1]]
+        hf_diffs_no_new_lt = [hf_len[c[1]] -
+                            hf_len[min(hf_len.keys(),
+                                       key=lambda x:abs(x - c[2]))]
+                                     for c in comp
+                                     if c[1] < aux_data.num_symbols
+                                     and c[2] < c[1]]
         print('mean differences of entropy codes w/o new symbols: {0}'
               .format(np.mean(hf_diffs_no_new)))
-        hf_devs = map(abs, hf_diffs)
+        print('mean differences of entropy codes for pred >= actual w/o new '
+              'symbols: {0}'.format(np.mean(hf_diffs_no_new_ge)))
+        print('mean differences of entropy codes for pred < actual w/o new '
+              'symbols: {0}'.format(np.mean(hf_diffs_no_new_lt)))
+        hf_devs = list(map(abs, hf_diffs))
+        hf_devs_ge = list(map(abs, hf_diffs_ge))
+        hf_devs_lt = list(map(abs, hf_diffs_lt))
         print('mean deviation of entropy codes: {0}'.format(np.mean(hf_devs)))
-        hf_devs_no_new = map(abs, hf_diffs_no_new)
+        print('mean deviation of entropy codes for pred >= actual: {0}'
+              .format(np.mean(hf_devs_ge)))
+        print('mean deviation of entropy codes for pred < actual: {0}'
+              .format(np.mean(hf_devs_lt)))
+        hf_devs_no_new = list(map(abs, hf_diffs_no_new))
+        hf_devs_no_new_ge = list(map(abs, hf_diffs_no_new_ge))
+        hf_devs_no_new_lt = list(map(abs, hf_diffs_no_new_lt))
         print('mean deviation of entropy codes w/o new symbols: {0}'
               .format(np.mean(hf_devs_no_new)))
-        hf_variance = map(lambda x:x ** 2, hf_diffs)
-        hf_variance_no_new = map(lambda x:x ** 2, hf_diffs_no_new)
+        print('mean deviation of entropy codes for pred >= actualw/o new '
+              'symbols: {0}'.format(np.mean(hf_devs_no_new_ge)))
+        print('mean deviation of entropy codes for pred < actual w/o new '
+              'symbols: {0}'.format(np.mean(hf_devs_no_new_lt)))
+        hf_variance = np.mean(list(map(lambda x:x ** 2, hf_diffs)))
+        hf_variance_ge = np.mean(list(map(lambda x:x ** 2, hf_diffs_ge)))
+        hf_variance_lt = np.mean(list(map(lambda x:x ** 2, hf_diffs_lt)))
+        hf_variance_no_new = np.mean(list(map(lambda x:x ** 2,
+                                              hf_diffs_no_new)))
+        hf_variance_no_new_ge = np.mean(list(map(lambda x:x ** 2,
+                                              hf_diffs_no_new_ge)))
+        hf_variance_no_new_lt = np.mean(list(map(lambda x:x ** 2,
+                                              hf_diffs_no_new_lt)))
         hf_std_deviation = math.sqrt(hf_variance)
+        hf_std_deviation_ge = math.sqrt(hf_variance_ge)
+        hf_std_deviation_lt = math.sqrt(hf_variance_lt)
         hf_std_deviation_no_new = math.sqrt(hf_variance_no_new)
+        hf_std_deviation_no_new_ge = math.sqrt(hf_variance_no_new_ge)
+        hf_std_deviation_no_new_lt = math.sqrt(hf_variance_no_new_lt)
         print('standard deviation of entropy codes: {0}'
               .format(hf_std_deviation))
+        print('standard deviation of entropy codes for pred >= actual: {0}'
+              .format(hf_std_deviation_ge))
+        print('standard deviation of entropy codes for pred < actual: {0}'
+              .format(hf_std_deviation_lt))
         print('standard deviation of entropy codes w/o new symbols: {0}'
               .format(hf_std_deviation_no_new))
+        print('standard deviation of entropy codes for pred >= actual w/o new '
+              'symbols: {0}'.format(hf_std_deviation_no_new_ge))
+        print('standard deviation of entropy codes for pred < actual w/o new '
+              'symbols: {0}'.format(hf_std_deviation_no_new_lt))
         print()
 
+    # TODO for predictions >= or < actual, as above
     # compare entropy length predictions with actual values
-    print('evaluating entropy code code length predictions for file {0}'
-          .format(in_file_name))
-    print()
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    with open(wd + 'aux', 'rb') as aux_file:
-        aux_data = pickle.load(aux_file)
-    for metric in metrics:
-        if 'entropy_code_len' in metric[1]:
-            if metric[1]['entropy_code_len'] == 'complete':
-                prediction = aux_data.huffman_codeword_lengths_complete
-            elif metric[1]['entropy_code_len'] == 'sparse':
-                prediction = aux_data.huffman_codeword_lengths_sparse
-            else:
-                continue
-        file_name = metric_unique_name(metric)
-        print('metric: {0}'.format(file_name))
-        tsplib_tour = read_tsplib_files(wd + file_name + '.tour',
-                                         wd + file_name + '.nodenames')
-        comp = compare_entropy_len_predictions(aux_data, [tsplib_tour],
-                                               prediction)
-        diffs = [c[1] - c[2] for c in comp]
-        print('mean differences: {0}'.format(np.mean(diffs)))
-        devs = map(abs, diffs)
-        print('mean deviation: {0}'.format(np.mean(devs)))
-        variance = np.mean(map(lambda x:x ** 2, diffs))
-        std_deviation = math.sqrt(variance)
-        print('standard deviation: {0}'.format(std_deviation))
-        print()
+#     print('evaluating entropy code code length predictions for file {0}'
+#           .format(in_file_name))
+#     print()
+#     in_path = in_dir + in_file_name
+#     wd = base_work_dir + in_file_name + '/'
+#     with open(wd + 'aux', 'rb') as aux_file:
+#         aux_data = pickle.load(aux_file)
+#     for metric in metrics:
+#         if 'entropy_code_len' in metric[1]:
+#             if metric[1]['entropy_code_len'] == 'complete':
+#                 prediction = aux_data.huffman_codeword_lengths_complete
+#             elif metric[1]['entropy_code_len'] == 'sparse':
+#                 prediction = aux_data.huffman_codeword_lengths_sparse
+#             else:
+#                 continue
+#         file_name = metric_unique_name(metric)
+#         print('metric: {0}'.format(file_name))
+#         tsplib_tour = read_tsplib_files(wd + file_name + '.tour',
+#                                          wd + file_name + '.nodenames')
+#         comp = compare_entropy_len_predictions(aux_data, [tsplib_tour],
+#                                                prediction)
+#         diffs = [c[1] - c[2] for c in comp]
+#         print('mean differences: {0}'.format(np.mean(diffs)))
+#         devs = list(map(abs, diffs))
+#         print('mean deviation: {0}'.format(np.mean(devs)))
+#         variance = np.mean(list(map(lambda x:x ** 2, diffs)))
+#         std_deviation = math.sqrt(variance)
+#         print('standard deviation: {0}'.format(std_deviation))
+#         print()
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
