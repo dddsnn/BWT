@@ -1,4 +1,6 @@
 \documentclass[a4paper]{scrreprt}
+\usepackage{multirow}
+\usepackage{pifont}
 
 \begin{document}
 
@@ -7,7 +9,8 @@
 %-def compression (decompression necessary)
 %-explain bw-mtf-entropy, mtf can be skipped
 %-explain simple version of bw used here, no rle
-%-definitions: context block, symbol (byte in this thesis), natural sort order
+%-definitions: context block, symbol (byte in this thesis), natural sort order,
+%	transition
 
 \chapter{Simple Sorting}
 
@@ -363,13 +366,128 @@ median.
 
 \subsection{Evaluating the performance of the predictors}
 
+Besides just trying out how much of an impact the different predictors have on
+the final comression rate, we can also evaluate their performance by simply
+comparing the values they predicted with the values that actually appear in the
+reordered MTF code.
+
+\subsubsection{MTF predictor}
+
+For this purpose, every prediction of the MTF code predictor is logged while the
+metric is computed. It is recorded in which transition the prediction happened,
+which symbol of the underlying BW code is encoded by the MTF code that has to be
+predicted, and the predicted value itself.
+
+Once the TSP heuristic has computed the reordering according to the metric,
+only the predictions of the transitions that occur in the reordering can be
+evaluated. The predictions for the first context block in the reordering also
+can't be evaluated, since predictions only happen in the right side of a
+transition, and the first block is not the right side of any transition that
+appears in the reordering.
+
+When we have all the pairs (actual value, predicted value), we can calculate
+indicators that can hint at the quality of the predictions:
+\begin{itemize}
+  \item The mean difference, i.e. the mean over all the (actual - predicted)
+  pairs
+  \item The mean deviation, i.e. the same as the mean difference, only with the
+  absolute of the difference
+  \item The (kind of) standard deviation, i.e. the square root of the mean of
+  the squared differences between actual and predicted value.\footnote{This is
+  not a real standard deviation, because we don't measure it with the distances
+  from a single expected value, since each prediction gets its own actual
+  value, the distance to which matters for the deviation. It's also not clear
+  that the distances follow a normal distribution, and the distribution is much
+  more spread out when the predicted value is less than the actual value than
+  when it is greater.}
+\end{itemize}
+
+The mean difference can tell us how well the predictions are on average and
+should be close to zero. If it is significantly greater or less, it means that
+the predictor is too optimistic or pessimistic, respectively.
+
+The deviations can tell us how far the predictions are spread around the correct
+value, and should be as low as possible.
+
+We can also calculate these indicators with just a subset of the
+(predicted, actual) pairs:
+\begin{itemize}
+  \item We can exclude pairs where the actual value is
+  greater than the number of distinct symbols in the input file. They only occur
+  when a symbol that's never been encoded before needs to be fetched to the
+  front of the MTF alphabet. They occur at most as many times as there are
+  distinct symbols in the input, but they skew the averages significantly.
+  \item We can only take pairs where the prediction is either greater than or
+  equal, or less than the actual value. With this we can learn how far spread
+  out the distribution is to either side.
+\end{itemize}
+
+Finally, we can calculate all these indicators while not using the difference
+between the codes themselves, but between their entropy code lengths. This can
+give us an indication of how big the error is in bits a prediction is likely to
+cause.
+
+\subsubsection{Entropy length predictor}
+
+Evaluating the predictions for the entropy code lengths is less complicated
+since there's no logging involved. The predicted values are easily computed in
+advance. To get the actual values, we simply encode the input file according to
+the computed order until we have the MTF code, and then ask the entropy coder
+for the code lengths for each MTF code.
+
+The resulting pairs of actual and predicted values can be evaluated with the
+same indicators as in the last section.
+
 %-for only first col and for all cols
 
+TODO update in case parameters to LKH change
 \subsubsection{Feeding back correction values}
 
 \subsection{Results}
 
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Metric & weighted & entropy length prediction & MTF prediction & out size all
+columns \\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139673 \\
+\cline{2-5} & \ding{55} & \ding{55} & generic mean & 2138203 \\ \cline{2-5}
+& \ding{55} & \ding{55} & generic median & 2142013 \\ \cline{2-5}
+& \ding{55} & \ding{55} & specific mean & 2134390 \\ \cline{2-5}
+& \ding{55} & \ding{55} & specific median & 2138527 \\ \cline{2-5}
+& \ding{55} & complete & \ding{55} & 2139013 \\ \cline{2-5}
+& \ding{55} & complete & generic mean & 2133935 \\ \cline{2-5}
+& \ding{55} & complete & generic median & 2135820 \\ \cline{2-5}
+& \ding{55} & complete & specific mean & 2135364 \\ \cline{2-5}
+& \ding{55} & complete & specific median & 2140979 \\ \cline{2-5}
+& \ding{55} & sparse & \ding{55} & 2139013 \\ \cline{2-5}
+& \ding{55} & sparse & generic mean & 2133644 \\ \cline{2-5}
+& \ding{55} & sparse & generic median & 2135622 \\ \cline{2-5}
+& \ding{55} & sparse & specific mean & 2136052 \\ \cline{2-5}
+& \ding{55} & sparse & specific median & 2138426 \\ \cline{2-5}
+& \ding{51} & \ding{55} & \ding{55} & 2135080 \\ \cline{2-5}
+& \ding{51} & \ding{55} & generic mean & 2133012 \\ \cline{2-5}
+& \ding{51} & \ding{55} & generic median & 2134234 \\ \cline{2-5}
+& \ding{51} & \ding{55} & specific mean & 2132082 \\ \cline{2-5}
+& \ding{51} & \ding{55} & specific median & 2140333 \\ \cline{2-5}
+& \ding{51} & complete & \ding{55} & 2136412 \\ \cline{2-5}
+& \ding{51} & complete & generic mean & 2134734 \\ \cline{2-5}
+& \ding{51} & complete & generic median & 2134390 \\ \cline{2-5}
+& \ding{51} & complete & specific mean & 2134469 \\ \cline{2-5}
+& \ding{51} & complete & specific median & 2136416 \\ \cline{2-5}
+& \ding{51} & sparse & \ding{55} & 2136417 \\ \cline{2-5}
+& \ding{51} & sparse & generic mean & 2135061 \\ \cline{2-5}
+& \ding{51} & sparse & generic median & 2134390 \\ \cline{2-5}
+& \ding{51} & sparse & specific mean & 2135461 \\ \cline{2-5}
+& \ding{51} & sparse & specific median & 2134783 \\ \hline
+\multicolumn{4}{|c|}{standard} & 2136995 \\ \hline
+\multicolumn{4}{|c|}{aeiou} & 2133488 \\ \hline
+\multicolumn{4}{|c|}{Chapin hst diff} & 2135905 \\ \hline
+\multicolumn{4}{|c|}{Chapin inv} & 2135217 \\ \hline
+\multicolumn{4}{|c|}{Chapin inv log} & x \\ \hline
+\end{tabular}
+
 %-first column only, all columns, with feedback corrections, compare
+%-chapin's metrics in my impl not quite as good as handpicked, same in his
 
 TODO update in case parameters to LKH change
 
