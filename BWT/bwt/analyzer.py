@@ -61,7 +61,7 @@ def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):
             continue
         # get the block of mtf-bw tuples corresponding to the right side of the
         # transition
-        block = an.bw_block(bw_mtf, bw_code.firsts, trs[1], spec)
+        block = bw_block(bw_mtf, bw_code.firsts, trs[1], spec)
         predictions = new_penalty_log[trs]
         # for every prediction, record the current sequence, the actual code
         # and the prediction
@@ -309,26 +309,22 @@ def mtf_avg_steps(bw_code, mtf_code, avg_func):
             result[(sym, n)] = mean_dev
     return result
 
-def analyze_transitions(bs, aux_data, metric, **metric_opts):
+def analyze_transitions(aux_data, metric):
     """Analyze all possible transitions between values of a byte string.
 
     Args:
-        bs: The input bytes object.
-        aux_data: The bwt.AuxData object corresponding to bs.
-        metric: The name of the metric to be used. The string 'metric_' will
-            be prepended to this name to get the actual function.
-        metric_opts: A dictionary of options to be passed to the metric function
-            as keyword arguments.
+        aux_data: The bwt.AuxData object for the input.
+        metric: A tuple of metric name and a dictionary with metric options
+        passed to the metric function as keyword arguments. The string 'metric_'
+        will be prepended to this name to get the actual function.
 
     Returns:
         A dictionary mapping each pair of byte values from bs to that
         transition's weight according to the given metric.
     """
-    if aux_data.raw != bs:
-        # not the correct data
-        raise ValueError('Not the correct aux data.')
-
-    an_func = getattr(sys.modules[__name__], 'metric_' + metric)
+    metric_name = metric[0]
+    metric_opts = metric[1]
+    an_func = getattr(sys.modules[__name__], 'metric_' + metric_name)
     firsts = aux_data.firsts
     transitions = {(a, b): an_func(a, b, aux_data, **metric_opts)
                    for a in firsts

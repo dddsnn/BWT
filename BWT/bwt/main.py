@@ -2,7 +2,6 @@ from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
 import bwt.huffman as hf
-import os.path as pt
 import networkx as nx
 import pickle
 import numpy as np
@@ -10,9 +9,9 @@ import time
 import math
 import os
 
-def make_aux_data(in_path, out_path=None):
+def make_aux_data(work_dir, in_file_path):
     """Create data commonly used in transition analysis."""
-    with open(in_path, 'rb') as in_file:
+    with open(in_file_path, 'rb') as in_file:
         bs = in_file.read()
     raw = bs
     num_symbols = len(set(bs))
@@ -55,115 +54,112 @@ def make_aux_data(in_path, out_path=None):
                      bw_subhistograms, huffcode_len_complete,
                      huffcode_len_sparse, mtf_mean_steps, mtf_median_steps,
                      freq_lists)
-    if out_path:
-        with open(out_path, 'xb') as out_file:
-            pickle.dump(result, out_file)
+    with open(work_dir + 'aux', 'xb') as out_file:
+        pickle.dump(result, out_file)
     return result
 
-def make_transitions(in_path, aux_data, metric, out_path=None, **metric_opts):
+def make_transitions(work_dir, metrics):
     """Create the transition analysis for a file."""
-    with open(in_path, 'rb') as in_file:
-        bs = in_file.read()
-    trs = an.analyze_transitions(bs, aux_data, metric, **metric_opts)
-    if out_path:
-        with open(out_path + '.transitions', 'xb') as out_file:
+    with open(work_dir + 'aux', 'rb') as aux_file:
+        aux_data = pickle.load(aux_file)
+    for metric in metrics:
+        metric_name = metric_unique_name(metric)
+        if os.path.exists(work_dir + metric_name):
+            print('skipping transitions for {0}, because file exists'.
+                  format(metric_name))
+            continue
+        metric_opts = metric[1]
+        trs = an.analyze_transitions(aux_data, metric)
+        with open(work_dir + metric_name + '.transitions', 'xb') as out_file:
             pickle.dump(trs, out_file)
-    # write the new penalty log if it exists
-    if out_path and 'new_penalty_log' in metric_opts:
-        with open(out_path + '.new_penalty_log', 'xb') as out_file:
-            pickle.dump(metric_opts['new_penalty_log'], out_file)
-    return trs
+        # write the new penalty log if it exists
+        if 'new_penalty_log' in metric_opts:
+            with open(work_dir + metric_name + '.new_penalty_log',
+                      'xb') as out_file:
+                pickle.dump(metric_opts['new_penalty_log'], out_file)
 
-def make_graph(transitions, out_path=None):
-    g = nx.DiGraph()
-    edges = []
-    for a, b in transitions.keys():
-        edges.append((a, b, {'cost':transitions[(a, b)]}))
-    g.add_edges_from(edges)
-    if out_path:
-        with open(out_path, 'xb') as out_file:
-            pickle.dump(g, out_file)
-    return g
-
-def write_tsplib_files(graph, out_dir_path, file_name):
+def write_tsplib_files(work_dir, metrics):
     """Create and write the .tsp and .par files for the LKH program as well as
     the file mapping the LKH node ids back to the node names."""
-    num_nodes = len(graph.nodes())
-    # name mapping part
-    # make dicts nodename->number and number->nodename for the tsp file
-    names_to_numbers = numbers_to_names = {}
-    for i, n in enumerate(graph.nodes(), 1):
-        names_to_numbers[n] = i
-        numbers_to_names[i] = n
+    file_names = [metric_unique_name(metric) for metric in metrics]
+    for file_name in file_names:
+        with open(work_dir + file_name + '.transitions', 'rb') as trs_file:
+            transitions = pickle.load(trs_file)
+        # name mapping part
+        # make dicts nodename->number and number->nodename for the tsp file
+        nodes = set([t[0] for t in transitions])
+        num_nodes = len(nodes)
+        names_to_numbers = numbers_to_names = {}
+        for i, n in enumerate(sorted(nodes), 1):
+            names_to_numbers[n] = i
+            numbers_to_names[i] = n
 
-    # tsp file part
-    # start with the header
-    tsp_text = 'NAME: bwt\n'
-    tsp_text += 'TYPE: ATSP\n'
-    tsp_text += 'DIMENSION: {0}\n'.format(num_nodes)
-    tsp_text += 'EDGE_WEIGHT_TYPE: EXPLICIT\n'
-    tsp_text += 'EDGE_WEIGHT_FORMAT: FULL_MATRIX\n'
-    tsp_text += 'EDGE_WEIGHT_SECTION\n'
+        # tsp file part
+        # start with the header
+        tsp_text = 'NAME: bwt\n'
+        tsp_text += 'TYPE: ATSP\n'
+        tsp_text += 'DIMENSION: {0}\n'.format(num_nodes)
+        tsp_text += 'EDGE_WEIGHT_TYPE: EXPLICIT\n'
+        tsp_text += 'EDGE_WEIGHT_FORMAT: FULL_MATRIX\n'
+        tsp_text += 'EDGE_WEIGHT_SECTION\n'
 
-    MAX_INT = 2 * 10 ** 7  # the maximum value to write to the tsp file
-    INFINITY = 2147483648  # value to signify infinity in the tsp file
-    # need to scale up all floats to integers
-    # dictionary edge->cost
-    costs = nx.get_edge_attributes(graph, 'cost')
-    # min and max edge costs, and the ratio
-    costs_nonzero = [abs(c) for c in costs.values() if c != 0]
-    if costs_nonzero:
-        min_cost = min(costs_nonzero)
-    else:
-        min_cost = 0
-    max_cost = max([abs(c) for c in costs.values()])
-    if min_cost:
-        ratio = max_cost / min_cost
-    else:
-        ratio = float('inf')
-    print('min value: {0}'.format(min_cost))
-    print('max value: {0}'.format(max_cost))
-    print('ratio: {0}'.format(ratio))
-    # choose the scaling factor so that the max cost is close to MAX_INT
-    if max_cost:
-        factor = int((1 / max_cost) * MAX_INT)
-    else:
-        # in case everything is 0
-        factor = 0
-    print('scaling with factor {0}'.format(factor))
-    print()
+        MAX_INT = 2 * 10 ** 7  # the maximum value to write to the tsp file
+        INFINITY = 2147483648  # value to signify infinity in the tsp file
+        # need to scale up all floats to integers
+        # min and max trs costs, and the ratio
+        costs_nonzero = [abs(c) for c in transitions.values() if c != 0]
+        if costs_nonzero:
+            min_cost = min(costs_nonzero)
+        else:
+            min_cost = 0
+        max_cost = max([abs(c) for c in transitions.values()])
+        if min_cost:
+            ratio = max_cost / min_cost
+        else:
+            ratio = float('inf')
+        print('min value: {0}'.format(min_cost))
+        print('max value: {0}'.format(max_cost))
+        print('ratio: {0}'.format(ratio))
+        # choose the scaling factor so that the max cost is close to MAX_INT
+        if max_cost:
+            factor = int((1 / max_cost) * MAX_INT)
+        else:
+            # in case everything is 0
+            factor = 0
+        print('scaling with factor {0}'.format(factor))
+        print()
 
-    max_len = len(str(INFINITY))  # length of the longest number
-    # append the scaled cost value matrix to the tsp text
-    for irow in range(1, num_nodes + 1):
-        for icol in range(1, num_nodes + 1):
-            if irow == icol:
-                # node to itself -> infinity
-                write_num = INFINITY
-            else:
-                edge = (numbers_to_names[irow], numbers_to_names[icol])
-                write_num = int(costs[edge] * factor)
-            # leave 2 characters spacing
-            space = ' ' * (max_len - len(str(write_num)) + 2)
-            # append the string
-            tsp_text += space + str(write_num)
-        # newline at the end of a row
-        tsp_text += '\n'
-    # EOF at the end of the file
-    tsp_text += 'EOF'
+        max_len = len(str(INFINITY))  # length of the longest number
+        # append the scaled cost value matrix to the tsp text
+        for irow in range(1, num_nodes + 1):
+            for icol in range(1, num_nodes + 1):
+                if irow == icol:
+                    # node to itself -> infinity
+                    write_num = INFINITY
+                else:
+                    trs = (numbers_to_names[irow], numbers_to_names[icol])
+                    write_num = int(transitions[trs] * factor)
+                # leave 2 characters spacing
+                space = ' ' * (max_len - len(str(write_num)) + 2)
+                # append the string
+                tsp_text += space + str(write_num)
+            # newline at the end of a row
+            tsp_text += '\n'
+        # EOF at the end of the file
+        tsp_text += 'EOF'
 
-    # par file part
-    par_text = 'PROBLEM_FILE = {0}\n'.format(file_name + '.atsp')
-    par_text += 'RUNS = 100\n'
-    par_text += 'TOUR_FILE = ' + file_name + '.tour'
+        # par file part
+        par_text = 'PROBLEM_FILE = {0}\n'.format(file_name + '.atsp')
+        par_text += 'RUNS = 100\n'
+        par_text += 'TOUR_FILE = ' + file_name + '.tour'
 
-    # write the files
-    with open(out_dir_path + file_name + '.atsp', 'xt') as tsp_file:
-        tsp_file.write(tsp_text)
-    with open(out_dir_path + file_name + '.par', 'xt') as par_file:
-        par_file.write(par_text)
-    with open(out_dir_path + file_name + '.nodenames', 'xb') as names_file:
-        pickle.dump(numbers_to_names, names_file)
+        # write the files
+        with open(work_dir + file_name + '.atsp', 'xt') as tsp_file:
+            tsp_file.write(tsp_text)
+        with open(work_dir + file_name + '.par', 'xt') as par_file:
+            par_file.write(par_text)
+        with open(work_dir + file_name + '.nodenames', 'xb') as names_file:
+            pickle.dump(numbers_to_names, names_file)
 
 def read_tsplib_files(in_path_tour, in_path_names):
     with open(in_path_tour, 'rt') as tour_file:
@@ -185,21 +181,165 @@ def read_tsplib_files(in_path_tour, in_path_names):
             tour.append(names_dict[number])
     return tour
 
-def simulate_compression(in_path, title, orders=None):
-    """Simulate compression of a file and print achieved compression ratio."""
-    with open(in_path, 'rb') as in_file:
+def print_simulated_compression_results(work_dir, metrics, in_file_path):
+    """Simulate compression of a file and print achieved compression."""
+    def final_bit_len(bs, orders):
+        bw_code = cd.bw_encode(bs, orders)
+        mtf_code = cd.mtf_enc(bw_code.encoded)
+        huff_code = hf.encode_to_bits_static(mtf_code)
+        return len(huff_code)
+    with open(in_file_path, 'rb') as in_file:
         bs = in_file.read()
-    bw_code = cd.bw_encode(bs, orders)
-    mtf_code = cd.mtf_enc(bw_code.encoded)
-    huff_code = hf.encode_to_bits_static(mtf_code)
-    res_text = '======================================\n'
-    res_text += title + '\n'
-    res_text += 'file: {0}\n'.format(in_path)
-    res_text += 'in size: {0}\n'.format(len(bs) * 8)
-    res_text += 'out size: {0}\n'.format(len(huff_code))
-    res_text += 'ratio: {0}\n'.format(len(huff_code) / (len(bs) * 8))
-    res_text += '======================================\n'
-    print(res_text)
+    handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
+    handpicked_orders = [[bytes([c]) for c in handpicked_str]]
+    natural_order = [bytes([x]) for x in range(256)]
+    print('simulating compression for file {0}'.format(in_file_path))
+    print('in size: {0}'.format(len(bs) * 8))
+    print()
+    print('natural order: {0}'.format(final_bit_len(bs, [natural_order])))
+    print()
+    print('handpicked order aeiou...:')
+    print('all columns      : {0}'.format(final_bit_len(bs, handpicked_orders)))
+    handpicked_orders.append(natural_order)
+    print('first column only: {0}'.format(final_bit_len(bs, handpicked_orders)))
+    print()
+    for metric in metrics:
+        file_name = metric_unique_name(metric)
+        print('{0}:'.format(file_name))
+        orders = [read_tsplib_files(work_dir + file_name + '.tour',
+                                   work_dir + file_name + '.nodenames')]
+        print('all columns      : {0}'.format(final_bit_len(bs, orders)))
+        orders.append(natural_order)
+        print('first column only: {0}'.format(final_bit_len(bs, orders)))
+        print()
+
+def print_mtf_prediction_evaluations(work_dir, metrics):
+    with open(work_dir + 'aux', 'rb') as aux_file:
+        aux_data = pickle.load(aux_file)
+    for metric in metrics:
+        file_name = metric_unique_name(metric)
+        with open(work_dir + file_name + '.new_penalty_log', 'rb') as in_file:
+            new_penalty_log = pickle.load(in_file)
+        print('metric: {0}'.format(file_name))
+        tsplib_tour = read_tsplib_files(work_dir + file_name + '.tour',
+                                         work_dir + file_name + '.nodenames')
+        natural_order = [bytes([x]) for x in range(256)]
+
+        for all_cols in [False, True]:
+            if all_cols:
+                print('  using the computed order for all columns:')
+                orders = [tsplib_tour]
+            else:
+                print('  using the computed order for only the first column:')
+                orders = [tsplib_tour, natural_order]
+            comp = an.compare_new_penalty_predictions(aux_data, orders,
+                                                      new_penalty_log)
+            mtf_code = cd.mtf_enc(cd.bw_encode(aux_data.raw, orders).encoded)
+            freqs = hf.symbol_frequencies(mtf_code)
+            hf_len = hf.codeword_lengths(freqs)
+            for subst_hf in [False, True]:
+                if subst_hf:
+                    print('    error of huffman codes:')
+                else:
+                    print('    error of mtf codes:')
+                for filter_new in[False, True]:
+                    if filter_new:
+                        print('      not considering errors where the actual '
+                              'value fetches a new symbol to the front:')
+                    else:
+                        print('      considering all errors:')
+                    for filter_sides in ['all', 'ge', 'lt']:
+                        if filter_sides == 'all':
+                            print('        considering both sides of the actual '
+                                  'value:')
+                        elif filter_sides == 'ge':
+                            print('        considering values where the '
+                                  'prediction is >= the actual value:')
+                        elif filter_sides == 'lt':
+                            print('        considering values where the '
+                                  'prediction is < the actual value:')
+                        if filter_sides == 'ge':
+                            comp = [c for c in comp if c[2] >= c[1]]
+                        elif filter_sides == 'lt':
+                            comp = [c for c in comp if c[2] < c[1]]
+                        if filter_new:
+                            comp = [c for c in comp
+                                    if c[1] < aux_data.num_symbols]
+                        if subst_hf:
+                            comp = [(c[0], hf_len[c[1]],
+                                     hf_len[min(hf_len.keys(),
+                                           key=lambda x:abs(x - c[2]))])
+                                         for c in comp]
+                        if not comp:
+                            print('          no data matches these criteria')
+                            continue
+                        diffs = [c[1] - c[2] for c in comp]
+                        devs = list(map(abs, diffs))
+                        variance = np.mean(list(map(lambda x:x ** 2, diffs)))
+                        std_deviation = math.sqrt(variance)
+                        print('          mean differences: {0}'
+                              .format(np.mean(diffs)))
+                        print('          mean deviation: {0}'
+                              .format(np.mean(devs)))
+                        print('          standard deviation: {0}'
+                              .format(std_deviation))
+        print()
+
+def print_entropy_length_prediction_evaluations(work_dir, metrics):
+    with open(work_dir + 'aux', 'rb') as aux_file:
+        aux_data = pickle.load(aux_file)
+    for metric in metrics:
+        if 'entropy_code_len' in metric[1]:
+            if metric[1]['entropy_code_len'] == 'complete':
+                prediction = aux_data.huffman_codeword_lengths_complete
+            elif metric[1]['entropy_code_len'] == 'sparse':
+                prediction = aux_data.huffman_codeword_lengths_sparse
+            else:
+                continue
+        else:
+            continue
+        file_name = metric_unique_name(metric)
+        print('metric: {0}'.format(file_name))
+        tsplib_tour = read_tsplib_files(work_dir + file_name + '.tour',
+                                         work_dir + file_name + '.nodenames')
+        natural_order = [bytes([x]) for x in range(256)]
+        for all_cols in [False, True]:
+            if all_cols:
+                print('  using the computed order for all columns:')
+                orders = [tsplib_tour]
+            else:
+                print('  using the computed order for only the first column:')
+                orders = [tsplib_tour, natural_order]
+            comp = an.compare_entropy_len_predictions(aux_data, orders,
+                                               prediction)
+            for filter_sides in ['all', 'ge', 'lt']:
+                if filter_sides == 'all':
+                    print('    considering both sides of the actual '
+                          'value:')
+                elif filter_sides == 'ge':
+                    print('    considering values where the '
+                          'prediction is >= the actual value:')
+                elif filter_sides == 'lt':
+                    print('    considering values where the '
+                          'prediction is < the actual value:')
+                if filter_sides == 'ge':
+                    comp = [c for c in comp if c[2] >= c[1]]
+                elif filter_sides == 'lt':
+                    comp = [c for c in comp if c[2] < c[1]]
+                if not comp:
+                    print('      no data matches these criteria')
+                    continue
+                diffs = [c[1] - c[2] for c in comp]
+                devs = list(map(abs, diffs))
+                variance = np.mean(list(map(lambda x:x ** 2, diffs)))
+                std_deviation = math.sqrt(variance)
+                print('      mean differences: {0}'
+                      .format(np.mean(diffs)))
+                print('      mean deviation: {0}'
+                      .format(np.mean(devs)))
+                print('      standard deviation: {0}'
+                      .format(std_deviation))
+        print()
 
 def metric_unique_name(metric):
     """Create a unique name for a metric with options."""
@@ -214,351 +354,37 @@ def metric_unique_name(metric):
             elems.append(opts[opt])
     return '_'.join(elems)
 
-def make_work_directory(base_work_dir, in_file_path):
-    wd = base_work_dir + pt.basename(in_file_path)
-    if not pt.exists(wd):
-        os.mkdir(wd)
-
 if __name__ == '__main__':
     start_time = time.time()
-#     in_dir = '/home/dddsnn/Dokumente/Studium/BA/calgary/'
-#     in_file_name = 'book1'
-#     base_work_dir = '/home/dddsnn/tmp/'
-# #     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-# #                ('chapin_inv', {'log':True})]
-#     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {})]
-# #     metrics = []
-#     for w in [True, False]:
-#         for entr_len in [False, 'complete', 'sparse']:
-#             for new_pen in [False, 'generic_mean', 'generic_median',
-#                             'specific_mean', 'specific_median']:
-#                 opts = {'weighted':w, 'entropy_code_len':entr_len,
-#                         'new_penalty':new_pen, 'new_penalty_log':{}}
-#                 metrics.append(('badness', opts))
-#     metrics = [('badness', {'weighted':False, 'new_penalty':False,
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':False,
-#                             'entropy_code_len':'complete', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':False,
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'generic',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'generic',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'generic',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'specific',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'specific',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'specific',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':False,
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':False,
-#                             'entropy_code_len':'complete', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':False,
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'generic',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'generic',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'generic',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'specific',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'specific',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'specific',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}})]
-#     metrics = [('badness', {'weighted':False, 'new_penalty':'generic',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'generic',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'generic',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'specific',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'specific',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':False, 'new_penalty':'specific',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'generic',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'generic',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'generic',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'specific',
-#                             'entropy_code_len':False, 'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'specific',
-#                             'entropy_code_len':'complete',
-#                             'new_penalty_log':{}}),
-#                ('badness', {'weighted':True, 'new_penalty':'specific',
-#                             'entropy_code_len':'sparse', 'new_penalty_log':{}})]
+    work_dir = '/home/dddsnn/tmp/book1/'
+    in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
+    metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
+               ('chapin_inv', {'log':True})]
+    for w in [True, False]:
+        for entr_len in [False, 'complete', 'sparse']:
+            for new_pen in [False, 'generic_mean', 'generic_median',
+                            'specific_mean', 'specific_median']:
+                opts = {'weighted':w, 'entropy_code_len':entr_len,
+                        'new_penalty':new_pen, 'new_penalty_log':{}}
+                metrics.append(('badness', opts))
 
-    # make directories
-#     if not pt.exists(base_work_dir + in_file_name):
-#         os.mkdir(base_work_dir + in_file_name)
-    make_work_directory(base_work_dir, in_file_path)
 
     # make aux data
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    make_aux_data(in_path, wd + 'aux')
+#     make_aux_data(work_dir, in_file_path)
 
     # make transitions
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    with open(wd + 'aux', 'rb') as aux_file:
-        aux_data = pickle.load(aux_file)
-    for metric in metrics:
-        file_name = metric_unique_name(metric)
-        make_transitions(in_path, aux_data, metric[0],
-                        wd + file_name, **metric[1])
+    make_transitions(work_dir, metrics)
 
     # write tsplib files
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    for metric in metrics:
-        file_name = metric_unique_name(metric)
-        with open(wd + file_name + '.transitions', 'rb') as trs_file:
-            trs = pickle.load(trs_file)
-        g = make_graph(trs)
-        write_tsplib_files(g, wd, file_name)
+#     write_tsplib_files(work_dir, metrics)
 
     # simulate compression
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
-    handpicked_order = [[bytes([c]) for c in handpicked_str]]
-    simulate_compression(in_path, 'aeiou...', handpicked_order)
-    simulate_compression(in_path, 'standard')
-
-    for metric in metrics:
-        file_name = metric_unique_name(metric)
-        tsplib_tour = [read_tsplib_files(wd + file_name + '.tour',
-                                 wd + file_name + '.nodenames')]
-        simulate_compression(in_path, file_name, tsplib_tour)
+#     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
     # compare new penalty predictions with actual values
-    print('evaluating new symbol penalties for file {0}'.format(in_file_name))
-    print()
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    with open(wd + 'aux', 'rb') as aux_file:
-        aux_data = pickle.load(aux_file)
-    for metric in [m for m in metrics if 'new_penalty_log' in m[1]]:
-        file_name = metric_unique_name(metric)
-        with open(wd + file_name + '.new_penalty_log', 'rb') as in_file:
-            new_penalty_log = pickle.load(in_file)
-        print('metric: {0}'.format(file_name))
-        tsplib_tour = read_tsplib_files(wd + file_name + '.tour',
-                                         wd + file_name + '.nodenames')
-        natural_order = [bytes([x]) for x in range(256)]
-        orders = [tsplib_tour, natural_order]
-        comp = an.compare_new_penalty_predictions(aux_data, orders,
-                                               new_penalty_log)
-        mtf_code = cd.mtf_enc(cd.bw_encode(aux_data.raw, orders).encoded)
-        freqs = hf.symbol_frequencies(mtf_code)
-        hf_len = hf.codeword_lengths(freqs)
-
-        diffs = [c[1] - c[2] for c in comp]
-        diffs_ge = [c[1] - c[2] for c in comp if c[2] >= c[1]]
-        diffs_lt = [c[1] - c[2] for c in comp if c[2] < c[1]]
-        print('mean differences: {0}'.format(np.mean(diffs)))
-        print('mean differences of pred >= actual: {0}'
-              .format(np.mean(diffs_ge)))
-        print('mean differences of pred < actual: {0}'.format(np.mean(diffs)))
-        diffs_no_new = [c[1] - c[2] for c in comp
-                        if c[1] < aux_data.num_symbols]
-        diffs_no_new_ge = [c[1] - c[2] for c in comp
-                           if c[1] < aux_data.num_symbols and c[2] >= c[1]]
-        diffs_no_new_lt = [c[1] - c[2] for c in comp
-                           if c[1] < aux_data.num_symbols and c[2] < c[1]]
-        print('mean differences w/o new symbols: {0}'
-              .format(np.mean(diffs_no_new)))
-        print('mean differences of pred >= actual w/o new symbols: {0}'
-              .format(np.mean(diffs_no_new_ge)))
-        print('mean differences of pred < actual w/o new symbols: {0}'
-              .format(np.mean(diffs_no_new)))
-        devs = list(map(abs, diffs))
-        devs_ge = list(map(abs, diffs_ge))
-        devs_lt = list(map(abs, diffs_lt))
-        print('mean deviation: {0}'.format(np.mean(devs)))
-        print('mean deviation of pred >= actual: {0}'.format(np.mean(devs_ge)))
-        print('mean deviation of pred < actual: {0}'.format(np.mean(devs_lt)))
-        devs_no_new = list(map(abs, diffs_no_new))
-        devs_no_new_ge = list(map(abs, diffs_no_new_ge))
-        devs_no_new_lt = list(map(abs, diffs_no_new_lt))
-        print('mean deviation w/o new symbols: {0}'
-              .format(np.mean(devs_no_new)))
-        print('mean deviation of pred >= actual w/o new symbols: {0}'
-              .format(np.mean(devs_no_new_ge)))
-        print('mean deviation of pred < actual w/o new symbols: {0}'
-              .format(np.mean(devs_no_new_lt)))
-        variance = np.mean(list(map(lambda x:x ** 2, diffs)))
-        variance_ge = np.mean(list(map(lambda x:x ** 2, diffs_ge)))
-        variance_lt = np.mean(list(map(lambda x:x ** 2, diffs_lt)))
-        variance_no_new = np.mean(list(map(lambda x:x ** 2, diffs_no_new)))
-        variance_no_new_ge = np.mean(list(map(lambda x:x ** 2,
-                                              diffs_no_new_ge)))
-        variance_no_new_lt = np.mean(list(map(lambda x:x ** 2,
-                                              diffs_no_new_lt)))
-        std_deviation = math.sqrt(variance)
-        std_deviation_ge = math.sqrt(variance_ge)
-        std_deviation_lt = math.sqrt(variance_lt)
-        std_deviation_no_new = math.sqrt(variance_no_new)
-        std_deviation_no_new_ge = math.sqrt(variance_no_new_ge)
-        std_deviation_no_new_lt = math.sqrt(variance_no_new_lt)
-        print('standard deviation: {0}'.format(std_deviation))
-        print('standard deviation of pred >= actual: {0}'
-              .format(std_deviation_ge))
-        print('standard deviation of pred < actual: {0}'
-              .format(std_deviation_lt))
-        print('standard deviation w/o new symbols: {0}'
-              .format(std_deviation_no_new))
-        print('standard deviation of pred >= actual w/o new symbols: {0}'
-              .format(std_deviation_no_new_ge))
-        print('standard deviation of pred < actual w/o new symbols: {0}'
-              .format(std_deviation_no_new_lt))
-
-        # take huffman codeword length of the closest mtf code to the
-        # predicted one
-        hf_diffs = [hf_len[c[1]] - hf_len[min(hf_len.keys(),
-                                              key=lambda x:abs(x - c[2]))]
-                    for c in comp]
-        hf_diffs_ge = [hf_len[c[1]] - hf_len[min(hf_len.keys(),
-                                              key=lambda x:abs(x - c[2]))]
-                    for c in comp if c[2] >= c[1]]
-        hf_diffs_lt = [hf_len[c[1]] - hf_len[min(hf_len.keys(),
-                                              key=lambda x:abs(x - c[2]))]
-                    for c in comp if c[2] < c[1]]
-        print('mean differences of entropy codes: {0}'.
-              format(np.mean(hf_diffs)))
-        print('mean differences of entropy codes for pred >= actual: {0}'.
-              format(np.mean(hf_diffs_ge)))
-        print('mean differences of entropy codes for pred < actual: {0}'.
-              format(np.mean(hf_diffs_lt)))
-        hf_diffs_no_new = [hf_len[c[1]] -
-                            hf_len[min(hf_len.keys(),
-                                       key=lambda x:abs(x - c[2]))]
-                                     for c in comp
-                                     if c[1] < aux_data.num_symbols]
-        hf_diffs_no_new_ge = [hf_len[c[1]] -
-                            hf_len[min(hf_len.keys(),
-                                       key=lambda x:abs(x - c[2]))]
-                                     for c in comp
-                                     if c[1] < aux_data.num_symbols
-                                     and c[2] >= c[1]]
-        hf_diffs_no_new_lt = [hf_len[c[1]] -
-                            hf_len[min(hf_len.keys(),
-                                       key=lambda x:abs(x - c[2]))]
-                                     for c in comp
-                                     if c[1] < aux_data.num_symbols
-                                     and c[2] < c[1]]
-        print('mean differences of entropy codes w/o new symbols: {0}'
-              .format(np.mean(hf_diffs_no_new)))
-        print('mean differences of entropy codes for pred >= actual w/o new '
-              'symbols: {0}'.format(np.mean(hf_diffs_no_new_ge)))
-        print('mean differences of entropy codes for pred < actual w/o new '
-              'symbols: {0}'.format(np.mean(hf_diffs_no_new_lt)))
-        hf_devs = list(map(abs, hf_diffs))
-        hf_devs_ge = list(map(abs, hf_diffs_ge))
-        hf_devs_lt = list(map(abs, hf_diffs_lt))
-        print('mean deviation of entropy codes: {0}'.format(np.mean(hf_devs)))
-        print('mean deviation of entropy codes for pred >= actual: {0}'
-              .format(np.mean(hf_devs_ge)))
-        print('mean deviation of entropy codes for pred < actual: {0}'
-              .format(np.mean(hf_devs_lt)))
-        hf_devs_no_new = list(map(abs, hf_diffs_no_new))
-        hf_devs_no_new_ge = list(map(abs, hf_diffs_no_new_ge))
-        hf_devs_no_new_lt = list(map(abs, hf_diffs_no_new_lt))
-        print('mean deviation of entropy codes w/o new symbols: {0}'
-              .format(np.mean(hf_devs_no_new)))
-        print('mean deviation of entropy codes for pred >= actualw/o new '
-              'symbols: {0}'.format(np.mean(hf_devs_no_new_ge)))
-        print('mean deviation of entropy codes for pred < actual w/o new '
-              'symbols: {0}'.format(np.mean(hf_devs_no_new_lt)))
-        hf_variance = np.mean(list(map(lambda x:x ** 2, hf_diffs)))
-        hf_variance_ge = np.mean(list(map(lambda x:x ** 2, hf_diffs_ge)))
-        hf_variance_lt = np.mean(list(map(lambda x:x ** 2, hf_diffs_lt)))
-        hf_variance_no_new = np.mean(list(map(lambda x:x ** 2,
-                                              hf_diffs_no_new)))
-        hf_variance_no_new_ge = np.mean(list(map(lambda x:x ** 2,
-                                              hf_diffs_no_new_ge)))
-        hf_variance_no_new_lt = np.mean(list(map(lambda x:x ** 2,
-                                              hf_diffs_no_new_lt)))
-        hf_std_deviation = math.sqrt(hf_variance)
-        hf_std_deviation_ge = math.sqrt(hf_variance_ge)
-        hf_std_deviation_lt = math.sqrt(hf_variance_lt)
-        hf_std_deviation_no_new = math.sqrt(hf_variance_no_new)
-        hf_std_deviation_no_new_ge = math.sqrt(hf_variance_no_new_ge)
-        hf_std_deviation_no_new_lt = math.sqrt(hf_variance_no_new_lt)
-        print('standard deviation of entropy codes: {0}'
-              .format(hf_std_deviation))
-        print('standard deviation of entropy codes for pred >= actual: {0}'
-              .format(hf_std_deviation_ge))
-        print('standard deviation of entropy codes for pred < actual: {0}'
-              .format(hf_std_deviation_lt))
-        print('standard deviation of entropy codes w/o new symbols: {0}'
-              .format(hf_std_deviation_no_new))
-        print('standard deviation of entropy codes for pred >= actual w/o new '
-              'symbols: {0}'.format(hf_std_deviation_no_new_ge))
-        print('standard deviation of entropy codes for pred < actual w/o new '
-              'symbols: {0}'.format(hf_std_deviation_no_new_lt))
-        print()
+#     print_mtf_prediction_evaluations(work_dir, metrics)
 
     # compare entropy length predictions with actual values
-    print('evaluating entropy code code length predictions for file {0}'
-          .format(in_file_name))
-    print()
-    in_path = in_dir + in_file_name
-    wd = base_work_dir + in_file_name + '/'
-    with open(wd + 'aux', 'rb') as aux_file:
-        aux_data = pickle.load(aux_file)
-    for metric in metrics:
-        if 'entropy_code_len' in metric[1]:
-            if metric[1]['entropy_code_len'] == 'complete':
-                prediction = aux_data.huffman_codeword_lengths_complete
-            elif metric[1]['entropy_code_len'] == 'sparse':
-                prediction = aux_data.huffman_codeword_lengths_sparse
-            else:
-                continue
-        file_name = metric_unique_name(metric)
-        print('metric: {0}'.format(file_name))
-        tsplib_tour = read_tsplib_files(wd + file_name + '.tour',
-                                         wd + file_name + '.nodenames')
-        comp = an.compare_entropy_len_predictions(aux_data, [tsplib_tour],
-                                               prediction)
-        diffs = [c[1] - c[2] for c in comp]
-        diffs_ge = [c[1] - c[2] for c in comp if c[2] >= c[1]]
-        diffs_lt = [c[1] - c[2] for c in comp if c[2] < c[1]]
-        print('mean differences: {0}'.format(np.mean(diffs)))
-        print('mean differences ge: {0}'.format(np.mean(diffs_ge)))
-        print('mean differences lt: {0}'.format(np.mean(diffs_lt)))
-        devs = list(map(abs, diffs))
-        devs_ge = list(map(abs, diffs_ge))
-        devs_lt = list(map(abs, diffs_lt))
-        print('mean deviation: {0}'.format(np.mean(devs)))
-        print('mean deviation ge: {0}'.format(np.mean(devs_ge)))
-        print('mean deviation lt: {0}'.format(np.mean(devs_lt)))
-        variance = np.mean(list(map(lambda x:x ** 2, diffs)))
-        variance_ge = np.mean(list(map(lambda x:x ** 2, diffs_ge)))
-        variance_lt = np.mean(list(map(lambda x:x ** 2, diffs_lt)))
-        std_deviation = math.sqrt(variance)
-        std_deviation_ge = math.sqrt(variance_ge)
-        std_deviation_lt = math.sqrt(variance_lt)
-        print('standard deviation: {0}'.format(std_deviation))
-        print('standard deviation ge: {0}'.format(std_deviation_ge))
-        print('standard deviation lt: {0}'.format(std_deviation_lt))
-        print()
+#     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
