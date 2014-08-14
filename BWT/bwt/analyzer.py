@@ -61,7 +61,7 @@ def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):
             continue
         # get the block of mtf-bw tuples corresponding to the right side of the
         # transition
-        block = bw_block(bw_mtf, bw_code.firsts, trs[1], spec)
+        block = context_block(bw_mtf, bw_code.firsts, trs[1], spec)
         predictions = new_penalty_log[trs]
         # for every prediction, record the current sequence, the actual code
         # and the prediction
@@ -94,7 +94,7 @@ def compare_entropy_len_predictions(aux_data, orders, predictions):
         result.append((s, actual[s], predictions[s]))
     return result
 
-def bw_block(code, firsts, seq, specializations):
+def context_block(code, firsts, seq, specializations):
     """Get a specific BW block.
 
     Gets the block of BW code corresponding to a specific sequence at the
@@ -122,8 +122,8 @@ def bw_block(code, firsts, seq, specializations):
         right = left + 1
         while right < len(firsts) and firsts[right][:len(seq)] == seq:
             right += 1
-        bw_block = code[left:right]
-        return bw_block
+        context_block = code[left:right]
+        return context_block
 
     # reverse specializations so they're sorted from most general to most
     # specific
@@ -146,7 +146,7 @@ def bw_block(code, firsts, seq, specializations):
         return b''
 
     # start the bw block
-    bw_block = bytes([code[left]])
+    context_block = bytes([code[left]])
 
     # now find the end of the bw block
     right = left + 1
@@ -159,9 +159,9 @@ def bw_block(code, firsts, seq, specializations):
         else:
             # no break, so this line is not a specialization, append to the
             # result and increment right
-            bw_block += bytes([code[right]])
+            context_block += bytes([code[right]])
             right += 1
-    return bw_block
+    return context_block
 
 def analyze_partial_mtf(mtf_code):
     """Get various stats about a partial MTF mtf_code.
@@ -466,6 +466,10 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         bw_subcode_b = aux_data.bw_subcodes[first_seq_b]
     else:
         new_penalty_log = False
+    if 'mtf_prediction_correction' in kwargs:
+        mtf_prediction_correction = kwargs['mtf_prediction_correction']
+    else:
+        mtf_prediction_correction = 0
 
     badness = 0
     # make list of tuples (index in partial mtf of right side, optimal code) for
@@ -493,13 +497,15 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
                 # give a generic penalty for a new symbol, if this was requested
                 # in the options
                 assumed_actual = mtf_steps[min_possible]
+                + mtf_prediction_correction
             elif new_penalty in ['specific_mean', 'specific_median']:
                 # give a penalty specific to the underlying symbol from the
                 # bw code
                 assumed_actual = mtf_steps[(bw_subcode_b[i], min_possible)]
+                + mtf_prediction_correction
             else:
                 # otherwise, assume the best possible
-                assumed_actual = min_possible
+                assumed_actual = min_possible + mtf_prediction_correction
             # write to the new penalty log if it exists
             if new_penalty_log != False:
                 if (first_seq_a, first_seq_b) not in new_penalty_log:

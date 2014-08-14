@@ -2,7 +2,6 @@ from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
 import bwt.huffman as hf
-import networkx as nx
 import pickle
 import numpy as np
 import time
@@ -20,7 +19,7 @@ def make_aux_data(work_dir, in_file_path):
     firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
     firsts.extend(an.select_sequences(bs, 2))
     specializations = cd.specializations(firsts)
-    bw_subcodes = {x:an.bw_block(bw_code.encoded, bw_code.firsts, x,
+    bw_subcodes = {x:an.context_block(bw_code.encoded, bw_code.firsts, x,
                                  specializations) for x in firsts}
     # first add subcodes for individual bytes
     partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
@@ -64,7 +63,7 @@ def make_transitions(work_dir, metrics):
         aux_data = pickle.load(aux_file)
     for metric in metrics:
         metric_name = metric_unique_name(metric)
-        if os.path.exists(work_dir + metric_name):
+        if os.path.exists(work_dir + metric_name + '.transitions'):
             print('skipping transitions for {0}, because file exists'.
                   format(metric_name))
             continue
@@ -83,6 +82,9 @@ def write_tsplib_files(work_dir, metrics):
     the file mapping the LKH node ids back to the node names."""
     file_names = [metric_unique_name(metric) for metric in metrics]
     for file_name in file_names:
+        if os.path.exists(work_dir + file_name + '.par'):
+            print('skipping {0}, because file {0}.par exists'.format(file_name))
+            continue
         with open(work_dir + file_name + '.transitions', 'rb') as trs_file:
             transitions = pickle.load(trs_file)
         # name mapping part
@@ -217,6 +219,8 @@ def print_mtf_prediction_evaluations(work_dir, metrics):
     with open(work_dir + 'aux', 'rb') as aux_file:
         aux_data = pickle.load(aux_file)
     for metric in metrics:
+        if metric[0] != 'badness':
+            continue
         file_name = metric_unique_name(metric)
         with open(work_dir + file_name + '.new_penalty_log', 'rb') as in_file:
             new_penalty_log = pickle.load(in_file)
@@ -351,7 +355,7 @@ def metric_unique_name(metric):
             continue
         elems.append(opt)
         if opts[opt] != True:
-            elems.append(opts[opt])
+            elems.append(str(opts[opt]))
     return '_'.join(elems)
 
 if __name__ == '__main__':
@@ -360,31 +364,50 @@ if __name__ == '__main__':
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
-    for w in [True, False]:
-        for entr_len in [False, 'complete', 'sparse']:
+    for w in [False]:  # [True, False]:
+        for entr_len in [False]:  # [False, 'complete', 'sparse']:
             for new_pen in [False, 'generic_mean', 'generic_median',
                             'specific_mean', 'specific_median']:
                 opts = {'weighted':w, 'entropy_code_len':entr_len,
                         'new_penalty':new_pen, 'new_penalty_log':{}}
                 metrics.append(('badness', opts))
 
+    tmp_metrics = []
+    for metric in metrics:
+        if not 'new_penalty' in metric[1]:
+            continue
+        if metric[1]['new_penalty'] == False:
+            tmp = (metric[0], metric[1].copy())
+            tmp[1]['mtf_prediction_correction'] = 20.629411764705882
+            tmp_metrics.append(tmp)
+        elif metric[1]['new_penalty'] == 'generic_mean':
+            tmp = (metric[0], metric[1].copy())
+            tmp[1]['mtf_prediction_correction'] = 14.011834428781349
+            tmp_metrics.append(tmp)
+        elif metric[1]['new_penalty'] == 'generic_median':
+            tmp = (metric[0], metric[1].copy())
+            tmp[1]['mtf_prediction_correction'] = 14.692065491183879
+            tmp_metrics.append(tmp)
+        elif metric[1]['new_penalty'] == 'specific_mean':
+            tmp = (metric[0], metric[1].copy())
+            tmp[1]['mtf_prediction_correction'] = 12.722633592206217
+            tmp_metrics.append(tmp)
+        elif metric[1]['new_penalty'] == 'specific_median':
+            tmp = (metric[0], metric[1].copy())
+            tmp[1]['mtf_prediction_correction'] = 13.904411764705882
+            tmp_metrics.append(tmp)
+    metrics.extend(tmp_metrics)
 
-    # make aux data
 #     make_aux_data(work_dir, in_file_path)
 
-    # make transitions
-    make_transitions(work_dir, metrics)
+#     make_transitions(work_dir, metrics)
 
-    # write tsplib files
 #     write_tsplib_files(work_dir, metrics)
 
-    # simulate compression
 #     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
-    # compare new penalty predictions with actual values
-#     print_mtf_prediction_evaluations(work_dir, metrics)
+    print_mtf_prediction_evaluations(work_dir, metrics)
 
-    # compare entropy length predictions with actual values
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
