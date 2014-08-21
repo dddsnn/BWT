@@ -150,10 +150,10 @@ def write_tsplib_files(work_dir, metrics):
             tsp_text += '\n'
         # EOF at the end of the file
         tsp_text += 'EOF'
-        new_values_nonzero = [t for t in new_values if t != (0, 0.0)]
-        error_ratios = [(t1[1] / t2[1]) / (t1[0] / t2[0])
+        new_values_nonzero = (t for t in new_values if t != (0, 0.0))
+        error_ratios = ((t1[1] / t2[1]) / (t1[0] / t2[0])
                         for t1 in new_values_nonzero
-                        for t2 in new_values_nonzero]
+                        for t2 in new_values_nonzero)
         max_error = max([abs(1 - e) for e in error_ratios])
         print('max error: {0}'.format(max_error))
         print()
