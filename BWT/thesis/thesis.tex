@@ -78,6 +78,9 @@ overwork\cite{bitner1979heuristics} for the MTF coder as it has to adapt to the
 new context, resulting in larger codes for symbols that were not requested in
 the previous sequence.
 
+%TODO why doesn't this affect decompressibility
+%TODO overhead needed to store reordering
+
 The idea behind using different sort orders is to order the contexts in a way
 that reduces the overwork caused by a transition from one context to the next,
 resulting in lower MTF codes and higher compression.
@@ -445,6 +448,7 @@ TODO update in case parameters to LKH change
 
 \subsection{Results}
 
+book1
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 Metric & weighted & entropy length prediction & MTF prediction & out size all
@@ -489,7 +493,52 @@ columns \\ \hline
 %-first column only, all columns, with feedback corrections, compare
 %-chapin's metrics in my impl not quite as good as handpicked, same in his
 
-TODO update in case parameters to LKH change
+book1, first col only:
+\begin{itemize}
+  \item first col only brings almost no benefit when using the handpicked order
+  \item for first col only almost all badness variants perform better than
+  handpicked or Chapin's
+  \item with weighting is usually better
+  \item when entropy code length prediction is turned on, it can affect the
+  result in either direction, but usually not by much. possible explanation: its
+  output are low integers instead of (higher) floats, this takes some precision
+  away. when the prediction is correct for most values, it affects the result
+  positively (as it's theoretically ideal), but if a couple of values are off by
+  a bit, it introduces a considerable relative error (arithmetic coding?). also,
+  they seem to be pretty useless on their own (without either mtf prediction or
+  weighting).
+  \item all kinds of mtf predicition have a positive influence, unless when
+  combined with entropy length prediction, in which case results vary (gonna
+  put this on entr len pred, see above). both generic and specific median give
+  bad results when combined with entr len pred. this could be because the median
+  tips the entr len predictor into incorrect results (some form of rounding
+  error, see above) and so this could be reversed for a different file, but
+  maybe not. generic prediction works much better when no weigthing occurs,
+  otherwise the specific version is marginally better. no significant difference
+  between mean and median, except for what's described before.
+\end{itemize}
+
+all cols:
+\begin{itemize}
+  \item when only considering first col reordering, almost all badness variants
+  were better than handpicked and Chapin's, with all cols only a few. some are
+  even worse than the standard ordering. so badness is good at what it was
+  designed to do, but obviously not all variants make good reorderings for every
+  column.
+  \item when using all cols, much higher compression gain (up to 5x). this means
+  reordering of subsequent cols to make 2nd- 3rd- etc order transitions better
+  is very relevant compared to just considering the first column. this makes
+  sense: compression is gained where transitions are reordered. if there are n
+  transitions of the first order, there are up to \(n^2\) of the second, \(n^3\)
+  of the third etc. but at a certain point the k-th order context only contains
+  one or a few symbols, making reorderings not seem useful anymore. if the file
+  is larger and contains more contexts, reordering further into the columns can
+  become useful. (it becomes useless at the latest when all the columns in the
+  bw table up to that column are unique)
+\end{itemize}
+
+%TODO update in case parameters to LKH change
+%TODO more files, book2, some non-text
 
 \section{Further Work}
 
@@ -498,6 +547,11 @@ TODO update in case parameters to LKH change
 %-analyze longer transitions, i.e. not all a->b, a!=b, but all a->b->c, a!=b!=c
 %	etc. reduces necessity for predictions, extreme case: try all possible
 %	orders
+
+\chapter{Ordering more columns independently}
+
+%-transition from last 2nd-order context in first 1st-order context to first
+% 2nd-order context in second 1st-order context relevant?
 
 \chapter{Exceptions to MTF}
 

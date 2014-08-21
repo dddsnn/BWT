@@ -497,15 +497,16 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
                 # give a generic penalty for a new symbol, if this was requested
                 # in the options
                 assumed_actual = mtf_steps[min_possible]
-                + mtf_prediction_correction
+                assumed_actual += mtf_prediction_correction
             elif new_penalty in ['specific_mean', 'specific_median']:
                 # give a penalty specific to the underlying symbol from the
                 # bw code
                 assumed_actual = mtf_steps[(bw_subcode_b[i], min_possible)]
-                + mtf_prediction_correction
+                assumed_actual += mtf_prediction_correction
             else:
                 # otherwise, assume the best possible
-                assumed_actual = min_possible + mtf_prediction_correction
+                assumed_actual = min_possible
+                assumed_actual += mtf_prediction_correction
             # write to the new penalty log if it exists
             if new_penalty_log != False:
                 if (first_seq_a, first_seq_b) not in new_penalty_log:
@@ -516,15 +517,13 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
                 # add the approximation of the actual number of bits this
                 # transition will cost in the entropy coder, if requested in
                 # the options
-                if new_penalty:
-                    # if new_penalty is also selected, assumed actual isn't
-                    # necessarily an integer. round to the next int in this case
-                    # so we still find it in the dict
-                    assumed_actual = int(round(assumed_actual))
-                    if assumed_actual > 255:
-                        # in case it gets rounded out of the range of valid
-                        # dict keys
-                        assumed_actual = 255
+                # assumed actual isn't necessarily an integer. round to the next
+                # int just in case, so we still find it in the dict
+                assumed_actual = int(round(assumed_actual))
+                if assumed_actual > 255:
+                    # in case it gets rounded out of the range of valid
+                    # dict keys
+                    assumed_actual = 255
                 huff_dist = hf_len[assumed_actual] - hf_len[ideal]
                 if huff_dist < 0:
                     # for high code values, higher codes can accidentally be

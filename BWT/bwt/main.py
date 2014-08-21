@@ -91,9 +91,8 @@ def write_tsplib_files(work_dir, metrics):
         # make dicts nodename->number and number->nodename for the tsp file
         nodes = set([t[0] for t in transitions])
         num_nodes = len(nodes)
-        names_to_numbers = numbers_to_names = {}
+        numbers_to_names = {}
         for i, n in enumerate(sorted(nodes), 1):
-            names_to_numbers[n] = i
             numbers_to_names[i] = n
 
         # tsp file part
@@ -119,6 +118,7 @@ def write_tsplib_files(work_dir, metrics):
             ratio = max_cost / min_cost
         else:
             ratio = float('inf')
+        print('making tsplib for {0}'.format(file_name))
         print('min value: {0}'.format(min_cost))
         print('max value: {0}'.format(max_cost))
         print('ratio: {0}'.format(ratio))
@@ -129,8 +129,8 @@ def write_tsplib_files(work_dir, metrics):
             # in case everything is 0
             factor = 0
         print('scaling with factor {0}'.format(factor))
-        print()
 
+        new_values = []
         max_len = len(str(INFINITY))  # length of the longest number
         # append the scaled cost value matrix to the tsp text
         for irow in range(1, num_nodes + 1):
@@ -141,6 +141,7 @@ def write_tsplib_files(work_dir, metrics):
                 else:
                     trs = (numbers_to_names[irow], numbers_to_names[icol])
                     write_num = int(transitions[trs] * factor)
+                    new_values.append((transitions[trs], write_num))
                 # leave 2 characters spacing
                 space = ' ' * (max_len - len(str(write_num)) + 2)
                 # append the string
@@ -149,6 +150,13 @@ def write_tsplib_files(work_dir, metrics):
             tsp_text += '\n'
         # EOF at the end of the file
         tsp_text += 'EOF'
+        new_values_nonzero = [t for t in new_values if t != (0, 0.0)]
+        error_ratios = [(t1[1] / t2[1]) / (t1[0] / t2[0])
+                        for t1 in new_values_nonzero
+                        for t2 in new_values_nonzero]
+        max_error = max([abs(1 - e) for e in error_ratios])
+        print('max error: {0}'.format(max_error))
+        print()
 
         # par file part
         par_text = 'PROBLEM_FILE = {0}\n'.format(file_name + '.atsp')
@@ -262,22 +270,25 @@ def print_mtf_prediction_evaluations(work_dir, metrics):
                         elif filter_sides == 'lt':
                             print('        considering values where the '
                                   'prediction is < the actual value:')
+                        filtered_comp = comp[:]
                         if filter_sides == 'ge':
-                            comp = [c for c in comp if c[2] >= c[1]]
+                            filtered_comp = [c for c in filtered_comp
+                                             if c[2] >= c[1]]
                         elif filter_sides == 'lt':
-                            comp = [c for c in comp if c[2] < c[1]]
+                            filtered_comp = [c for c in filtered_comp
+                                             if c[2] < c[1]]
                         if filter_new:
-                            comp = [c for c in comp
+                            filtered_comp = [c for c in filtered_comp
                                     if c[1] < aux_data.num_symbols]
                         if subst_hf:
-                            comp = [(c[0], hf_len[c[1]],
+                            filtered_comp = [(c[0], hf_len[c[1]],
                                      hf_len[min(hf_len.keys(),
                                            key=lambda x:abs(x - c[2]))])
-                                         for c in comp]
-                        if not comp:
+                                         for c in filtered_comp]
+                        if not filtered_comp:
                             print('          no data matches these criteria')
                             continue
-                        diffs = [c[1] - c[2] for c in comp]
+                        diffs = [c[1] - c[2] for c in filtered_comp]
                         devs = list(map(abs, diffs))
                         variance = np.mean(list(map(lambda x:x ** 2, diffs)))
                         std_deviation = math.sqrt(variance)
@@ -326,14 +337,15 @@ def print_entropy_length_prediction_evaluations(work_dir, metrics):
                 elif filter_sides == 'lt':
                     print('    considering values where the '
                           'prediction is < the actual value:')
+                filtered_comp = comp[:]
                 if filter_sides == 'ge':
-                    comp = [c for c in comp if c[2] >= c[1]]
+                    filtered_comp = [c for c in filtered_comp if c[2] >= c[1]]
                 elif filter_sides == 'lt':
-                    comp = [c for c in comp if c[2] < c[1]]
-                if not comp:
+                    filtered_comp = [c for c in filtered_comp if c[2] < c[1]]
+                if not filtered_comp:
                     print('      no data matches these criteria')
                     continue
-                diffs = [c[1] - c[2] for c in comp]
+                diffs = [c[1] - c[2] for c in filtered_comp]
                 devs = list(map(abs, diffs))
                 variance = np.mean(list(map(lambda x:x ** 2, diffs)))
                 std_deviation = math.sqrt(variance)
@@ -362,51 +374,46 @@ if __name__ == '__main__':
     start_time = time.time()
     work_dir = '/home/dddsnn/tmp/book1/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
-    metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-               ('chapin_inv', {'log':True})]
-    for w in [False]:  # [True, False]:
-        for entr_len in [False]:  # [False, 'complete', 'sparse']:
+#     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
+#                ('chapin_inv', {'log':True})]
+    metrics = []
+    for w in [True, False]:
+        for entr_len in [False, 'complete', 'sparse']:
             for new_pen in [False, 'generic_mean', 'generic_median',
                             'specific_mean', 'specific_median']:
                 opts = {'weighted':w, 'entropy_code_len':entr_len,
                         'new_penalty':new_pen, 'new_penalty_log':{}}
                 metrics.append(('badness', opts))
-
-    tmp_metrics = []
-    for metric in metrics:
-        if not 'new_penalty' in metric[1]:
-            continue
-        if metric[1]['new_penalty'] == False:
-            tmp = (metric[0], metric[1].copy())
-            tmp[1]['mtf_prediction_correction'] = 20.629411764705882
-            tmp_metrics.append(tmp)
-        elif metric[1]['new_penalty'] == 'generic_mean':
-            tmp = (metric[0], metric[1].copy())
-            tmp[1]['mtf_prediction_correction'] = 14.011834428781349
-            tmp_metrics.append(tmp)
-        elif metric[1]['new_penalty'] == 'generic_median':
-            tmp = (metric[0], metric[1].copy())
-            tmp[1]['mtf_prediction_correction'] = 14.692065491183879
-            tmp_metrics.append(tmp)
-        elif metric[1]['new_penalty'] == 'specific_mean':
-            tmp = (metric[0], metric[1].copy())
-            tmp[1]['mtf_prediction_correction'] = 12.722633592206217
-            tmp_metrics.append(tmp)
-        elif metric[1]['new_penalty'] == 'specific_median':
-            tmp = (metric[0], metric[1].copy())
-            tmp[1]['mtf_prediction_correction'] = 13.904411764705882
-            tmp_metrics.append(tmp)
-    metrics.extend(tmp_metrics)
+#     metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
+#                             'weighted': False, 'new_penalty_log': {},
+#                             'mtf_prediction_correction':14.76774193548387}),
+#                ('badness', {'new_penalty': 'generic_mean',
+#                             'entropy_code_len': False, 'weighted': False,
+#                             'new_penalty_log': {},
+#                             'mtf_prediction_correction':7.016073054355908}),
+#                ('badness', {'new_penalty': 'generic_median',
+#                             'entropy_code_len': False,
+#                             'weighted': False, 'new_penalty_log': {},
+#                             'mtf_prediction_correction':9.033012379642367}),
+#                ('badness', {'new_penalty': 'specific_mean',
+#                             'entropy_code_len': False,
+#                             'weighted': False,
+#                             'new_penalty_log': {},
+#                             'mtf_prediction_correction':5.2337720496925035}),
+#                ('badness', {'new_penalty': 'specific_median',
+#                             'entropy_code_len': False,
+#                             'weighted': False, 'new_penalty_log': {},
+#                             'mtf_prediction_correction':6.9992559523809526})]
 
 #     make_aux_data(work_dir, in_file_path)
 
 #     make_transitions(work_dir, metrics)
 
-#     write_tsplib_files(work_dir, metrics)
+    write_tsplib_files(work_dir, metrics)
 
 #     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
-    print_mtf_prediction_evaluations(work_dir, metrics)
+#     print_mtf_prediction_evaluations(work_dir, metrics)
 
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
