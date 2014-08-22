@@ -99,7 +99,7 @@ merge with next section unless there's more
 
 \section{Chapin's Metrics}
 
-aeiou
+%TODO aeiou
 
 Chapin uses four different cost metrics, three of which I have reimplemented for
 comparison with my own metric.\footnote{The fourth uses the Kullback-Leibler
@@ -149,7 +149,26 @@ LKH\cite{helsgaun2000lkh}\footnote{http://www.akira.ruc.dk/~keld/research/LKH/},
 which can approximate solutions to the asymmetrical TSP. Unfortunately, it can
 not handle floating point input, so I have to do some ugly scaling.
 
-%-describe and give error bounds
+The transition data is exported as a .atsp file in full matrix format according
+to the TSPLIB specification\cite{reinelt1991tsplib}. LKH doesn't allow floating
+point numbers in the matrix, so the original values have to be converted into
+integers while preserving the ratios between all of the values as best as
+possible. Since just rounding to the nearest integer would incur large relative
+errors for values close to zero, they are first scaled up. If all values are
+multiplied with the same factor, the solution to the TSP remains the same. This
+factor is the greatest number such that the absolute greatest original value,
+when multiplied with the factor, is less than or equal to a preset maximum. If
+this maximum is too large, LKH will fail an assertion, probably because the
+variable overflows. I have chosen \(2\cdot10^7\), as this seems to be small
+enough to not cause problems.
+%TODO still 2*10^7?
+
+To get a picture of the accuracy of this transformation, for every pair of
+values the ratio of the original (floating-point) values and the ratio of their
+correspoding integers is computed and the relative error calculated. The maximum
+relative error for the examples is rarely greater than \(10^-4\).
+%TODO update in case this changes
+
 
 \subsection{Basic Operation}
 
@@ -164,6 +183,8 @@ appears that isn't already in the alphabet.
 E.g., the ASCII encoded string ``aabcab'' encoded (byte-wise) with regular MTF
 would yield \([97, 0, 98, 99, 2, 2]\), encoded with partial MTF it would be
 \([-1, 0, -1, -1, 2, 2]\).
+
+%TODO property non-escape codes are the same
 
 Of course this means that it can't be decoded anymore, but we only need it to
 illustrate the operation of the metric.
@@ -535,6 +556,7 @@ all cols:
   is larger and contains more contexts, reordering further into the columns can
   become useful. (it becomes useless at the latest when all the columns in the
   bw table up to that column are unique)
+  %TODO more?
 \end{itemize}
 
 %TODO update in case parameters to LKH change

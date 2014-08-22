@@ -151,11 +151,10 @@ def write_tsplib_files(work_dir, metrics):
         # EOF at the end of the file
         tsp_text += 'EOF'
         new_values_nonzero = (t for t in new_values if t != (0, 0.0))
-        error_ratios = ((t1[1] / t2[1]) / (t1[0] / t2[0])
+        rel_errors = ((abs((t1[1] / t2[1]) - (t1[0] / t2[0])) / (t1[0] / t2[0]))
                         for t1 in new_values_nonzero
                         for t2 in new_values_nonzero)
-        max_error = max([abs(1 - e) for e in error_ratios])
-        print('max error: {0}'.format(max_error))
+        print('max relative error: {0}'.format(max(rel_errors)))
         print()
 
         # par file part
@@ -374,9 +373,9 @@ if __name__ == '__main__':
     start_time = time.time()
     work_dir = '/home/dddsnn/tmp/book1/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
-#     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-#                ('chapin_inv', {'log':True})]
-    metrics = []
+    metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
+               ('chapin_inv', {'log':True})]
+#     metrics = []
     for w in [True, False]:
         for entr_len in [False, 'complete', 'sparse']:
             for new_pen in [False, 'generic_mean', 'generic_median',
