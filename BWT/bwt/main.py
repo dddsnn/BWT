@@ -7,8 +7,9 @@ import numpy as np
 import time
 import math
 import os
+from itertools import chain
 
-def make_aux_data(work_dir, in_file_path):
+def make_aux_data(work_dir, in_file_path, col_depth=1):
     """Create data commonly used in transition analysis."""
     with open(in_file_path, 'rb') as in_file:
         bs = in_file.read()
@@ -17,10 +18,14 @@ def make_aux_data(work_dir, in_file_path):
     bw_code = cd.bw_encode(bs)
     mtf_code = cd.mtf_enc(bw_code.encoded)
     firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
-    firsts.extend(an.select_sequences(bs, 2))
-    specializations = cd.specializations(firsts)
-    bw_subcodes = {x:an.context_block(bw_code.encoded, bw_code.firsts, x,
-                                 specializations) for x in firsts}
+    for i in range(1, col_depth):
+        for prefix in [x for x in firsts if len(x) == i]:
+            symbols = list(set([x[i] for x in bw_code.firsts
+                                if x[:i] == prefix]))
+            new = [prefix + bytes([sym]) for sym in symbols]
+            firsts.extend(new)
+    bw_subcodes = {x:an.context_block(bw_code.encoded, bw_code.firsts, x)
+                   for x in firsts}
     # first add subcodes for individual bytes
     partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
                             for x in bw_subcodes}
@@ -28,7 +33,7 @@ def make_aux_data(work_dir, in_file_path):
     partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
                                                          + bw_subcodes[b])
                                for a in bw_subcodes for b in bw_subcodes
-                               if a != b}
+                               if a != b and a[:-1] == b[:-1]}
     partial_mtf_subcodes.update(partial_mtf_transitions)
     partial_mtf_analyses = {x:an.analyze_partial_mtf(partial_mtf_subcodes[x])
                             for x in partial_mtf_subcodes}
@@ -57,30 +62,34 @@ def make_aux_data(work_dir, in_file_path):
         pickle.dump(result, out_file)
     return result
 
-def make_transitions(work_dir, metrics):
+def make_transitions(work_dir, metrics, col_depth=1):
     """Create the transition analysis for a file."""
     with open(work_dir + 'aux', 'rb') as aux_file:
         aux_data = pickle.load(aux_file)
+    prefixes = set([x[:i] for x in aux_data.firsts for i in range(col_depth)])
     for metric in metrics:
-        metric_name = metric_unique_name(metric)
-        if os.path.exists(work_dir + metric_name + '.transitions'):
-            print('skipping transitions for {0}, because file exists'.
-                  format(metric_name))
-            continue
         metric_opts = metric[1]
-        trs = an.analyze_transitions(aux_data, metric)
-        with open(work_dir + metric_name + '.transitions', 'xb') as out_file:
-            pickle.dump(trs, out_file)
-        # write the new penalty log if it exists
-        if 'new_penalty_log' in metric_opts:
-            with open(work_dir + metric_name + '.new_penalty_log',
-                      'xb') as out_file:
-                pickle.dump(metric_opts['new_penalty_log'], out_file)
+        for prefix in prefixes:
+            file_name = metric_unique_name(metric, prefix)
+            if os.path.exists(work_dir + file_name + '.transitions'):
+                print('skipping transitions for {0}, because file exists'.
+                      format(file_name))
+                continue
+            trs = an.analyze_transitions(aux_data, metric, prefix)
+            with open(work_dir + file_name + '.transitions', 'xb') as out_file:
+                pickle.dump(trs, out_file)
+            # write the new penalty log if it exists
+            if 'new_penalty_log' in metric_opts:
+                with open(work_dir + file_name + '.new_penalty_log',
+                          'xb') as out_file:
+                    pickle.dump(metric_opts['new_penalty_log'], out_file)
 
 def write_tsplib_files(work_dir, metrics):
     """Create and write the .tsp and .par files for the LKH program as well as
     the file mapping the LKH node ids back to the node names."""
-    file_names = [metric_unique_name(metric) for metric in metrics]
+    file_names_list = [find_metric_file_names(work_dir, metric)
+                             for metric in metrics]
+    file_names = list(chain.from_iterable(file_names_list))
     for file_name in file_names:
         if os.path.exists(work_dir + file_name + '.par'):
             print('skipping {0}, because file {0}.par exists'.format(file_name))
@@ -88,7 +97,7 @@ def write_tsplib_files(work_dir, metrics):
         with open(work_dir + file_name + '.transitions', 'rb') as trs_file:
             transitions = pickle.load(trs_file)
         # name mapping part
-        # make dicts nodename->number and number->nodename for the tsp file
+        # make dict number->nodename for the tsp file
         nodes = set([t[0] for t in transitions])
         num_nodes = len(nodes)
         numbers_to_names = {}
@@ -113,7 +122,11 @@ def write_tsplib_files(work_dir, metrics):
             min_cost = min(costs_nonzero)
         else:
             min_cost = 0
-        max_cost = max([abs(c) for c in transitions.values()])
+        absolute_values = [abs(c) for c in transitions.values()]
+        if absolute_values:
+            max_cost = max(absolute_values)
+        else:
+            max_cost = 0
         if min_cost:
             ratio = max_cost / min_cost
         else:
@@ -154,7 +167,10 @@ def write_tsplib_files(work_dir, metrics):
         rel_errors = ((abs((t1[1] / t2[1]) - (t1[0] / t2[0])) / (t1[0] / t2[0]))
                         for t1 in new_values_nonzero
                         for t2 in new_values_nonzero)
-        print('max relative error: {0}'.format(max(rel_errors)))
+        if num_nodes > 1:
+            print('max relative error: {0}'.format(max(rel_errors)))
+        else:
+            print('only one element, no transitions, no error')
         print()
 
         # par file part
@@ -213,10 +229,9 @@ def print_simulated_compression_results(work_dir, metrics, in_file_path):
     print('first column only: {0}'.format(final_bit_len(bs, handpicked_orders)))
     print()
     for metric in metrics:
-        file_name = metric_unique_name(metric)
+        file_name = metric_unique_name(metric, b'')
         print('{0}:'.format(file_name))
-        orders = [read_tsplib_files(work_dir + file_name + '.tour',
-                                   work_dir + file_name + '.nodenames')]
+        orders = assemble_multicol_orders(work_dir, file_name)
         print('all columns      : {0}'.format(final_bit_len(bs, orders)))
         orders.append(natural_order)
         print('first column only: {0}'.format(final_bit_len(bs, orders)))
@@ -356,7 +371,7 @@ def print_entropy_length_prediction_evaluations(work_dir, metrics):
                       .format(std_deviation))
         print()
 
-def metric_unique_name(metric):
+def metric_unique_name(metric, prefix):
     """Create a unique name for a metric with options."""
     elems = [metric[0]]
     opts = metric[1]
@@ -367,11 +382,29 @@ def metric_unique_name(metric):
         elems.append(opt)
         if opts[opt] != True:
             elems.append(str(opts[opt]))
-    return '_'.join(elems)
+    result = '_'.join(elems)
+    if prefix:
+        result += '.' + '.'.join([str(b) for b in prefix])
+    return result
+
+def find_metric_file_names(work_dir, metric):
+    """Find base file names for all prefixes for metric in work_dir."""
+    metric_name = metric_unique_name(metric, b'')
+    files = os.listdir(path=work_dir)
+    metric_files = [f for f in files if f[:len(metric_name)] == metric_name]
+    return list(set([f.rsplit(sep='.', maxsplit=1)[0] for f in metric_files]))
+
+def assemble_multicol_orders(work_dir, metric):
+    base_file_name = metric_unique_name(metric, b'')
+    file_name_splits = [f.split('.')
+                        for f in find_metric_file_names(work_dir, metric)]
+    col_depth = max((len(s) for s in file_name_splits))
+#     [read_tsplib_files(work_dir + file_name + '.tour',
+#                                    work_dir + file_name + '.nodenames')]
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/book1/'
+    work_dir = '/home/dddsnn/tmp/book1_2col/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
@@ -403,10 +436,12 @@ if __name__ == '__main__':
 #                             'entropy_code_len': False,
 #                             'weighted': False, 'new_penalty_log': {},
 #                             'mtf_prediction_correction':6.9992559523809526})]
+    metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
+                            'weighted': False, 'new_penalty_log': {}})]
 
-#     make_aux_data(work_dir, in_file_path)
+#     make_aux_data(work_dir, in_file_path, col_depth=2)
 
-#     make_transitions(work_dir, metrics)
+#     make_transitions(work_dir, metrics, col_depth=2)
 
     write_tsplib_files(work_dir, metrics)
 

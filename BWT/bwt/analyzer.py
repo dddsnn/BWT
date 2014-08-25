@@ -4,29 +4,6 @@ import sys
 from bwt import *
 import math
 
-def select_sequences(bs, max_len):
-    """Select sequences from a file that could benefit from being ordered more
-    specially than by the same order for all characters.
-    """
-    # TODO this is a primitive placeholder and needs to be replaced by a
-    # function that's aware of the quality of the transitions of each
-    # possible sequence when it's not specially reordered
-
-    # make histograms for sequences of length up to max_len
-    hst = {}
-    for l in range(2, max_len + 1):
-        for i in range(len(bs) - l):
-            if bs[i:i + l] in hst:
-                hst[bs[i:i + l]] += 1
-            else:
-                hst[bs[i:i + l]] = 1
-    # make a list of all sequences found and sort by number of occurrences
-    seq = [s for s in hst]
-    seq.sort(key=lambda x:hst[x], reverse=True)
-    # select the first 255 and return
-    return []
-    return seq[:20]  # TODO
-
 def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):
     """Compare the predictions for new codes with actual values.
 
@@ -54,14 +31,13 @@ def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):
     # can only handle the first order for the moment
     order = orders[0]
     transitions = zip(order[:-1], order[1:])
-    spec = cd.specializations(aux_data.firsts)
     for trs in transitions:
         if trs not in new_penalty_log:
             # there were not predictions necessary for this transition, skip
             continue
         # get the block of mtf-bw tuples corresponding to the right side of the
         # transition
-        block = context_block(bw_mtf, bw_code.firsts, trs[1], spec)
+        block = context_block(bw_mtf, bw_code.firsts, trs[1])
         predictions = new_penalty_log[trs]
         # for every prediction, record the current sequence, the actual code
         # and the prediction
@@ -94,12 +70,11 @@ def compare_entropy_len_predictions(aux_data, orders, predictions):
         result.append((s, actual[s], predictions[s]))
     return result
 
-def context_block(code, firsts, seq, specializations):
+def context_block(code, firsts, seq):
     """Get a specific BW block.
 
     Gets the block of BW code corresponding to a specific sequence at the
-    beginning of the line. Omit symbols in the BW code belonging to a more
-    special sequence indicated in the specializations dictionary.
+    beginning of the line.
 
     Args:
         code: An iterable from which the result will be selected.
@@ -108,59 +83,16 @@ def context_block(code, firsts, seq, specializations):
             contain seq as a substring.
         seq: The sequence at the beginning of the line whose block should be
             returned.
-        specializations: A dictionary listing specializations of seq as returned
-            by bwt.coder.specializations().
 
     Returns:
-        The block of BW code whose first lines begin with seq, excluding those
-        beginning with any of specializations[seq].
+        The block of BW code whose first lines begin with seq.
     """
     # first index matching seq
     left = next(i for i, s in enumerate(firsts) if s[:len(seq)] == seq)
-    if not specializations[seq]:
-        # no specializations for this sequence, straightforward
-        right = left + 1
-        while right < len(firsts) and firsts[right][:len(seq)] == seq:
-            right += 1
-        context_block = code[left:right]
-        return context_block
-
-    # reverse specializations so they're sorted from most general to most
-    # specific
-    spec = reversed(specializations[seq])
-    # find the first occurrence of seq in firsts that isn't a specialization
-    while left < len(firsts) and firsts[left][:len(seq)] == seq:
-        for sp in spec:
-            if firsts[left][:len(sp)] == sp:
-                # this line is a specialization, so increment left and break to
-                # find another beginning
-                left += 1
-                break
-        else:
-            # no break, so this line is not a specialization, break out of the
-            # while and keep the value of left
-            break
-    if not left < len(firsts) or firsts[left][:len(seq)] != seq:
-        # this means that all elements in firsts starting with seq were
-        # specializations, so return an empty bytes object as the bw block
-        return b''
-
-    # start the bw block
-    context_block = bytes([code[left]])
-
-    # now find the end of the bw block
     right = left + 1
     while right < len(firsts) and firsts[right][:len(seq)] == seq:
-        for sp in spec:
-            if firsts[right][:len(sp)] == sp:
-                # this line is a specialization, so increment right and break
-                right += 1
-                break
-        else:
-            # no break, so this line is not a specialization, append to the
-            # result and increment right
-            context_block += bytes([code[right]])
-            right += 1
+        right += 1
+    context_block = code[left:right]
     return context_block
 
 def analyze_partial_mtf(mtf_code):
@@ -309,7 +241,7 @@ def mtf_avg_steps(bw_code, mtf_code, avg_func):
             result[(sym, n)] = mean_dev
     return result
 
-def analyze_transitions(aux_data, metric):
+def analyze_transitions(aux_data, metric, prefix=b''):
     """Analyze all possible transitions between values of a byte string.
 
     Args:
@@ -328,7 +260,10 @@ def analyze_transitions(aux_data, metric):
     firsts = aux_data.firsts
     transitions = {(a, b): an_func(a, b, aux_data, **metric_opts)
                    for a in firsts
-                   for b in firsts if a != b}
+                   for b in firsts
+                   if a != b and a[:len(prefix)] == prefix
+                   and b[:len(prefix)] == prefix and len(a) == len(prefix) + 1
+                   and len(b) == len(prefix) + 1}
     return transitions
 
 def metric_chapin_hst_diff(first_seq_a, first_seq_b, aux_data, **kwargs):
