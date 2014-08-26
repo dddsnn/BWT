@@ -1,5 +1,6 @@
 import warnings
 from bwt import BWEncodeResult
+from collections.abc import Mapping
 
 def bw_table(text):
     """Create the Burrows-Wheeler table."""
@@ -29,33 +30,6 @@ def print_demo(text):
     print(firsts)
     print(encoded)
 
-def specializations(string_list):
-    """Find all specialized strings in a list.
-
-    For every element in the list, find all other elements in the list that are
-    specializations of that element, i.e. that start with the same symbols, but
-    are longer.
-
-    Args:
-        string_list: A list of strings.
-
-    Returns:
-        A dictionary mapping every element of the input to a list of more
-        specific strings in the input, sorted from most specific to most
-        general, i.e. from longest to shortest.
-        E.g.: {'a': ['asd', 'as'], 'as': ['asd'], 'asd': []}
-    """
-    spec_dict = {s:[] for s in string_list}
-    for s1 in spec_dict:
-        for s2 in spec_dict:
-            if s1 != s2 and len(s2) > len(s1) and s2[:len(s1)] == s1:
-                # more specific sequence found, add to dict
-                spec_dict[s1].append(s2)
-    # sort the lists in spec_dict from most specific to most general
-    for s in spec_dict:
-        spec_dict[s].sort(key=lambda x:len(x), reverse=True)
-    return spec_dict
-
 def make_order_lists(bs, orders):
     """Make a list of lists by which the columns of the BW table can be ordered.
 
@@ -69,11 +43,7 @@ def make_order_lists(bs, orders):
         result sorted with the list values as the key, the bs values will be
         sorted according to the n-th order in orders.
     """
-    # turn the order lists of bytes objects into dicts {byte: value} for
-    # ordering
-    order_dicts = []
-    for order in orders:
-        order_dict = {}
+    def list_to_dict(order_list, distinct_syms):
         for i, s in enumerate(order):
             # ignore multiple occurrences, count the first one
             if not s in order_dict:
@@ -83,33 +53,45 @@ def make_order_lists(bs, orders):
                 warnings.warn('multiple occurence of symbol or sequence {0} in '
                               'order. ignoring.'.format(s))
         # check that order is complete (all bytes from bs are in it)
-        for b in bs:
+        for b in distinct_syms:
             if not bytes([b]) in order_dict:
                 warnings.warn('symbol or sequence {0} not in the custom order but '
                               'in the bs.  appending'.format(b))
                 # append any missing bytes
                 order_dict[bytes([b])] = max_order + 1
                 max_order += 1
+    distinct_syms = set(bs)
+    # turn the order lists of bytes objects into dicts {byte: value} for
+    # ordering
+    order_dicts = []
+    for order in orders:
+        order_dict = {}
+        if isinstance(order, Mapping):
+            for prefix, order_list in order.items():
+                order_dict[prefix] = list_to_dict(order_list, distinct_syms)
+        else:
+            # None to indicate it's a general order
+            order_dict[None] = list_to_dict(order, distinct_syms)
         # append the order dict to the list
         order_dicts.append(order_dict)
     # make lists by which the strings will be sorted
     order_lists = []
     for order_dict in order_dicts:
         order_list = []
-        # dict with all keys in order_dict that lists more specific keys
-        # (e.g. b'a' -> [b'adf', b'as']
-        spec_dict = specializations(order_dict)
-        for i, b in enumerate(bs):
-            # in case there is a more specific sequence
-            for s in spec_dict[bytes([b])]:
-                if bs[i:i + len(s)] == s:
-                    # more specific sequence has been found, append the order for
-                    # that sequence and break (so we don't get into the else)
-                    order_list.append(order_dict[s])
-                    break
-            else:
+        if None in order_dict:
+            # only one general order
+            order_dict = order_dict[None]
+            for b in bs:
                 order_list.append(order_dict[bytes([b])])
-        # append this list to the list of order lists
+        else:
+            # lenght of prefix, assume all are equal
+            l = len(next(iter(order_dict.keys())))
+            for i, b in enumerate(bs):
+                if i > l:
+                    prefix = bs[i - l:i]
+                else:
+                    prefix = bs[i - l:] + bs[:i]
+                order_list.append(order_dict[prefix][bytes([b])])
         order_lists.append(order_list)
     return order_lists
 
@@ -119,12 +101,16 @@ def bw_encode(bs, orders=None):
     Args:
         bs: The data to be encoded as a bytes object.
         orders: A list of orders by which each of the columns of the BW table
-            should be sorted. An order is a list of bytes objects in the order
-            in which they should be sorted. An order must contain all byte
-            values in bs, in the order in which they should be sorted. If less
-            orders are given than there are input bytes, the last order is used
-            for all following columns. If None is given, the natural order is
-            assumed.
+            should be sorted. An order is either a list of bytes objects of
+            length one, in the order in which they should be sorted, to indicate
+            a general order valid for any subcontext. Alternatively it can be a
+            dictionary mapping the symbols in the columns before (as a bytes
+            object) to a specific order for that context. The keys of this
+            dictionary must have the same length as the order's position in the
+            orders list. An order must contain all byte values in appearing in
+            the relevant context. If less orders are given than there are input
+            bytes, the last order is used for all following columns. If None is
+            given, the natural order is assumed.
 
     Returns:
         A bwt.BWTEncodeResult containing the BW code and the list of unique
@@ -135,7 +121,7 @@ def bw_encode(bs, orders=None):
         orders = [[bytes([x]) for x in range(256)]]
 
     l = len(bs)
-    # take the bs  twice so we can get long substrings from the end
+    # take the bs twice so we can get long substrings from the end
     bs = bs + bs
     order_lists = make_order_lists(bs, orders)
 
