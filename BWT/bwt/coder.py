@@ -44,22 +44,24 @@ def make_order_lists(bs, orders):
         sorted according to the n-th order in orders.
     """
     def list_to_dict(order_list, distinct_syms):
+        result = {}
         for i, s in enumerate(order):
             # ignore multiple occurrences, count the first one
-            if not s in order_dict:
-                order_dict[s] = i
+            if not s in result:
+                result[s] = i
                 max_order = i
             else:
-                warnings.warn('multiple occurence of symbol or sequence {0} in '
+                warnings.warn('multiple occurence of symbol {0} in '
                               'order. ignoring.'.format(s))
         # check that order is complete (all bytes from bs are in it)
         for b in distinct_syms:
-            if not bytes([b]) in order_dict:
-                warnings.warn('symbol or sequence {0} not in the custom order but '
+            if not bytes([b]) in result:
+                warnings.warn('symbol {0} not in the custom order but '
                               'in the bs.  appending'.format(b))
                 # append any missing bytes
-                order_dict[bytes([b])] = max_order + 1
+                result[bytes([b])] = max_order + 1
                 max_order += 1
+        return result
     distinct_syms = set(bs)
     # turn the order lists of bytes objects into dicts {byte: value} for
     # ordering
@@ -138,7 +140,7 @@ def bw_encode(bs, orders=None):
             order_firsts.append(order_lists[j][i + j])
         # now use the last ordering for the rest
         order_firsts.extend(order_lists[-1][i + min(NUM_CHARS,
-                                                len(order_lists)):i + NUM_CHARS])
+                                                    len(order_lists)):i + NUM_CHARS])
         tuples.append((i, order_firsts, bs[i - 1],
                        bs[i:i + NUM_CHARS]))
     tuples.sort(key=lambda x: x[1])

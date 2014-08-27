@@ -84,6 +84,22 @@ def make_transitions(work_dir, metrics, col_depth=1):
                           'xb') as out_file:
                     pickle.dump(metric_opts['new_penalty_log'], out_file)
 
+
+def write_natural_tour(path):
+    tour_text = 'NAME : bwt.trivial.tour\n'
+    tour_text += 'TYPE : TOUR\n'
+    tour_text += 'DIMENSION : 256\n'
+    tour_text += 'TOUR_SECTION\n'
+    for i in range(256):
+        tour_text += '{0}\n'.format(i)
+    tour_text += '-1\n'
+    tour_text += 'EOF'
+    numbers_to_names = {i:bytes([i]) for i in range(256)}
+    with open(path + '.tour', 'xt') as tour_file:
+        tour_file.write(tour_text)
+    with open(path + '.nodenames', 'xb') as names_file:
+        pickle.dump(numbers_to_names, names_file)
+
 def write_tsplib_files(work_dir, metrics):
     """Create and write the .tsp and .par files for the LKH program as well as
     the file mapping the LKH node ids back to the node names."""
@@ -100,6 +116,10 @@ def write_tsplib_files(work_dir, metrics):
         # make dict number->nodename for the tsp file
         nodes = set([t[0] for t in transitions])
         num_nodes = len(nodes)
+        if num_nodes < 3:
+            # trivial case, no tsp necessary (LKH actually can't handle this)
+            write_natural_tour(work_dir + file_name)
+            return
         numbers_to_names = {}
         for i, n in enumerate(sorted(nodes), 1):
             numbers_to_names[i] = n
@@ -231,7 +251,7 @@ def print_simulated_compression_results(work_dir, metrics, in_file_path):
     for metric in metrics:
         file_name = metric_unique_name(metric, b'')
         print('{0}:'.format(file_name))
-        orders = assemble_multicol_orders(work_dir, file_name)
+        orders = assemble_multicol_orders(work_dir, metric)
         print('all columns      : {0}'.format(final_bit_len(bs, orders)))
         orders.append(natural_order)
         print('first column only: {0}'.format(final_bit_len(bs, orders)))
@@ -398,9 +418,19 @@ def assemble_multicol_orders(work_dir, metric):
     base_file_name = metric_unique_name(metric, b'')
     file_name_splits = [f.split('.')
                         for f in find_metric_file_names(work_dir, metric)]
+    prefixes = [bytes(map(lambda x:int(x), p[1:])) for p in file_name_splits]
     col_depth = max((len(s) for s in file_name_splits))
-#     [read_tsplib_files(work_dir + file_name + '.tour',
-#                                    work_dir + file_name + '.nodenames')]
+    orders = [read_tsplib_files(work_dir + base_file_name + '.tour',
+                                work_dir + base_file_name + '.nodenames')]
+    for i in range(1, col_depth):
+        order = {}
+        for prefix in [p for p in prefixes if len(p) == i]:
+            file_name = base_file_name + '.' + '.'.join([str(b)for b in prefix])
+            tour = read_tsplib_files(work_dir + file_name + '.tour',
+                                     work_dir + file_name + '.nodenames')
+            order[prefix] = tour
+        orders.append(order)
+    return orders
 
 if __name__ == '__main__':
     start_time = time.time()
