@@ -85,16 +85,25 @@ def make_transitions(work_dir, metrics, col_depth=1):
                     pickle.dump(metric_opts['new_penalty_log'], out_file)
 
 
-def write_natural_tour(path):
+def write_trivial_tour(path, transitions):
     tour_text = 'NAME : bwt.trivial.tour\n'
     tour_text += 'TYPE : TOUR\n'
     tour_text += 'DIMENSION : 256\n'
     tour_text += 'TOUR_SECTION\n'
-    for i in range(256):
-        tour_text += '{0}\n'.format(i)
+    numbers_to_names = {}
+    # either there's 2 nodes and transitions between them, or no nodes
+    if len(transitions) == 2:
+        sorted_nodes = sorted(transitions.keys(), key=lambda x:transitions[x])
+        tour_text += '1\n2\n'
+        numbers_to_names[1] = sorted_nodes[0]
+        numbers_to_names[2] = sorted_nodes[1]
+    else:
+        # write natural tour
+        for i in range(1, 257):
+            tour_text += '{0}\n'.format(i)
+            numbers_to_names = {i + 1:bytes([i]) for i in range(256)}
     tour_text += '-1\n'
     tour_text += 'EOF'
-    numbers_to_names = {i:bytes([i]) for i in range(256)}
     with open(path + '.tour', 'xt') as tour_file:
         tour_file.write(tour_text)
     with open(path + '.nodenames', 'xb') as names_file:
@@ -118,8 +127,8 @@ def write_tsplib_files(work_dir, metrics):
         num_nodes = len(nodes)
         if num_nodes < 3:
             # trivial case, no tsp necessary (LKH actually can't handle this)
-            write_natural_tour(work_dir + file_name)
-            return
+            write_trivial_tour(work_dir + file_name, transitions)
+            continue
         numbers_to_names = {}
         for i, n in enumerate(sorted(nodes), 1):
             numbers_to_names[i] = n
@@ -252,9 +261,11 @@ def print_simulated_compression_results(work_dir, metrics, in_file_path):
         file_name = metric_unique_name(metric, b'')
         print('{0}:'.format(file_name))
         orders = assemble_multicol_orders(work_dir, metric)
-        print('all columns      : {0}'.format(final_bit_len(bs, orders)))
+        print('using the last specified as default: {0}'
+              .format(final_bit_len(bs, orders)))
         orders.append(natural_order)
-        print('first column only: {0}'.format(final_bit_len(bs, orders)))
+        print('using the natural order as default : {0}'
+              .format(final_bit_len(bs, orders)))
         print()
 
 def print_mtf_prediction_evaluations(work_dir, metrics):
@@ -473,9 +484,9 @@ if __name__ == '__main__':
 
 #     make_transitions(work_dir, metrics, col_depth=2)
 
-    write_tsplib_files(work_dir, metrics)
+#     write_tsplib_files(work_dir, metrics)
 
-#     print_simulated_compression_results(work_dir, metrics, in_file_path)
+    print_simulated_compression_results(work_dir, metrics, in_file_path)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 

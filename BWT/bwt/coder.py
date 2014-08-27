@@ -89,7 +89,7 @@ def make_order_lists(bs, orders):
             # lenght of prefix, assume all are equal
             l = len(next(iter(order_dict.keys())))
             for i, b in enumerate(bs):
-                if i > l:
+                if i >= l:
                     prefix = bs[i - l:i]
                 else:
                     prefix = bs[i - l:] + bs[:i]
