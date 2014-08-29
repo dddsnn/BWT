@@ -86,6 +86,9 @@ def make_transitions(work_dir, metrics, col_depth=1):
 
 
 def write_trivial_tour(path, transitions):
+    if os.path.exists(path + '.tour'):
+        print('skipping {0}, because file {0}.tour exists'.format(path))
+        return
     tour_text = 'NAME : bwt.trivial.tour\n'
     tour_text += 'TYPE : TOUR\n'
     tour_text += 'DIMENSION : 256\n'
@@ -142,7 +145,7 @@ def write_tsplib_files(work_dir, metrics):
         tsp_text += 'EDGE_WEIGHT_FORMAT: FULL_MATRIX\n'
         tsp_text += 'EDGE_WEIGHT_SECTION\n'
 
-        MAX_INT = 2 * 10 ** 7  # the maximum value to write to the tsp file
+        MAX_INT = 10 ** 7  # the maximum value to write to the tsp file
         INFINITY = 2147483648  # value to signify infinity in the tsp file
         # need to scale up all floats to integers
         # min and max trs costs, and the ratio
@@ -232,7 +235,7 @@ def read_tsplib_files(in_path_tour, in_path_names):
     with open(in_path_names, 'rb') as names_file:
         names_dict = pickle.load(names_file)
         for number in node_number_list:
-            tour.append(names_dict[number])
+            tour.append(names_dict[number][-1:])
     return tour
 
 def print_simulated_compression_results(work_dir, metrics, in_file_path):
@@ -422,7 +425,7 @@ def find_metric_file_names(work_dir, metric):
     """Find base file names for all prefixes for metric in work_dir."""
     metric_name = metric_unique_name(metric, b'')
     files = os.listdir(path=work_dir)
-    metric_files = [f for f in files if f[:len(metric_name)] == metric_name]
+    metric_files = [f for f in files if f.split('.')[0] == metric_name]
     return list(set([f.rsplit(sep='.', maxsplit=1)[0] for f in metric_files]))
 
 def assemble_multicol_orders(work_dir, metric):
@@ -447,9 +450,9 @@ if __name__ == '__main__':
     start_time = time.time()
     work_dir = '/home/dddsnn/tmp/book1_2col/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
-    metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
-               ('chapin_inv', {'log':True})]
-#     metrics = []
+#     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
+#                ('chapin_inv', {'log':True})]
+    metrics = []
     for w in [True, False]:
         for entr_len in [False, 'complete', 'sparse']:
             for new_pen in [False, 'generic_mean', 'generic_median',
@@ -477,8 +480,8 @@ if __name__ == '__main__':
 #                             'entropy_code_len': False,
 #                             'weighted': False, 'new_penalty_log': {},
 #                             'mtf_prediction_correction':6.9992559523809526})]
-    metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
-                            'weighted': False, 'new_penalty_log': {}})]
+#     metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
+#                             'weighted': False, 'new_penalty_log': {}})]
 
 #     make_aux_data(work_dir, in_file_path, col_depth=2)
 
