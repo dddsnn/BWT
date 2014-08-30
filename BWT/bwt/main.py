@@ -488,9 +488,9 @@ if __name__ == '__main__':
 
 #     make_transitions(work_dir, metrics, col_depth=2)
 
-    write_tsplib_files(work_dir, metrics)
+#     write_tsplib_files(work_dir, metrics)
 
-#     print_simulated_compression_results(work_dir, metrics, in_file_path)
+    print_simulated_compression_results(work_dir, metrics, in_file_path)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 

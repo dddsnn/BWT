@@ -30,12 +30,19 @@ def print_demo(text):
     print(firsts)
     print(encoded)
 
-def make_order_lists(bs, orders):
+def make_order_lists(bs, orders, depth, start_depth=0):
     """Make a list of lists by which the columns of the BW table can be ordered.
 
     Args:
         bs: The input bytes object.
         orders: A list of orders, see bw_encode().
+        depth: How many lists should be returned. This is important for orders
+            that aren't generic, as order lists in this case are only valid for
+            one column of the BW table. If there aren't enough orders to make
+            lists, the last order is used as a default.
+        start_depth: The number of lists that will be omitted from the
+            beginning, so not all lists have to be created again when more are
+            needed.
 
     Returns:
         A list of as many lists as there are orders in the orders argument. Each
@@ -45,19 +52,14 @@ def make_order_lists(bs, orders):
     """
     def list_to_dict(order_list, distinct_syms):
         result = {}
-        for i, s in enumerate(order):
+        for i, s in enumerate(order_list):
             # ignore multiple occurrences, count the first one
             if not s in result:
                 result[s] = i
                 max_order = i
-            else:
-                warnings.warn('multiple occurence of symbol {0} in '
-                              'order. ignoring.'.format(s))
         # check that order is complete (all bytes from bs are in it)
         for b in distinct_syms:
             if not bytes([b]) in result:
-                warnings.warn('symbol {0} not in the custom order but '
-                              'in the bs.  appending'.format(b))
                 # append any missing bytes
                 result[bytes([b])] = max_order + 1
                 max_order += 1
@@ -78,21 +80,27 @@ def make_order_lists(bs, orders):
         order_dicts.append(order_dict)
     # make lists by which the strings will be sorted
     order_lists = []
-    for order_dict in order_dicts:
+    for d in range(start_depth, depth):
+        print(d)
+        try:
+            order_dict = order_dicts[d]
+            offset = 0
+        except IndexError:
+            order_dict = order_dicts[-1]
+            offset = d - len(order_dicts) + 1
         order_list = []
         if None in order_dict:
             # only one general order
-            order_dict = order_dict[None]
             for b in bs:
-                order_list.append(order_dict[bytes([b])])
+                order_list.append(order_dict[None][bytes([b])])
         else:
             # lenght of prefix, assume all are equal
             l = len(next(iter(order_dict.keys())))
             for i, b in enumerate(bs):
-                if i >= l:
-                    prefix = bs[i - l:i]
+                if i >= l + offset or i < offset:
+                    prefix = bs[i - l - offset:i - offset]
                 else:
-                    prefix = bs[i - l:] + bs[:i]
+                    prefix = bs[i - l - offset:] + bs[:i - offset]
                 order_list.append(order_dict[prefix][bytes([b])])
         order_lists.append(order_list)
     return order_lists
@@ -122,25 +130,19 @@ def bw_encode(bs, orders=None):
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
 
+    NUM_CHARS = 25  # number of characters to save for ordering
     l = len(bs)
     # take the bs twice so we can get long substrings from the end
     bs = bs + bs
-    order_lists = make_order_lists(bs, orders)
+    order_lists = make_order_lists(bs, orders, NUM_CHARS)
 
-    NUM_CHARS = 25  # number of characters to save for ordering
     # make tuples (pos in the table, ordering first bytes, last byte,
     # actual first bytes)
     tuples = []
     for i in range(l):
         # make the list the tuple will be sorted by, according to the order
         # lists for the appropriate columns
-        order_firsts = []
-        # first the columns for which there is a special ordering
-        for j in range(min(NUM_CHARS, len(order_lists))):
-            order_firsts.append(order_lists[j][i + j])
-        # now use the last ordering for the rest
-        order_firsts.extend(order_lists[-1][i + min(NUM_CHARS,
-                                                    len(order_lists)):i + NUM_CHARS])
+        order_firsts = [order_lists[j][i + j] for j in range(NUM_CHARS)]
         tuples.append((i, order_firsts, bs[i - 1],
                        bs[i:i + NUM_CHARS]))
     tuples.sort(key=lambda x: x[1])
@@ -172,12 +174,15 @@ def bw_encode(bs, orders=None):
                     # j characters are enough
                     if not bs[t[0] + j] in other_chars:
                         # make the list the tuple will be sorted by, see above
-                        order_firsts = []
                         num_chars = j + 1
-                        for k in range(min(num_chars, len(order_lists))):
-                            order_firsts.append(order_lists[k][t[0] + k])
-                        order_firsts.extend(order_lists[-1][t[0] + min(num_chars, len(order_lists)):
-                                             t[0] + num_chars])
+                        if num_chars > len(order_lists):
+                            # we need new order lists with more elements for
+                            # more columns
+                            order_lists.extend(make_order_lists(bs, orders,
+                                                           num_chars,
+                                                           len(order_lists)))
+                        order_firsts = [order_lists[k][t[0] + k]
+                                        for k in range(num_chars)]
                         long_tuples.append((t[0], order_firsts,
                                             bs[t[0] - 1],
                                             bs[t[0]:t[0] + j + 1]))
