@@ -81,12 +81,16 @@ def make_order_lists(bs, orders, depth, start_depth=0):
     # make lists by which the strings will be sorted
     order_lists = []
     for d in range(start_depth, depth):
-        print(d)
         try:
             order_dict = order_dicts[d]
             offset = 0
         except IndexError:
             order_dict = order_dicts[-1]
+            if None in order_dict and order_lists:
+                # if the default order is a general order, we can just copy the
+                # last order list
+                order_lists.append(order_lists[-1][:])
+                continue
             offset = d - len(order_dicts) + 1
         order_list = []
         if None in order_dict:
@@ -178,9 +182,16 @@ def bw_encode(bs, orders=None):
                         if num_chars > len(order_lists):
                             # we need new order lists with more elements for
                             # more columns
-                            order_lists.extend(make_order_lists(bs, orders,
-                                                           num_chars,
-                                                           len(order_lists)))
+                            if not isinstance(orders[-1], Mapping):
+                                # if the default order is a general one, we can
+                                # just copy to save time
+                                times = num_chars - len(order_lists)
+                                order_lists.extend(order_lists[-1:] * times)
+                            else:
+                                extension = make_order_lists(bs, orders,
+                                                             num_chars,
+                                                             len(order_lists))
+                                order_lists.extend(extension)
                         order_firsts = [order_lists[k][t[0] + k]
                                         for k in range(num_chars)]
                         long_tuples.append((t[0], order_firsts,
