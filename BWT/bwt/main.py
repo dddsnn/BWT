@@ -449,7 +449,7 @@ def assemble_multicol_orders(work_dir, metric):
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/book1_2col/'
+    work_dir = '/home/dddsnn/tmp/book1/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
@@ -490,10 +490,14 @@ if __name__ == '__main__':
 
 #     write_tsplib_files(work_dir, metrics)
 
-    print_simulated_compression_results(work_dir, metrics, in_file_path)
+#     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
+
+    bw = cd.bw_encode(b'mississippi')
+    dec = cd.bw_decode(bw.encoded, 0)
+
 
     print('time: {0:.0f}s'.format(time.time() - start_time))

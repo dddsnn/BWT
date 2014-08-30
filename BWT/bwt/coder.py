@@ -134,8 +134,8 @@ def bw_encode(bs, orders=None):
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
 
-    NUM_CHARS = 25  # number of characters to save for ordering
     l = len(bs)
+    NUM_CHARS = min(25, l)  # number of characters to save for ordering
     # take the bs twice so we can get long substrings from the end
     bs = bs + bs
     order_lists = make_order_lists(bs, orders, NUM_CHARS)
@@ -204,6 +204,25 @@ def bw_encode(bs, orders=None):
     firsts = [t[3] for t in tuples]
     encoded = bytes([t[2] for t in tuples])
     result = BWEncodeResult(firsts, encoded)
+    return result
+
+def bw_decode(bs, start_idx, orders=None):
+    # TODO only one order works for now
+    # if no order was given, assume natural
+    if not orders:
+        orders = [[bytes([x]) for x in range(256)]]
+    first_col = bytes(sorted(bs, key=lambda x:orders[0][x]))
+    i = start_idx
+    result = bytes([bs[i]])
+    for _ in range(len(bs) - 1):
+        new_sym = first_col[i]
+        result += bytes([new_sym])
+        num_skip = sum(1 for j, b in enumerate(first_col)
+                             if b == new_sym and j <= i) - 1
+        sym_idx_in_code = (j for j, b in enumerate(bs) if b == new_sym)
+        for j in range(num_skip):
+            next(sym_idx_in_code)
+        i = next(sym_idx_in_code)
     return result
 
 def mtf_partial_enc(bs):
