@@ -2,6 +2,8 @@ import warnings
 from bwt import BWEncodeResult
 from collections.abc import Mapping
 
+NUM_CHARS = 25
+
 def bw_table(text):
     """Create the Burrows-Wheeler table."""
     table = [text]
@@ -135,10 +137,10 @@ def bw_encode(bs, orders=None):
         orders = [[bytes([x]) for x in range(256)]]
 
     l = len(bs)
-    NUM_CHARS = min(25, l)  # number of characters to save for ordering
+    num_chars = min(NUM_CHARS, l)  # number of characters to save for ordering
     # take the bs twice so we can get long substrings from the end
     bs = bs + bs
-    order_lists = make_order_lists(bs, orders, NUM_CHARS)
+    order_lists = make_order_lists(bs, orders, num_chars)
 
     # make tuples (pos in the table, ordering first bytes, last byte,
     # actual first bytes)
@@ -146,9 +148,9 @@ def bw_encode(bs, orders=None):
     for i in range(l):
         # make the list the tuple will be sorted by, according to the order
         # lists for the appropriate columns
-        order_firsts = [order_lists[j][i + j] for j in range(NUM_CHARS)]
+        order_firsts = [order_lists[j][i + j] for j in range(num_chars)]
         tuples.append((i, order_firsts, bs[i - 1],
-                       bs[i:i + NUM_CHARS]))
+                       bs[i:i + num_chars]))
     tuples.sort(key=lambda x: x[1])
     # check for duplicate first bytes and compare longer strings
     for i in range(len(tuples) - 1):
@@ -171,7 +173,7 @@ def bw_encode(bs, orders=None):
                 # if the j-th character in the string is different from all the
                 # other affected strings, add the string of length j to the
                 # long tuples
-                for j in range(NUM_CHARS, l):
+                for j in range(num_chars, l):
                     # make a list of chars the other strings have a position j
                     other_chars = [bs[o[0] + j] for o in others]
                     # if the current string's char doesn't appear in it,
@@ -207,23 +209,94 @@ def bw_encode(bs, orders=None):
     return result
 
 def bw_decode(bs, start_idx, orders=None):
+    def find_sym_idx_in_code(idx, level, history):
+        # TODO extend order lists if necessary
+        # TODO if the input is periodical, multiple correct solutions will
+        # remain in possible_idx_seq. break when their length is the length of
+        # the entire input
+        history.append(idx)
+        sym = first_col[idx]
+        # how many times the same symbol occurs in the first column before
+        num_in_first_col = sum(1 for i, b in enumerate(first_col)
+                               if b == sym and i <= idx) - 1
+        possible_idx_seq = [[i] for i, b in enumerate(bs) if b == sym]
+        num_skipped = 0
+        while True:
+#             print(level)
+            possible_idx_seq.sort(key=lambda x:order_lists[level][x[-1]])
+            next_sym = first_col[possible_idx_seq[num_in_first_col - num_skipped][-1]]
+            num_skipped += sum(1 for i in range(num_in_first_col - num_skipped)
+                              if possible_idx_seq[i][-1] in history or first_col[possible_idx_seq[i][-1]] != next_sym)
+            possible_idx_seq = [l for l in possible_idx_seq
+                                if l[-1] not in history and first_col[l[-1]] == next_sym]
+            if len(possible_idx_seq) == 1:
+                break
+            for l in possible_idx_seq:
+#                 if len(history) + len(possible_idx_seq[0]) + 1 >= len(bs):
+                    # delete the beginning of history to allow wrapping around
+#                     n = len(bs) - len(history) - len(possible_idx_seq[0])
+#                     tmp_ruled_out = history[:-n]
+#                 else:  # TODO
+#                     tmp_ruled_out = history[:]
+                l.append(find_sym_idx_in_code(l[-1], level + 1, history + l[:-1]))
+            # TODO make it possible to return a whole sequence, if it's sure
+            # that it's correct
+        return possible_idx_seq[0][0]
+#         syms_idx_in_code = [i for i, b in enumerate(bs) if b == sym]
+#         syms_idx_in_code.sort(key=lambda x:order_lists[level][x])
+#         sym_idx_in_code = syms_idx_in_code[num_in_first_col]
+#         possible_idx_seq = [(i, idx) for (i, idx) in enumerate(syms_idx_in_code)
+#                         if first_col[idx] == first_col[sym_idx_in_code]]
+#         while len(possible_idx_seq) != 1:
+#             possible_idx_seq = [(i, find_sym_idx_in_code(idx, first_col,
+#                                                      order_lists, level + 1))
+#                              for (i, idx) in possible_idx_seq]
+        # only one possibility, return
+#         return sym_idx_in_code
+            # TODO
+
+
     # TODO only one order works for now
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
-    first_col = bytes(sorted(bs, key=lambda x:orders[0][x]))
+    num_chars = min(len(bs), NUM_CHARS)
+    order_lists = make_order_lists(bs, orders, num_chars)
+    first_col = bytes((x[1] for x in sorted(zip(order_lists[0], bs),
+                                            key=lambda x:x[0])))
+
+
+
+
+
+    for i in range(len(bs)):
+        try:
+            print(find_sym_idx_in_code(i, 0, []))
+        except:
+            print('fail at {0}'.format(i))
+    return
+
+
+
+
     i = start_idx
-    result = bytes([bs[i]])
+    result_ints = [bs[i]]
     for _ in range(len(bs) - 1):
+        # append the new symbol
         new_sym = first_col[i]
-        result += bytes([new_sym])
-        num_skip = sum(1 for j, b in enumerate(first_col)
-                             if b == new_sym and j <= i) - 1
-        sym_idx_in_code = (j for j, b in enumerate(bs) if b == new_sym)
-        for j in range(num_skip):
-            next(sym_idx_in_code)
-        i = next(sym_idx_in_code)
-    return result
+        result_ints.append(new_sym)
+        # find the new symbol in the code
+        i = find_sym_idx_in_code(i, 1, [])
+#         num_in_first_col = sum(1 for j, b in enumerate(first_col)
+#                                if b == new_sym and j <= i) - 1
+#         syms_idx_in_code = [i for i, b in enumerate(bs) if b == new_sym]
+#         syms_idx_in_code.sort(key=lambda x:order_lists[1][x])
+#         i = syms_idx_in_code[num_in_first_col]
+#         sym_idx_in_code = (j for j, b in enumerate(bs) if b == new_sym)
+#         for j in range(num_in_first_col):
+#             next(sym_idx_in_code)
+#         i = next(sym_idx_in_code)
+    return bytes(result_ints)
 
 def mtf_partial_enc(bs):
     """Do a partial MTF encode of a byte sequence.
