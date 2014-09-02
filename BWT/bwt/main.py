@@ -497,8 +497,8 @@ if __name__ == '__main__':
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
     natural_order = [bytes([x]) for x in range(256)]
-    orders = [natural_order]  # , reversed(natural_order)]
-    bw = cd.bw_encode(b'mississippi')
+    orders = [natural_order , reversed(natural_order)]
+    bw = cd.bw_encode(b'abracadabra')
     dec = cd.bw_decode(bw.encoded, 0)
     print(dec)
 

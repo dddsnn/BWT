@@ -211,9 +211,6 @@ def bw_encode(bs, orders=None):
 def bw_decode(bs, start_idx, orders=None):
     def find_sym_idx_in_code(idx, level, history):
         # TODO extend order lists if necessary
-        # TODO if the input is periodical, multiple correct solutions will
-        # remain in possible_idx_seq. break when their length is the length of
-        # the entire input
         history.append(idx)
         sym = first_col[idx]
         # how many times the same symbol occurs in the first column before
@@ -222,41 +219,45 @@ def bw_decode(bs, start_idx, orders=None):
         possible_idx_seq = [[i] for i, b in enumerate(bs) if b == sym]
         num_skipped = 0
         while True:
-#             print(level)
             possible_idx_seq.sort(key=lambda x:order_lists[level][x[-1]])
-            next_sym = first_col[possible_idx_seq[num_in_first_col - num_skipped][-1]]
-            num_skipped += sum(1 for i in range(num_in_first_col - num_skipped)
-                              if possible_idx_seq[i][-1] in history or first_col[possible_idx_seq[i][-1]] != next_sym)
-            possible_idx_seq = [l for l in possible_idx_seq
-                                if l[-1] not in history and first_col[l[-1]] == next_sym]
-            if len(possible_idx_seq) == 1:
-                break
+            next_sym = first_col[possible_idx_seq[num_in_first_col
+                                                  - num_skipped][-1]]
+            new_seq = []
+            for i, l in enumerate(possible_idx_seq):
+                # count indices that haven't already appeared and where the next
+                # symbol matches
+                if l[-1] not in history and first_col[l[-1]] == next_sym:
+                    new_seq.append(l)
+                # in case the history plus the sequence is as long as the input
+                # and now wraps around to the correct symbol, that's also ok
+                elif (len(history) + len(l) == len(bs) + 1
+                      and history[0] == l[-1]
+                      and first_col[l[-1]] == next_sym):
+                    new_seq.append(l)
+                elif i < num_in_first_col:
+                    num_skipped += 1
+            possible_idx_seq = new_seq
+            if len(possible_idx_seq) == 0:
+                raise Exception  # TODO, pretty sure this can't happen
+            elif len(possible_idx_seq) == 1:
+                return possible_idx_seq[0][0]
+                # TODO make it possible to return a whole sequence, if it's sure
+                # that it's correct
+            elif all(len(history) + len(l) == len(bs) + 1
+                     for l in possible_idx_seq):
+                first_res = [bs[i] for i in possible_idx_seq[0]]
+                if all([bs[i] == first_res for i in l]
+                       for l in possible_idx_seq[1:]):
+                    # all possible sequences have maximum length and yield the
+                    # same result, it's safe to return
+                    return possible_idx_seq[0][0]
+                else:
+                    raise Exception  # TODO
+                # TODO make it possible to return a whole sequence, if it's sure
+                # that it's correct
             for l in possible_idx_seq:
-#                 if len(history) + len(possible_idx_seq[0]) + 1 >= len(bs):
-                    # delete the beginning of history to allow wrapping around
-#                     n = len(bs) - len(history) - len(possible_idx_seq[0])
-#                     tmp_ruled_out = history[:-n]
-#                 else:  # TODO
-#                     tmp_ruled_out = history[:]
-                l.append(find_sym_idx_in_code(l[-1], level + 1, history + l[:-1]))
-            # TODO make it possible to return a whole sequence, if it's sure
-            # that it's correct
-        return possible_idx_seq[0][0]
-#         syms_idx_in_code = [i for i, b in enumerate(bs) if b == sym]
-#         syms_idx_in_code.sort(key=lambda x:order_lists[level][x])
-#         sym_idx_in_code = syms_idx_in_code[num_in_first_col]
-#         possible_idx_seq = [(i, idx) for (i, idx) in enumerate(syms_idx_in_code)
-#                         if first_col[idx] == first_col[sym_idx_in_code]]
-#         while len(possible_idx_seq) != 1:
-#             possible_idx_seq = [(i, find_sym_idx_in_code(idx, first_col,
-#                                                      order_lists, level + 1))
-#                              for (i, idx) in possible_idx_seq]
-        # only one possibility, return
-#         return sym_idx_in_code
-            # TODO
-
-
-    # TODO only one order works for now
+                l.append(find_sym_idx_in_code(l[-1], level + 1,
+                                              history + l[:-1]))
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
@@ -264,21 +265,6 @@ def bw_decode(bs, start_idx, orders=None):
     order_lists = make_order_lists(bs, orders, num_chars)
     first_col = bytes((x[1] for x in sorted(zip(order_lists[0], bs),
                                             key=lambda x:x[0])))
-
-
-
-
-
-    for i in range(len(bs)):
-        try:
-            print(find_sym_idx_in_code(i, 0, []))
-        except:
-            print('fail at {0}'.format(i))
-    return
-
-
-
-
     i = start_idx
     result_ints = [bs[i]]
     for _ in range(len(bs) - 1):
@@ -287,15 +273,6 @@ def bw_decode(bs, start_idx, orders=None):
         result_ints.append(new_sym)
         # find the new symbol in the code
         i = find_sym_idx_in_code(i, 1, [])
-#         num_in_first_col = sum(1 for j, b in enumerate(first_col)
-#                                if b == new_sym and j <= i) - 1
-#         syms_idx_in_code = [i for i, b in enumerate(bs) if b == new_sym]
-#         syms_idx_in_code.sort(key=lambda x:order_lists[1][x])
-#         i = syms_idx_in_code[num_in_first_col]
-#         sym_idx_in_code = (j for j, b in enumerate(bs) if b == new_sym)
-#         for j in range(num_in_first_col):
-#             next(sym_idx_in_code)
-#         i = next(sym_idx_in_code)
     return bytes(result_ints)
 
 def mtf_partial_enc(bs):
