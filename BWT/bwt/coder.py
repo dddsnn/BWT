@@ -205,11 +205,12 @@ def bw_encode(bs, orders=None):
             tuples[i:i + num_affected] = long_tuples
     firsts = [t[3] for t in tuples]
     encoded = bytes([t[2] for t in tuples])
-    result = BWEncodeResult(firsts, encoded)
+    start_index = next((i for i, t in enumerate(tuples) if t[0] == 1))
+    result = BWEncodeResult(firsts, encoded, start_index)
     return result
 
 def bw_decode(bs, start_idx, orders=None):
-    def next_indices(idx, level=1, history=[]):
+    def next_indices(idx, level, history):
         # TODO extend order lists if necessary
         history.append(idx)
         sym = first_col[idx]
@@ -221,6 +222,7 @@ def bw_decode(bs, start_idx, orders=None):
             possible_idx_seq.sort(key=lambda x:order_lists[level][x[-1]])
             next_sym = first_col[possible_idx_seq[num_in_first_col][-1]]
             tmp_seq = []
+            num_skipped = 0
             for i, l in enumerate(possible_idx_seq):
                 # count indices that haven't already appeared and where the next
                 # symbol matches
@@ -232,8 +234,9 @@ def bw_decode(bs, start_idx, orders=None):
                       and history[0] == l[-1]
                       and first_col[l[-1]] == next_sym):
                     tmp_seq.append(l)
-                elif i < num_in_first_col:
-                    num_in_first_col -= 1
+                elif i <= num_in_first_col:
+                    num_skipped += 1
+            num_in_first_col -= num_skipped
             possible_idx_seq = tmp_seq
             if len(possible_idx_seq) == 0:
                 # return None to indicate no successor index can be found with
@@ -243,27 +246,32 @@ def bw_decode(bs, start_idx, orders=None):
                 return possible_idx_seq[0]
             elif all(len(history) + len(l) >= len(bs) + 1
                      for l in possible_idx_seq):
-                # TODO possible index seq should all have the same length,
-                # checking all shouldn't be necessary
                 first_res = [bs[i] for i in possible_idx_seq[0]]
                 if all([bs[i] == first_res for i in l]
                        for l in possible_idx_seq[1:]):
                     # all possible sequences have maximum length and yield the
                     # same result, it's safe to return
+                    # TODO return the correct number of indices; possible
+                    # sequences may be longer than expected
                     return possible_idx_seq[0][:-1]
                 else:
                     raise Exception  # TODO i don't think this can happen
             tmp_seq = []
+            num_skipped = 0
             for i, l in enumerate(possible_idx_seq):
                 next_seq = next_indices(l[-1], level + 1, history + l[:-1])
                 if next_seq is None:
                     # indicates this sequence is impossible
-                    if i < num_in_first_col:
-                        num_in_first_col -= 1
+                    if i <= num_in_first_col:
+                        num_skipped += 1
                     continue
                 l.extend(next_seq)
                 tmp_seq.append(l)
+            num_in_first_col -= num_skipped
             possible_idx_seq = tmp_seq
+            if len(possible_idx_seq) == 0:
+                # no sequence has a correct continuation
+                return None
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]

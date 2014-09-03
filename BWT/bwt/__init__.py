@@ -1,7 +1,8 @@
 from collections import namedtuple
 
 
-BWEncodeResult = namedtuple('BWEncodeResult', ['firsts', 'encoded'])
+BWEncodeResult = namedtuple('BWEncodeResult', ['firsts', 'encoded',
+                                               'start_index'])
 
 PartialMTFAnalysisResult = namedtuple('PartialMTFAnalysisResult',
                                           ['raw', 'length', 'length_rec',

@@ -498,8 +498,11 @@ if __name__ == '__main__':
 
     natural_order = [bytes([x]) for x in range(256)]
     orders = [natural_order , reversed(natural_order)]
-    bw = cd.bw_encode(b'asdfdsfghwerksdvlkjklsd;')
-    dec = cd.bw_decode(bw.encoded, 0)
+    in_bs = b'missishjkdgfhjkdasdasdasdjklsdgfjklsdgfjkl'
+    in_bs = b'missishjkdgfsdfgsdgfthjythjythtythjyilakqj'
+    bw = cd.bw_encode(in_bs)
+    dec = cd.bw_decode(bw.encoded, bw.start_index)
+    print(in_bs == dec)
     print(dec)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
