@@ -209,55 +209,61 @@ def bw_encode(bs, orders=None):
     return result
 
 def bw_decode(bs, start_idx, orders=None):
-    def find_sym_idx_in_code(idx, level, history):
+    def next_indices(idx, level=1, history=[]):
         # TODO extend order lists if necessary
         history.append(idx)
         sym = first_col[idx]
         # how many times the same symbol occurs in the first column before
         num_in_first_col = sum(1 for i, b in enumerate(first_col)
-                               if b == sym and i <= idx) - 1
+                               if b == sym and i < idx)
         possible_idx_seq = [[i] for i, b in enumerate(bs) if b == sym]
-        num_skipped = 0
         while True:
             possible_idx_seq.sort(key=lambda x:order_lists[level][x[-1]])
-            next_sym = first_col[possible_idx_seq[num_in_first_col
-                                                  - num_skipped][-1]]
-            new_seq = []
+            next_sym = first_col[possible_idx_seq[num_in_first_col][-1]]
+            tmp_seq = []
             for i, l in enumerate(possible_idx_seq):
                 # count indices that haven't already appeared and where the next
                 # symbol matches
                 if l[-1] not in history and first_col[l[-1]] == next_sym:
-                    new_seq.append(l)
+                    tmp_seq.append(l)
                 # in case the history plus the sequence is as long as the input
                 # and now wraps around to the correct symbol, that's also ok
                 elif (len(history) + len(l) == len(bs) + 1
                       and history[0] == l[-1]
                       and first_col[l[-1]] == next_sym):
-                    new_seq.append(l)
+                    tmp_seq.append(l)
                 elif i < num_in_first_col:
-                    num_skipped += 1
-            possible_idx_seq = new_seq
+                    num_in_first_col -= 1
+            possible_idx_seq = tmp_seq
             if len(possible_idx_seq) == 0:
-                raise Exception  # TODO, pretty sure this can't happen
+                # return None to indicate no successor index can be found with
+                # the given history
+                return None
             elif len(possible_idx_seq) == 1:
-                return possible_idx_seq[0][0]
-                # TODO make it possible to return a whole sequence, if it's sure
-                # that it's correct
-            elif all(len(history) + len(l) == len(bs) + 1
+                return possible_idx_seq[0]
+            elif all(len(history) + len(l) >= len(bs) + 1
                      for l in possible_idx_seq):
+                # TODO possible index seq should all have the same length,
+                # checking all shouldn't be necessary
                 first_res = [bs[i] for i in possible_idx_seq[0]]
                 if all([bs[i] == first_res for i in l]
                        for l in possible_idx_seq[1:]):
                     # all possible sequences have maximum length and yield the
                     # same result, it's safe to return
-                    return possible_idx_seq[0][0]
+                    return possible_idx_seq[0][:-1]
                 else:
-                    raise Exception  # TODO
-                # TODO make it possible to return a whole sequence, if it's sure
-                # that it's correct
-            for l in possible_idx_seq:
-                l.append(find_sym_idx_in_code(l[-1], level + 1,
-                                              history + l[:-1]))
+                    raise Exception  # TODO i don't think this can happen
+            tmp_seq = []
+            for i, l in enumerate(possible_idx_seq):
+                next_seq = next_indices(l[-1], level + 1, history + l[:-1])
+                if next_seq is None:
+                    # indicates this sequence is impossible
+                    if i < num_in_first_col:
+                        num_in_first_col -= 1
+                    continue
+                l.extend(next_seq)
+                tmp_seq.append(l)
+            possible_idx_seq = tmp_seq
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
@@ -265,14 +271,18 @@ def bw_decode(bs, start_idx, orders=None):
     order_lists = make_order_lists(bs, orders, num_chars)
     first_col = bytes((x[1] for x in sorted(zip(order_lists[0], bs),
                                             key=lambda x:x[0])))
-    i = start_idx
-    result_ints = [bs[i]]
-    for _ in range(len(bs) - 1):
+    idx_seq = [start_idx]
+    last_idx = start_idx
+    result_ints = [bs[start_idx]]
+    while len(result_ints) < len(bs):
+        if not idx_seq:
+            # find more indices
+            idx_seq = next_indices(last_idx, 1, [])
+            last_idx = idx_seq[-1]
         # append the new symbol
-        new_sym = first_col[i]
+        new_sym = first_col[idx_seq[0]]
+        del idx_seq[0]
         result_ints.append(new_sym)
-        # find the new symbol in the code
-        i = find_sym_idx_in_code(i, 1, [])
     return bytes(result_ints)
 
 def mtf_partial_enc(bs):
