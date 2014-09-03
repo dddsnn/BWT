@@ -497,11 +497,11 @@ if __name__ == '__main__':
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
     natural_order = [bytes([x]) for x in range(256)]
-    orders = [natural_order , reversed(natural_order)]
+    orders = [natural_order , list(reversed(natural_order))]
     in_bs = b'missishjkdgfhjkdasdasdasdjklsdgfjklsdgfjkl'
-    in_bs = b'missishjkdgfsdfgsdgfthjythjythtythjyilakqj'
-    bw = cd.bw_encode(in_bs)
-    dec = cd.bw_decode(bw.encoded, bw.start_index)
+    in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+    bw = cd.bw_encode(in_bs, orders)
+    dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
     print(in_bs == dec)
     print(dec)
 

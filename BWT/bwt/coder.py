@@ -219,7 +219,9 @@ def bw_decode(bs, start_idx, orders=None):
                                if b == sym and i < idx)
         possible_idx_seq = [[i] for i, b in enumerate(bs) if b == sym]
         while True:
-            possible_idx_seq.sort(key=lambda x:order_lists[level][x[-1]])
+            min_len = min((len(s) for s in possible_idx_seq))
+            possible_idx_seq.sort(key=lambda x:[order_lists[level][x[i]]
+                                                for i in range(min_len)])
             next_sym = first_col[possible_idx_seq[num_in_first_col][-1]]
             tmp_seq = []
             num_skipped = 0
