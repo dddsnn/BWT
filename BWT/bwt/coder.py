@@ -1,4 +1,3 @@
-import warnings
 from bwt import BWEncodeResult
 from collections.abc import Mapping
 
@@ -32,6 +31,21 @@ def print_demo(text):
     print(firsts)
     print(encoded)
 
+def order_list_to_dict(order_list, distinct_syms):
+    result = {}
+    for i, s in enumerate(order_list):
+        # ignore multiple occurrences, count the first one
+        if not s in result:
+            result[s[0]] = i
+            max_order = i
+    # check that order is complete (all bytes from bs are in it)
+    for b in distinct_syms:
+        if not b in result:
+            # append any missing bytes
+            result[b] = max_order + 1
+            max_order += 1
+    return result
+
 def make_order_lists(bs, orders, depth, start_depth=0):
     """Make a list of lists by which the columns of the BW table can be ordered.
 
@@ -52,20 +66,6 @@ def make_order_lists(bs, orders, depth, start_depth=0):
         result sorted with the list values as the key, the bs values will be
         sorted according to the n-th order in orders.
     """
-    def list_to_dict(order_list, distinct_syms):
-        result = {}
-        for i, s in enumerate(order_list):
-            # ignore multiple occurrences, count the first one
-            if not s in result:
-                result[s] = i
-                max_order = i
-        # check that order is complete (all bytes from bs are in it)
-        for b in distinct_syms:
-            if not bytes([b]) in result:
-                # append any missing bytes
-                result[bytes([b])] = max_order + 1
-                max_order += 1
-        return result
     distinct_syms = set(bs)
     # turn the order lists of bytes objects into dicts {byte: value} for
     # ordering
@@ -74,10 +74,11 @@ def make_order_lists(bs, orders, depth, start_depth=0):
         order_dict = {}
         if isinstance(order, Mapping):
             for prefix, order_list in order.items():
-                order_dict[prefix] = list_to_dict(order_list, distinct_syms)
+                order_dict[prefix] = order_list_to_dict(order_list,
+                                                        distinct_syms)
         else:
             # None to indicate it's a general order
-            order_dict[None] = list_to_dict(order, distinct_syms)
+            order_dict[None] = order_list_to_dict(order, distinct_syms)
         # append the order dict to the list
         order_dicts.append(order_dict)
     # make lists by which the strings will be sorted
@@ -98,7 +99,7 @@ def make_order_lists(bs, orders, depth, start_depth=0):
         if None in order_dict:
             # only one general order
             for b in bs:
-                order_list.append(order_dict[None][bytes([b])])
+                order_list.append(order_dict[None][b])
         else:
             # lenght of prefix, assume all are equal
             l = len(next(iter(order_dict.keys())))
@@ -107,7 +108,7 @@ def make_order_lists(bs, orders, depth, start_depth=0):
                     prefix = bs[i - l - offset:i - offset]
                 else:
                     prefix = bs[i - l - offset:] + bs[:i - offset]
-                order_list.append(order_dict[prefix][bytes([b])])
+                order_list.append(order_dict[prefix][b])
         order_lists.append(order_list)
     return order_lists
 
@@ -210,76 +211,99 @@ def bw_encode(bs, orders=None):
     return result
 
 def bw_decode(bs, start_idx, orders=None):
-    def next_indices(idx, level, history):
+    def next_indices(idx, history):
         # TODO extend order lists if necessary
         history.append(idx)
+        level = len(history)
         sym = first_col[idx]
         # how many times the same symbol occurs in the first column before
         num_in_first_col = sum(1 for i, b in enumerate(first_col)
                                if b == sym and i < idx)
-        possible_idx_seq = [[i] for i, b in enumerate(bs) if b == sym]
+        # tuples (idx_seq, sym_seq) containing possible index sequences and
+        # their respective symbols sequences
+        possible_seq = [([i], [first_col[i]])
+                        for i, b in enumerate(bs) if b == sym]
         while True:
-            min_len = min((len(s) for s in possible_idx_seq))
-            possible_idx_seq.sort(key=lambda x:[order_lists[level][x[i]]
-                                                for i in range(min_len)])
-            next_sym = first_col[possible_idx_seq[num_in_first_col][-1]]
+            seq_level = level - len(history)
+#             possible_next_syms = [(t[seq_level], bytes([first_col[i]
+#                                                   for i in t[:seq_level + 1]]))
+#                                   for t in possible_seq]
+#             possible_next_syms.sort(key=lambda x:[order_dicts[i][x[1][i - level]]
+#                                                   for i in range(level,
+#                                                                  level +
+#                                                                  seq_level
+#                                                                  + 1)])
+            possible_seq.sort(key=lambda x:[order_dicts[min(len(order_dicts) - 1, i)][x[1][i - level]]
+                                            for i in range(level, seq_level +
+                                                                 level + 1)])
+            next_sym = possible_seq[num_in_first_col][1][seq_level]
+#             next_sym_idx = possible_next_syms[num_in_first_col][0]
+#             next_sym = first_col[next_sym_idx]
+#             possible_next_syms[num_in_first_col][0]
+#             possible_seq.sort(key=lambda x:first_order_list[level][x[seq_level]])
+#             next_sym = first_col[possible_seq[num_in_first_col][seq_level]]
             tmp_seq = []
             num_skipped = 0
-            for i, l in enumerate(possible_idx_seq):
-                # count indices that haven't already appeared and where the next
+            for i, t in enumerate(possible_seq):
+                l = t[0]
+                # keep indices that haven't already appeared and where the next
                 # symbol matches
-                if l[-1] not in history and first_col[l[-1]] == next_sym:
-                    tmp_seq.append(l)
+                if (l[seq_level] not in history
+                    and first_col[l[seq_level]] == next_sym):
+                    tmp_seq.append(t)
                 # in case the history plus the sequence is as long as the input
                 # and now wraps around to the correct symbol, that's also ok
-                elif (len(history) + len(l) == len(bs) + 1
-                      and history[0] == l[-1]
-                      and first_col[l[-1]] == next_sym):
-                    tmp_seq.append(l)
+                elif (len(history) + len(l) >= len(bs) + 1
+                      and history[0] == l[len(bs) - len(history)]
+                      and first_col[l[seq_level]] == next_sym):
+                    tmp_seq.append(t)
                 elif i <= num_in_first_col:
                     num_skipped += 1
             num_in_first_col -= num_skipped
-            possible_idx_seq = tmp_seq
-            if len(possible_idx_seq) == 0:
+            possible_seq = tmp_seq
+            if len(possible_seq) == 0:
                 # return None to indicate no successor index can be found with
                 # the given history
                 return None
-            elif len(possible_idx_seq) == 1:
-                return possible_idx_seq[0]
-            elif all(len(history) + len(l) >= len(bs) + 1
-                     for l in possible_idx_seq):
-                first_res = [bs[i] for i in possible_idx_seq[0]]
-                if all([bs[i] == first_res for i in l]
-                       for l in possible_idx_seq[1:]):
+            elif len(possible_seq) == 1:
+                return possible_seq[0]
+            elif all(len(history) + len(l) >= len(bs) + 1  # TODO
+                     for l in possible_seq):
+                first_res = [bs[i] for i in possible_seq[0][:len(bs)
+                                                                - len(history)]]
+                if all([bs[i] == first_res for i in l[:len(bs) - len(history)]]
+                       for l in possible_seq[1:]):
                     # all possible sequences have maximum length and yield the
                     # same result, it's safe to return
-                    # TODO return the correct number of indices; possible
-                    # sequences may be longer than expected
-                    return possible_idx_seq[0][:-1]
+                    return possible_seq[0][:len(bs) - len(history)]
                 else:
                     raise Exception  # TODO i don't think this can happen
             tmp_seq = []
             num_skipped = 0
-            for i, l in enumerate(possible_idx_seq):
-                next_seq = next_indices(l[-1], level + 1, history + l[:-1])
-                if next_seq is None:
-                    # indicates this sequence is impossible
-                    if i <= num_in_first_col:
-                        num_skipped += 1
-                    continue
-                l.extend(next_seq)
-                tmp_seq.append(l)
+            for i, t in enumerate(possible_seq):
+                if len(t[0]) <= seq_level + 1:
+                    next_seq = next_indices(t[0][-1], history + t[0][:-1])
+                    if next_seq is None:
+                        # indicates this sequence is impossible
+                        if i <= num_in_first_col:
+                            num_skipped += 1
+                        continue
+                    t[0].extend(next_seq[0])
+                    t[1].extend(next_seq[1])
+                tmp_seq.append(t)
             num_in_first_col -= num_skipped
-            possible_idx_seq = tmp_seq
-            if len(possible_idx_seq) == 0:
+            possible_seq = tmp_seq
+            if len(possible_seq) == 0:
                 # no sequence has a correct continuation
                 return None
+            level += 1
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
-    num_chars = min(len(bs), NUM_CHARS)
-    order_lists = make_order_lists(bs, orders, num_chars)
-    first_col = bytes((x[1] for x in sorted(zip(order_lists[0], bs),
+    distinct_syms = set(bs)
+    order_dicts = [order_list_to_dict(o, distinct_syms) for o in orders]
+    first_order_list = make_order_lists(bs, orders, 1)
+    first_col = bytes((x[1] for x in sorted(zip(first_order_list[0], bs),
                                             key=lambda x:x[0])))
     idx_seq = [start_idx]
     last_idx = start_idx
@@ -287,7 +311,7 @@ def bw_decode(bs, start_idx, orders=None):
     while len(result_ints) < len(bs):
         if not idx_seq:
             # find more indices
-            idx_seq = next_indices(last_idx, 1, [])
+            idx_seq = next_indices(last_idx, [])[0]
             last_idx = idx_seq[-1]
         # append the new symbol
         new_sym = first_col[idx_seq[0]]

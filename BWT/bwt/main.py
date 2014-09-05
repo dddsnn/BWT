@@ -500,6 +500,7 @@ if __name__ == '__main__':
     orders = [natural_order , list(reversed(natural_order))]
     in_bs = b'missishjkdgfhjkdasdasdasdjklsdgfjklsdgfjkl'
     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+#     in_bs = b'mississippi'
     bw = cd.bw_encode(in_bs, orders)
     dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
     print(in_bs == dec)
