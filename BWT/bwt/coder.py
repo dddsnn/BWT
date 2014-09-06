@@ -212,7 +212,6 @@ def bw_encode(bs, orders=None):
 
 def bw_decode(bs, start_idx, orders=None):
     def next_indices(idx, history):
-        # TODO extend order lists if necessary
         history.append(idx)
         level = len(history)
         sym = first_col[idx]
@@ -225,23 +224,10 @@ def bw_decode(bs, start_idx, orders=None):
                         for i, b in enumerate(bs) if b == sym]
         while True:
             seq_level = level - len(history)
-#             possible_next_syms = [(t[seq_level], bytes([first_col[i]
-#                                                   for i in t[:seq_level + 1]]))
-#                                   for t in possible_seq]
-#             possible_next_syms.sort(key=lambda x:[order_dicts[i][x[1][i - level]]
-#                                                   for i in range(level,
-#                                                                  level +
-#                                                                  seq_level
-#                                                                  + 1)])
             possible_seq.sort(key=lambda x:[order_dicts[min(len(order_dicts) - 1, i)][x[1][i - level]]
                                             for i in range(level, seq_level +
                                                                  level + 1)])
             next_sym = possible_seq[num_in_first_col][1][seq_level]
-#             next_sym_idx = possible_next_syms[num_in_first_col][0]
-#             next_sym = first_col[next_sym_idx]
-#             possible_next_syms[num_in_first_col][0]
-#             possible_seq.sort(key=lambda x:first_order_list[level][x[seq_level]])
-#             next_sym = first_col[possible_seq[num_in_first_col][seq_level]]
             tmp_seq = []
             num_skipped = 0
             for i, t in enumerate(possible_seq):
@@ -267,15 +253,16 @@ def bw_decode(bs, start_idx, orders=None):
                 return None
             elif len(possible_seq) == 1:
                 return possible_seq[0]
-            elif all(len(history) + len(l) >= len(bs) + 1  # TODO
+            elif all(len(history) + len(l[0]) >= len(bs) + 1
                      for l in possible_seq):
-                first_res = [bs[i] for i in possible_seq[0][:len(bs)
-                                                                - len(history)]]
-                if all([bs[i] == first_res for i in l[:len(bs) - len(history)]]
+                length = len(bs) - len(history)
+                first_res = [bs[i] for i in possible_seq[0][0][:length]]
+                if all([bs[i] == first_res for i in l[0][:length]]
                        for l in possible_seq[1:]):
                     # all possible sequences have maximum length and yield the
                     # same result, it's safe to return
-                    return possible_seq[0][:len(bs) - len(history)]
+                    return (possible_seq[0][0][:length],
+                            possible_seq[0][1][:length])
                 else:
                     raise Exception  # TODO i don't think this can happen
             tmp_seq = []
@@ -311,7 +298,8 @@ def bw_decode(bs, start_idx, orders=None):
     while len(result_ints) < len(bs):
         if not idx_seq:
             # find more indices
-            idx_seq = next_indices(last_idx, [])[0]
+            idx_sym_tuple = next_indices(last_idx, [])
+            idx_seq = idx_sym_tuple[0]
             last_idx = idx_seq[-1]
         # append the new symbol
         new_sym = first_col[idx_seq[0]]
