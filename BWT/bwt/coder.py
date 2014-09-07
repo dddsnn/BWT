@@ -1,12 +1,18 @@
 from bwt import BWEncodeResult
 from collections.abc import Mapping
 from collections import namedtuple
+import itertools as it
 
 NUM_CHARS = 25
 
 class OrderList(list):
-    def __lt__(self, other):  # TODO
-        return list.__lt__(self, other)
+    """List with a modified less than operator for different sorting behavior.
+    """
+    def __lt__(self, other):
+        for s, o in zip(self, other):
+            if s < o:
+                return True
+        return False
 
 def bw_table(text):
     """Create the Burrows-Wheeler table."""
@@ -216,7 +222,8 @@ def bw_encode(bs, orders=None):
     return result
 
 def bw_decode(bs, start_idx, orders=None):
-    SeqTuple = namedtuple('SeqTuple', ['idx_seq', 'sym_seq', 'possible'])
+    SeqTuple = namedtuple('SeqTuple', ['idx_seq', 'sym_seq', 'possible',
+                                       'need_more'])
     def next_indices(idx, history):
         level = 0
         history.append(idx)
@@ -224,34 +231,48 @@ def bw_decode(bs, start_idx, orders=None):
         # how many times the same symbol occurs in the first column before
         num_in_first_col = sum(1 for i, b in enumerate(first_col)
                                if b == sym and i < idx)
-        possible_seq = [SeqTuple([i], [first_col[i]], True)
+        possible_seq = [SeqTuple([i], [first_col[i]], True, True)
                         for i, b in enumerate(bs) if b == sym]
         while True:
             possible_seq.sort(key=lambda x:
-                              [order_dicts[min(len(order_dicts) - 1, i)]
-                               [x.sym_seq[i - 1]]
+                              OrderList([order_dicts[min(len(order_dicts) - 1,
+                                                         i)][x.sym_seq[i - 1]]
                                for i in range(1, min(level + 2,
-                                                     len(x.sym_seq) + 1))])
+                                                     len(x.sym_seq) + 1))]))
+            if not possible_seq[num_in_first_col].possible:
+                # if the sequence at position num_in_first_col is not possible
+                # after sorting, there is no correct continuation
+                # TODO is this correct? necessary?
+                return None
             next_sym = possible_seq[num_in_first_col].sym_seq[level]
             for i, t in enumerate(possible_seq):
-                if not t.possible:
-                    # it's already impossible, no need to worry about it
+                if not t.possible and not t.need_more:
+                    # it's already impossible and doesn't need more symbols, no
+                    # need to worry about it
                     continue
                 l = t.idx_seq
                 # keep indices that haven't already appeared and where the next
                 # symbol matches
-                if (l[level] not in history
+                if (t.possible and l[level] not in history
                     and first_col[l[level]] == next_sym):
                     continue
                 # in case the history plus the sequence is as long as the input
                 # and now wraps around to the correct symbol, that's also ok
-                elif (len(history) + len(l) >= len(bs) + 1
+                elif (t.possible and len(history) + len(l) >= len(bs) + 1
                       and history[0] == l[len(bs) - len(history)]
                       and first_col[l[level]] == next_sym):
                     continue
+                elif (l[level] in history
+                    and first_col[l[level]] == next_sym):
+                    # not possible because it's in history, but we need more
+                    # syms to sort the still possible ones correctly
+                    # TODO can this lead to infinite loops? where, to get the
+                    # idx for sym a you need more syms for the (impossible) idx
+                    # b, and for b you need syms for a
+                    possible_seq[i] = SeqTuple(t[0], t[1], False, True)
                 else:
                     # not possible anymore, set possible to False
-                    possible_seq[i] = SeqTuple(t[0], t[1], False)
+                    possible_seq[i] = SeqTuple(t[0], t[1], False, False)
             num_possible = sum(1 for t in possible_seq if t.possible)
             if num_possible == 0:
                 # return None to indicate no successor index can be found with
@@ -269,16 +290,25 @@ def bw_decode(bs, start_idx, orders=None):
                     # all possible sequences have maximum length and yield the
                     # same result, it's safe to return
                     return SeqTuple(possible_seq[0][0][:length],
-                            possible_seq[0][1][:length], True)
+                            possible_seq[0][1][:length], True, True)
                 else:
                     raise Exception  # TODO i don't think this can happen
             for i, t in enumerate(possible_seq):
-                if t.possible and len(t.idx_seq) <= level + 1:
-                    next_seq = next_indices(t.idx_seq[-1],
+                if t.need_more and len(t.idx_seq) <= level + 1:
+                    if t.possible:
+                        next_seq = next_indices(t.idx_seq[-1],
                                             history + t.idx_seq[:-1])
+                    else:
+                        # if the sequence is not possible but we need more syms,
+                        # give an empty history
+                        next_seq = next_indices(t.idx_seq[-1], [])
                     if next_seq is None:
                         # indicates this sequence is impossible
-                        possible_seq[i] = SeqTuple(t[0], t[1], False)
+                        # TODO what if we needed more syms, but can't get any?
+                        #     can this happen?
+                        if not t.possible and t.need_more:
+                            raise Exception  # TODO
+                        possible_seq[i] = SeqTuple(t[0], t[1], False, False)
                         continue
                     t.idx_seq.extend(next_seq.idx_seq)
                     t.sym_seq.extend(next_seq.sym_seq)
@@ -307,6 +337,25 @@ def bw_decode(bs, start_idx, orders=None):
         result_idx.append(current_idx_seq[0])
         del current_idx_seq[0]
     return bytes([bs[i] for i in result_idx])
+
+def bw_decode_bruteforce(bs, start_index, orders=None):
+    # if no order was given, assume natural
+    if not orders:
+        orders = [[bytes([x]) for x in range(256)]]
+    first_order_list = make_order_lists(bs, orders, 1)
+    first_col = bytes((x[1] for x in sorted(zip(first_order_list[0], bs),
+                                            key=lambda x:x[0])))
+    possible_idx_runs = []
+    for p in it.permutations(list(range(len(bs)))):
+        idx_run = list(p) * 2
+        if idx_run[0] != start_index:
+            continue
+        for i in range(len(bs)):
+            if first_col[idx_run[i]] != bs[idx_run[i + 1]]:
+                break
+        else:
+            possible_idx_runs.append(idx_run[:len(idx_run) // 2])
+    return [bytes([bs[i] for i in idx_run]) for idx_run in possible_idx_runs]
 
 def mtf_partial_enc(bs):
     """Do a partial MTF encode of a byte sequence.

@@ -498,12 +498,15 @@ if __name__ == '__main__':
 
     natural_order = [bytes([x]) for x in range(256)]
     orders = [natural_order, list(reversed(natural_order)), natural_order]
-    in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
+    # [15,24,25,14,26,13,17,21,4,11,9,12,16,20,6,0,27,7,1,28,8,2,30,3,18,19,22,29,5,10,23]
+#     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
 #     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 #     in_bs = b'mississippi'
+    in_bs = b'missis'
     bw = cd.bw_encode(in_bs, orders)
-    dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
-    print(in_bs == dec)
+#     dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
+    dec = cd.bw_decode_bruteforce(bw.encoded, bw.start_index, orders)
+#     print(in_bs == dec)
     print(dec)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
