@@ -1,7 +1,12 @@
 from bwt import BWEncodeResult
 from collections.abc import Mapping
+from collections import namedtuple
 
 NUM_CHARS = 25
+
+class OrderList(list):
+    def __lt__(self, other):  # TODO
+        return list.__lt__(self, other)
 
 def bw_table(text):
     """Create the Burrows-Wheeler table."""
@@ -25,8 +30,8 @@ def print_demo(text):
     firsts = first_column(table)
     encoded = last_column(table)
 
-    for row in table:
-        print(row)
+    for i, row in enumerate(table):
+        print('{0:2} {1}'.format(i, row))
     print()
     print(firsts)
     print(encoded)
@@ -211,76 +216,74 @@ def bw_encode(bs, orders=None):
     return result
 
 def bw_decode(bs, start_idx, orders=None):
+    SeqTuple = namedtuple('SeqTuple', ['idx_seq', 'sym_seq', 'possible'])
     def next_indices(idx, history):
+        level = 0
         history.append(idx)
-        level = len(history)
         sym = first_col[idx]
         # how many times the same symbol occurs in the first column before
         num_in_first_col = sum(1 for i, b in enumerate(first_col)
                                if b == sym and i < idx)
-        # tuples (idx_seq, sym_seq) containing possible index sequences and
-        # their respective symbols sequences
-        possible_seq = [([i], [first_col[i]])
+        possible_seq = [SeqTuple([i], [first_col[i]], True)
                         for i, b in enumerate(bs) if b == sym]
         while True:
-            seq_level = level - len(history)
-            possible_seq.sort(key=lambda x:[order_dicts[min(len(order_dicts) - 1, i)][x[1][i - level]]
-                                            for i in range(level, seq_level +
-                                                                 level + 1)])
-            next_sym = possible_seq[num_in_first_col][1][seq_level]
-            tmp_seq = []
-            num_skipped = 0
+            possible_seq.sort(key=lambda x:
+                              [order_dicts[min(len(order_dicts) - 1, i)]
+                               [x.sym_seq[i - 1]]
+                               for i in range(1, min(level + 2,
+                                                     len(x.sym_seq) + 1))])
+            next_sym = possible_seq[num_in_first_col].sym_seq[level]
             for i, t in enumerate(possible_seq):
-                l = t[0]
+                if not t.possible:
+                    # it's already impossible, no need to worry about it
+                    continue
+                l = t.idx_seq
                 # keep indices that haven't already appeared and where the next
                 # symbol matches
-                if (l[seq_level] not in history
-                    and first_col[l[seq_level]] == next_sym):
-                    tmp_seq.append(t)
+                if (l[level] not in history
+                    and first_col[l[level]] == next_sym):
+                    continue
                 # in case the history plus the sequence is as long as the input
                 # and now wraps around to the correct symbol, that's also ok
                 elif (len(history) + len(l) >= len(bs) + 1
                       and history[0] == l[len(bs) - len(history)]
-                      and first_col[l[seq_level]] == next_sym):
-                    tmp_seq.append(t)
-                elif i <= num_in_first_col:
-                    num_skipped += 1
-            num_in_first_col -= num_skipped
-            possible_seq = tmp_seq
-            if len(possible_seq) == 0:
+                      and first_col[l[level]] == next_sym):
+                    continue
+                else:
+                    # not possible anymore, set possible to False
+                    possible_seq[i] = SeqTuple(t[0], t[1], False)
+            num_possible = sum(1 for t in possible_seq if t.possible)
+            if num_possible == 0:
                 # return None to indicate no successor index can be found with
                 # the given history
                 return None
-            elif len(possible_seq) == 1:
-                return possible_seq[0]
-            elif all(len(history) + len(l[0]) >= len(bs) + 1
-                     for l in possible_seq):
+            elif num_possible == 1:
+                # find and return the possible one
+                return next(t for t in possible_seq if t.possible)
+            elif all(len(history) + len(l.idx_seq) >= len(bs) + 1
+                     for l in (t for t in possible_seq if t.possible)):
                 length = len(bs) - len(history)
-                first_res = [bs[i] for i in possible_seq[0][0][:length]]
+                first_res = [bs[i] for i in possible_seq[0].idx_seq[:length]]
                 if all([bs[i] == first_res for i in l[0][:length]]
-                       for l in possible_seq[1:]):
+                       for l in (t for t in possible_seq[1:] if t.possible)):
                     # all possible sequences have maximum length and yield the
                     # same result, it's safe to return
-                    return (possible_seq[0][0][:length],
-                            possible_seq[0][1][:length])
+                    return SeqTuple(possible_seq[0][0][:length],
+                            possible_seq[0][1][:length], True)
                 else:
                     raise Exception  # TODO i don't think this can happen
-            tmp_seq = []
-            num_skipped = 0
             for i, t in enumerate(possible_seq):
-                if len(t[0]) <= seq_level + 1:
-                    next_seq = next_indices(t[0][-1], history + t[0][:-1])
+                if t.possible and len(t.idx_seq) <= level + 1:
+                    next_seq = next_indices(t.idx_seq[-1],
+                                            history + t.idx_seq[:-1])
                     if next_seq is None:
                         # indicates this sequence is impossible
-                        if i <= num_in_first_col:
-                            num_skipped += 1
+                        possible_seq[i] = SeqTuple(t[0], t[1], False)
                         continue
-                    t[0].extend(next_seq[0])
-                    t[1].extend(next_seq[1])
-                tmp_seq.append(t)
-            num_in_first_col -= num_skipped
-            possible_seq = tmp_seq
-            if len(possible_seq) == 0:
+                    t.idx_seq.extend(next_seq.idx_seq)
+                    t.sym_seq.extend(next_seq.sym_seq)
+            num_possible = sum(1 for t in possible_seq if t.possible)
+            if num_possible == 0:
                 # no sequence has a correct continuation
                 return None
             level += 1
@@ -292,20 +295,18 @@ def bw_decode(bs, start_idx, orders=None):
     first_order_list = make_order_lists(bs, orders, 1)
     first_col = bytes((x[1] for x in sorted(zip(first_order_list[0], bs),
                                             key=lambda x:x[0])))
-    idx_seq = [start_idx]
+    result_idx = [start_idx]
+    current_idx_seq = []
     last_idx = start_idx
-    result_ints = [bs[start_idx]]
-    while len(result_ints) < len(bs):
-        if not idx_seq:
+    while len(result_idx) < len(bs):
+        if not current_idx_seq:
             # find more indices
-            idx_sym_tuple = next_indices(last_idx, [])
-            idx_seq = idx_sym_tuple[0]
-            last_idx = idx_seq[-1]
-        # append the new symbol
-        new_sym = first_col[idx_seq[0]]
-        del idx_seq[0]
-        result_ints.append(new_sym)
-    return bytes(result_ints)
+            idx_sym_tuple = next_indices(last_idx, result_idx[:-1])
+            current_idx_seq = idx_sym_tuple.idx_seq
+            last_idx = current_idx_seq[-1]
+        result_idx.append(current_idx_seq[0])
+        del current_idx_seq[0]
+    return bytes([bs[i] for i in result_idx])
 
 def mtf_partial_enc(bs):
     """Do a partial MTF encode of a byte sequence.
