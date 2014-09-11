@@ -5,17 +5,15 @@ from bwt import *
 import math
 import numpy as np
 
-def select_mtf_exceptions(bw):
-    LENGTH_THRESHOLD = 50
-    MEAN_THRESHOLD = 5
+def select_mtf_exceptions(bw, min_length, threshold):
     mtf = cd.mtf_encode(bw.encoded)
     contexts = {s:context_block(mtf, bw.firsts, bytes([s]))
                 for s in set(bw.encoded)}
     context_lengths = {s:len(contexts[s]) for s in contexts}
     context_means = {s:np.mean(contexts[s]) for s in contexts}
     result = [bytes([s]) for s in contexts
-              if context_lengths[s] >= LENGTH_THRESHOLD
-              and context_means[s] >= MEAN_THRESHOLD]
+              if context_lengths[s] >= min_length
+              and context_means[s] >= threshold]
     return result
 
 def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):

@@ -240,32 +240,47 @@ def read_tsplib_files(in_path_tour, in_path_names):
     return tour
 
 def print_simulated_compression_results(work_dir, metrics, in_file_path,
-                                        mtf_exceptions):
+                                        mtf_exc_min_length=None,
+                                        mtf_exc_threshold=None):
     """Simulate compression of a file and print achieved compression."""
     def final_bit_len(orders):
         bw = cd.bw_encode(bs, orders)
-        # exclude mtf exceptions from the bw code
-        excepted_blocks = [an.context_block(bw.encoded, bw.firsts, e)
-                           for e in mtf_exceptions]
-        # make the bw code without the exceptions
-        bw_ints = []
-        for f, s in zip(bw.firsts, bw.encoded):
-            if not any(f[:len(e)] == e for e in mtf_exceptions):
-                bw_ints.append(s)
-        bw_code = bytes(bw_ints)
+        if mtf_exc_min_length is not None and mtf_exc_threshold is not None:
+            mtf_exceptions = an.select_mtf_exceptions(bw, mtf_exc_min_length,
+                                                      mtf_exc_threshold)
+            # exclude mtf exceptions from the bw code
+            excepted_blocks = [an.context_block(bw.encoded, bw.firsts, e)
+                               for e in mtf_exceptions]
+            # make the bw code without the exceptions
+            bw_ints = []
+            for f, s in zip(bw.firsts, bw.encoded):
+                if not any(f[:len(e)] == e for e in mtf_exceptions):
+                    bw_ints.append(s)
+            bw_code = bytes(bw_ints)
+            excepted_huff_codes = [hf.encode_to_bits_static(b)
+                                   for b in excepted_blocks]
+        else:
+            mtf_exceptions = None
+            excepted_huff_codes = []
+            bw_code = bw.encoded
         mtf_code = cd.mtf_encode(bw_code)
         huff_code_mtf = hf.encode_to_bits_static(mtf_code)
-        excepted_huff_codes = [hf.encode_to_bits_static(b)
-                               for b in excepted_blocks]
         size = len(huff_code_mtf) + sum(len(c) for c in excepted_huff_codes)
-        return size
+        result = str(size)
+        if mtf_exceptions:
+            result += ' (mtf exceptions: {0})'.format(mtf_exceptions)
+        return result
     with open(in_file_path, 'rb') as in_file:
         bs = in_file.read()
     handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
     handpicked_orders = [[bytes([c]) for c in handpicked_str]]
     natural_order = [bytes([x]) for x in range(256)]
     print('simulating compression for file {0}'.format(in_file_path))
-    print('mtf exceptions: {0}'.format(mtf_exceptions))
+    if mtf_exc_min_length is not None and mtf_exc_threshold is not None:
+        print('minimum length of an mtf block for an mtf exception: {0}'
+              .format(mtf_exc_min_length))
+        print('threshold for the mean mtf value in a block for an mtf '
+              'exception: {0}'.format(mtf_exc_threshold))
     print('in size: {0}'.format(len(bs) * 8))
     print()
     print('natural order: {0}'.format(final_bit_len([natural_order])))
@@ -499,10 +514,6 @@ if __name__ == '__main__':
 #                             'weighted': False, 'new_penalty_log': {}})]
 
     metrics = []
-    with open(in_file_path, 'rb') as f:
-        bs = f.read()
-    bw = cd.bw_encode(bs)
-    mtf_exc = an.select_mtf_exceptions(bw)
 
 #     make_aux_data(work_dir, in_file_path, col_depth=2)
 
@@ -510,8 +521,7 @@ if __name__ == '__main__':
 
 #     write_tsplib_files(work_dir, metrics)
 
-    print_simulated_compression_results(work_dir, metrics, in_file_path,
-                                        mtf_exc)
+    print_simulated_compression_results(work_dir, metrics, in_file_path, 100, 4)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
