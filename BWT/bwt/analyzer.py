@@ -3,6 +3,19 @@ import bwt.coder as cd
 import sys
 from bwt import *
 import math
+import numpy as np
+
+def select_mtf_exceptions(bw):
+    LENGTH_THRESHOLD = 50
+    MEAN_THRESHOLD = 5
+    mtf = cd.mtf_enc(bw.encoded)
+    contexts = {s:context_block(mtf, bw.firsts, bytes([s]))
+                for s in set(bw.encoded)}
+    context_lengths = {s:len(contexts[s]) for s in contexts}
+    context_means = {s:np.mean(contexts[s]) for s in contexts}
+    result = [s for s in contexts if context_lengths[s] >= LENGTH_THRESHOLD
+              and context_means[s] >= MEAN_THRESHOLD]
+    return result
 
 def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):
     """Compare the predictions for new codes with actual values.
