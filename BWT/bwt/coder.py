@@ -357,7 +357,7 @@ def bw_decode_bruteforce(bs, start_index, orders=None):
             possible_idx_runs.append(idx_run[:len(idx_run) // 2])
     return [bytes([bs[i] for i in idx_run]) for idx_run in possible_idx_runs]
 
-def mtf_partial_enc(bs):
+def mtf_partial_encode(bs):
     """Do a partial MTF encode of a byte sequence.
 
     Partial MTF means that values that haven't occurred before are marked as -1.
@@ -384,7 +384,7 @@ def mtf_partial_enc(bs):
             alphabet.insert(0, byte)
     return result
 
-def mtf_enc(bs):
+def mtf_encode(bs):
     """Encode a byte sequence with Move-to-front.
 
     Args:

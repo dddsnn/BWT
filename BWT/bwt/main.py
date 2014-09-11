@@ -16,7 +16,7 @@ def make_aux_data(work_dir, in_file_path, col_depth=1):
     raw = bs
     num_symbols = len(set(bs))
     bw_code = cd.bw_encode(bs)
-    mtf_code = cd.mtf_enc(bw_code.encoded)
+    mtf_code = cd.mtf_encode(bw_code.encoded)
     firsts = list(set([bytes([x[0]]) for x in bw_code.firsts]))
     for i in range(1, col_depth):
         for prefix in [x for x in firsts if len(x) == i]:
@@ -27,10 +27,10 @@ def make_aux_data(work_dir, in_file_path, col_depth=1):
     bw_subcodes = {x:an.context_block(bw_code.encoded, bw_code.firsts, x)
                    for x in firsts}
     # first add subcodes for individual bytes
-    partial_mtf_subcodes = {x:cd.mtf_partial_enc(bw_subcodes[x])
+    partial_mtf_subcodes = {x:cd.mtf_partial_encode(bw_subcodes[x])
                             for x in bw_subcodes}
     # now make and add the transitions
-    partial_mtf_transitions = {(a, b):cd.mtf_partial_enc(bw_subcodes[a]
+    partial_mtf_transitions = {(a, b):cd.mtf_partial_encode(bw_subcodes[a]
                                                          + bw_subcodes[b])
                                for a in bw_subcodes for b in bw_subcodes
                                if a != b and a[:-1] == b[:-1]}
@@ -239,37 +239,51 @@ def read_tsplib_files(in_path_tour, in_path_names):
             tour.append(names_dict[number][-1:])
     return tour
 
-def print_simulated_compression_results(work_dir, metrics, in_file_path):
+def print_simulated_compression_results(work_dir, metrics, in_file_path,
+                                        mtf_exceptions):
     """Simulate compression of a file and print achieved compression."""
-    def final_bit_len(bs, orders):
-        bw_code = cd.bw_encode(bs, orders)
-        mtf_code = cd.mtf_enc(bw_code.encoded)
-        huff_code = hf.encode_to_bits_static(mtf_code)
-        return len(huff_code)
+    def final_bit_len(orders):
+        bw = cd.bw_encode(bs, orders)
+        # exclude mtf exceptions from the bw code
+        excepted_blocks = [an.context_block(bw.encoded, bw.firsts, e)
+                           for e in mtf_exceptions]
+        # make the bw code without the exceptions
+        bw_ints = []
+        for f, s in zip(bw.firsts, bw.encoded):
+            if not any(f[:len(e)] == e for e in mtf_exceptions):
+                bw_ints.append(s)
+        bw_code = bytes(bw_ints)
+        mtf_code = cd.mtf_encode(bw_code)
+        huff_code_mtf = hf.encode_to_bits_static(mtf_code)
+        excepted_huff_codes = [hf.encode_to_bits_static(b)
+                               for b in excepted_blocks]
+        size = len(huff_code_mtf) + sum(len(c) for c in excepted_huff_codes)
+        return size
     with open(in_file_path, 'rb') as in_file:
         bs = in_file.read()
     handpicked_str = b'aeioubcdgfhrlsmnpqjktwvxyzAEIOUBCDGFHRLSMNPQJKTWVXYZ'
     handpicked_orders = [[bytes([c]) for c in handpicked_str]]
     natural_order = [bytes([x]) for x in range(256)]
     print('simulating compression for file {0}'.format(in_file_path))
+    print('mtf exceptions: {0}'.format(mtf_exceptions))
     print('in size: {0}'.format(len(bs) * 8))
     print()
-    print('natural order: {0}'.format(final_bit_len(bs, [natural_order])))
+    print('natural order: {0}'.format(final_bit_len([natural_order])))
     print()
     print('handpicked order aeiou...:')
-    print('all columns      : {0}'.format(final_bit_len(bs, handpicked_orders)))
+    print('all columns      : {0}'.format(final_bit_len(handpicked_orders)))
     handpicked_orders.append(natural_order)
-    print('first column only: {0}'.format(final_bit_len(bs, handpicked_orders)))
+    print('first column only: {0}'.format(final_bit_len(handpicked_orders)))
     print()
     for metric in metrics:
         file_name = metric_unique_name(metric, b'')
         print('{0}:'.format(file_name))
         orders = assemble_multicol_orders(work_dir, metric)
         print('using the last specified as default: {0}'
-              .format(final_bit_len(bs, orders)))
+              .format(final_bit_len(orders)))
         orders.append(natural_order)
         print('using the natural order as default : {0}'
-              .format(final_bit_len(bs, orders)))
+              .format(final_bit_len(orders)))
         print()
 
 def print_mtf_prediction_evaluations(work_dir, metrics):
@@ -295,7 +309,7 @@ def print_mtf_prediction_evaluations(work_dir, metrics):
                 orders = [tsplib_tour, natural_order]
             comp = an.compare_new_penalty_predictions(aux_data, orders,
                                                       new_penalty_log)
-            mtf_code = cd.mtf_enc(cd.bw_encode(aux_data.raw, orders).encoded)
+            mtf_code = cd.mtf_encode(cd.bw_encode(aux_data.raw, orders).encoded)
             freqs = hf.symbol_frequencies(mtf_code)
             hf_len = hf.codeword_lengths(freqs)
             for subst_hf in [False, True]:
@@ -484,29 +498,36 @@ if __name__ == '__main__':
 #     metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
 #                             'weighted': False, 'new_penalty_log': {}})]
 
+    metrics = []
+    with open(in_file_path, 'rb') as f:
+        bs = f.read()
+    bw = cd.bw_encode(bs)
+    mtf_exc = an.select_mtf_exceptions(bw)
+
 #     make_aux_data(work_dir, in_file_path, col_depth=2)
 
 #     make_transitions(work_dir, metrics, col_depth=2)
 
 #     write_tsplib_files(work_dir, metrics)
 
-#     print_simulated_compression_results(work_dir, metrics, in_file_path)
+    print_simulated_compression_results(work_dir, metrics, in_file_path,
+                                        mtf_exc)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
-    natural_order = [bytes([x]) for x in range(256)]
-    orders = [natural_order, list(reversed(natural_order)), natural_order]
-    # [15,24,25,14,26,13,17,21,4,11,9,12,16,20,6,0,27,7,1,28,8,2,30,3,18,19,22,29,5,10,23]
-#     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
-#     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-#     in_bs = b'mississippi'
-    in_bs = b'missis'
-    bw = cd.bw_encode(in_bs, orders)
-#     dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
-    dec = cd.bw_decode_bruteforce(bw.encoded, bw.start_index, orders)
-#     print(in_bs == dec)
-    print(dec)
+#     natural_order = [bytes([x]) for x in range(256)]
+#     orders = [natural_order, list(reversed(natural_order)), natural_order]
+#     # [15,24,25,14,26,13,17,21,4,11,9,12,16,20,6,0,27,7,1,28,8,2,30,3,18,19,22,29,5,10,23]
+# #     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
+# #     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+# #     in_bs = b'mississippi'
+#     in_bs = b'missis'
+#     bw = cd.bw_encode(in_bs, orders)
+# #     dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
+#     dec = cd.bw_decode_bruteforce(bw.encoded, bw.start_index, orders)
+# #     print(in_bs == dec)
+#     print(dec)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))

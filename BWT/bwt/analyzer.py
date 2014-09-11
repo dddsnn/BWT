@@ -8,12 +8,13 @@ import numpy as np
 def select_mtf_exceptions(bw):
     LENGTH_THRESHOLD = 50
     MEAN_THRESHOLD = 5
-    mtf = cd.mtf_enc(bw.encoded)
+    mtf = cd.mtf_encode(bw.encoded)
     contexts = {s:context_block(mtf, bw.firsts, bytes([s]))
                 for s in set(bw.encoded)}
     context_lengths = {s:len(contexts[s]) for s in contexts}
     context_means = {s:np.mean(contexts[s]) for s in contexts}
-    result = [s for s in contexts if context_lengths[s] >= LENGTH_THRESHOLD
+    result = [bytes([s]) for s in contexts
+              if context_lengths[s] >= LENGTH_THRESHOLD
               and context_means[s] >= MEAN_THRESHOLD]
     return result
 
@@ -38,7 +39,7 @@ def compare_new_penalty_predictions(aux_data, orders, new_penalty_log):
             block is not the right side of any transition.
     """
     bw_code = cd.bw_encode(aux_data.raw, orders)
-    mtf = cd.mtf_enc(bw_code.encoded)
+    mtf = cd.mtf_encode(bw_code.encoded)
     bw_mtf = list(zip(bw_code.encoded, mtf))
     result = []
     # can only handle the first order for the moment
@@ -75,7 +76,7 @@ def compare_entropy_len_predictions(aux_data, orders, predictions):
         codeword length when the file is BW encoded with the given orders, and
         the predicted length for that MTF code.
     """
-    mtf_code = cd.mtf_enc(cd.bw_encode(aux_data.raw, orders).encoded)
+    mtf_code = cd.mtf_encode(cd.bw_encode(aux_data.raw, orders).encoded)
     freqs = hf.symbol_frequencies(mtf_code)
     actual = hf.codeword_lengths(freqs)
     result = []
