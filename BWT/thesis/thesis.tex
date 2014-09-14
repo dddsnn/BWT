@@ -4,6 +4,10 @@
 
 \begin{document}
 
+\begin{abstract}
+
+\end{abstract}
+
 \chapter{Intro}
 
 %-def compression (decompression necessary)
@@ -11,6 +15,36 @@
 %-explain simple version of bw used here, no rle
 %-definitions: context block, symbol (byte in this thesis), natural sort order,
 %	transition
+
+The Burrows-Wheeler compression algorithm is a highly effective context-based
+compression method centered around the Burrows-Wheeler Transform (BWT) first
+described in 1994\cite{burrowswheeler1994bwt}.
+The basic compression is done in three stages:
+\begin{enumerate}
+  \item Burrows-Wheeler Transform of the input, to produce a permutation that
+  groups ``similar'' symbols together.
+  \item Move-To-Front (MTF) coding of the first stage's output, to produce a
+  sequence of natural numbers, with lower values occurring much more frequently
+  than higher ones.
+  \item Compression of the MTF code with an entropy coder, such as Huffman
+  coding.
+\end{enumerate}
+There are variations of the algorithm, most notably run-length encoding of the
+output of the second stage to make use of long runs of zeros that tend to occur.
+This modification was already proposed by Burrows and Wheeler in their original
+paper and can lead to considerable compression gains.
+
+However, I will focus on only the three core stages, as these (in particular
+the first two) are the ones affected by the modifications I
+examine\footnote{I'm also lazy.}
+
+I will briefly describe the stages as I use them in my implementation.
+
+\section{The Burrows-Wheeler Transtorm}
+
+\section{Move-To-Front Coding}
+
+\section{Entropy Coding}
 
 \chapter{Simple Sorting}
 

@@ -521,7 +521,7 @@ if __name__ == '__main__':
 
 #     write_tsplib_files(work_dir, metrics)
 
-    print_simulated_compression_results(work_dir, metrics, in_file_path, 100, 4)
+    print_simulated_compression_results(work_dir, metrics, in_file_path, 0, 0)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
