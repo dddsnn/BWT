@@ -42,9 +42,67 @@ I will briefly describe the stages as I use them in my implementation.
 
 \section{The Burrows-Wheeler Transtorm}
 
+The Burrows-Wheeler Transform transforms an input string into a permutation of
+that string that is more suited for compression. It does not itself perform any
+compression, in fact, in addition to the permuted string a start index is
+necessary to reverse the transformation, so it actually slightly inflates the
+input.
+
+To perform the transformation, all cyclic shifts of the input are created and
+placed one below the other so they form a table that has as many rows and
+columns as the input string is long. The table is then sorted; the output of the
+transform is the last column of the sorted table.
+
+For example, the string \texttt{mississippi} yields the following table:
+
+\begin{tabular}{|r||cccccccccc|c|}
+\hline
+0 & i & m & i & s & s & i & s & s & i & p & p \\
+1 & i & p & p & i & m & i & s & s & i & s & s \\
+2 & i & s & s & i & p & p & i & m & i & s & s \\
+3 & i & s & s & i & s & s & i & p & p & i & m \\
+4 & m & i & s & s & i & s & s & i & p & p & i \\
+5 & p & i & m & i & s & s & i & s & s & i & p \\
+6 & p & p & i & m & i & s & s & i & s & s & i \\
+7 & s & i & p & p & i & m & i & s & s & i & s \\
+8 & s & i & s & s & i & p & p & i & m & i & s \\
+9 & s & s & i & p & p & i & m & i & s & s & i \\
+10 & s & s & i & s & s & i & p & p & i & m & i \\
+\hline
+\end{tabular}
+
+The output of the transformation in this case is \texttt{pssmipissii}. In
+addition, the index of the row where the first character of the input string
+appears in the last column is saved (3 in this case).
+
+To perform the inverse transform, it is important to note that every index of
+the input string appears exactly once in each column of the table, and that
+therefore every column is a permutation of the input.
+
+Given only the last column of the table, the first column can be reconstructed
+by simply sorting the last. Since the rows wrap around from the last column to
+the first, the \(i\)-th character in the last column is followed by the \(i\)-th
+character in the first column, so it's easy to find the next character for any
+character in the last column.
+
+The trickier part is, given an index in the first column, to find the correct
+index in the last column at which to continue decoding. If the character \(c\)
+at the given index occurs for the \(i\)-th time in the first column, it
+corresponds to the index in the last column at which \(c\) occurs for the
+\(i\)-th time. This is due to the fact that the table is sorted: All the \(c\)'s
+are grouped together in the first column and are sorted based on the strings
+\(s_i\) succeeding them, with \(s_i\) denoting the string preceded by the
+\(i\)-th occurrence of \(c\) in the first column. Each of the \(s_i\) is also
+the beginning of a row in the table, and the relative order between the \(s_i\)
+is the same whether they're preceded by \(c\), or they're the beginning of a
+row, i.e. the row beginning with \(s_i\) appears before the row beginning with
+\(s_j\) iff \(i<j\).
+
 \section{Move-To-Front Coding}
 
 \section{Entropy Coding}
+
+\section{Definitions}
 
 \chapter{Simple Sorting}
 
