@@ -100,7 +100,31 @@ row, i.e. the row beginning with \(s_i\) appears before the row beginning with
 
 \section{Move-To-Front Coding}
 
+Move-To-Front coding transforms an input string into a sequence of integers
+denoting the index of the encoded character in the coders alphabet. When
+starting encoding, the alphabet is initialized to a known value (usually
+something trivial, e.g. [a, b, c, \ldots, x, y, z] if only lowercase letters
+have to be encoded). The alphabet is updated after each character is encoded, so
+that the character is moved to the front of the alphabet (and thus its index
+becomes 0), with all characters before its previous position being shifted to
+the back.
+
+For example, the MTF code of the string \texttt{aabccca} with the starting
+alphabet [a, b, c] is [0, 0, 1, 2, 0, 0, 2].
+
+MTF coding is easily reversible, as the starting alphabet is known, and the
+alphabet can be updated with every decoded character, just as during encoding.
+
+Starting alphabet in my implementation [0x00, 0x01, \ldots, 0xff] because byte
+values are symbols.
+
 \section{Entropy Coding}
+
+Entropy coding encodes input characters into variable length codes, based on
+statistical properties of the input. Characters that occur more frequently are
+assigned shorter codes than those that occur only rarely.
+
+%Huffman coding, optimal, arithmetic coding, my implementation
 
 \section{Definitions}
 
