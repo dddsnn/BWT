@@ -5,15 +5,6 @@ import itertools as it
 
 NUM_CHARS = 25
 
-class OrderList(list):
-    """List with a modified less than operator for different sorting behavior.
-    """
-    def __lt__(self, other):
-        for s, o in zip(self, other):
-            if s < o:
-                return True
-        return False
-
 def bw_table(text):
     """Create the Burrows-Wheeler table."""
     table = [text]
@@ -235,15 +226,20 @@ def bw_decode(bs, start_idx, orders=None):
                         for i, b in enumerate(bs) if b == sym]
         while True:
             possible_seq.sort(key=lambda x:
-                              OrderList([order_dicts[min(len(order_dicts) - 1,
-                                                         i)][x.sym_seq[i - 1]]
+                              [order_dicts[min(len(order_dicts) - 1,
+                                               i)][x.sym_seq[i - 1]]
                                for i in range(1, min(level + 2,
-                                                     len(x.sym_seq) + 1))]))
+                                                     len(x.sym_seq) + 1))])
             if not possible_seq[num_in_first_col].possible:
                 # if the sequence at position num_in_first_col is not possible
                 # after sorting, there is no correct continuation
                 # TODO is this correct? necessary?
                 return None
+            if len(order_dicts) <= level + 2:
+                # no need to get any more indices and sort any further, since
+                # all following symbols are already sorted with the default
+                # order and num_in_first_col is the correct continuation
+                return possible_seq[num_in_first_col]
             next_sym = possible_seq[num_in_first_col].sym_seq[level]
             for i, t in enumerate(possible_seq):
                 if not t.possible and not t.need_more:
@@ -301,6 +297,7 @@ def bw_decode(bs, start_idx, orders=None):
                     else:
                         # if the sequence is not possible but we need more syms,
                         # give an empty history
+                        # TODO this can cause liveloops
                         next_seq = next_indices(t.idx_seq[-1], [])
                     if next_seq is None:
                         # indicates this sequence is impossible
@@ -320,6 +317,8 @@ def bw_decode(bs, start_idx, orders=None):
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
+    if len(orders) > 2:
+        raise NotImplementedError('Only 2 different orders for now.')
     distinct_syms = set(bs)
     order_dicts = [order_list_to_dict(o, distinct_syms) for o in orders]
     first_order_list = make_order_lists(bs, orders, 1)
