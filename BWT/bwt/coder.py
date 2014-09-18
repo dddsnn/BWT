@@ -344,18 +344,31 @@ def bw_decode_2_orders(bs, start_idx, orders=None):
     if len(orders) > 2:
         raise ValueError('Only up to 2 different orders are allowed.')
     distinct_syms = set(bs)
-    order_dicts = [order_list_to_dict(o, distinct_syms) for o in orders]
+    if len(orders) == 2:
+        second_order_dict = {}
+        if isinstance(orders[1], Mapping):
+            for prefix, order_list in orders[1].items():
+                second_order_dict[prefix] = order_list_to_dict(order_list,
+                                                        distinct_syms)
+        else:
+            # copy the general order for all prefixes
+            order_dict = order_list_to_dict(orders[1], distinct_syms)
+            for s in distinct_syms:
+                second_order_dict[s] = order_dict
     first_order_list = make_order_lists(bs, orders, 1)
     first_col = bytes((x[1] for x in sorted(zip(first_order_list[0], bs),
                                             key=lambda x:x[0])))
     result_idx = [start_idx]
     while len(result_idx) < len(bs):
         idx = result_idx[-1]
-        sym = first_col[idx]
+        sym = bs[idx]
+        next_sym = first_col[idx]
         num_in_first_col = sum(1 for i, b in enumerate(first_col)
-                               if b == sym and i < idx)
-        possible_idx = [i for i, b in enumerate(bs) if b == sym]
-        possible_idx.sort(key=lambda x:order_dicts[1][first_col[x]])
+                               if b == next_sym and i < idx)
+        possible_idx = [i for i, b in enumerate(bs) if b == next_sym]
+        if len(orders) == 2:
+            # reordering is only necessary if there are 2 orders
+            possible_idx.sort(key=lambda x:second_order_dict[sym][first_col[x]])
         result_idx.append(possible_idx[num_in_first_col])
     return bytes([bs[i] for i in result_idx])
 
