@@ -533,9 +533,8 @@ if __name__ == '__main__':
     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 #     in_bs = b'mississippi'
-#     in_bs = b'mississippi'
     bw = cd.bw_encode(in_bs, orders)
-    dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
+    dec = cd.bw_decode_2_orders(bw.encoded, bw.start_index, orders)
 #     dec = cd.bw_decode_bruteforce(bw.encoded, bw.start_index, orders)
     print(in_bs == dec)
     print(dec)

@@ -337,24 +337,27 @@ def bw_decode(bs, start_idx, orders=None):
         del current_idx_seq[0]
     return bytes([bs[i] for i in result_idx])
 
-def bw_decode_bruteforce(bs, start_index, orders=None):
+def bw_decode_2_orders(bs, start_idx, orders=None):
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
+    if len(orders) > 2:
+        raise ValueError('Only up to 2 different orders are allowed.')
+    distinct_syms = set(bs)
+    order_dicts = [order_list_to_dict(o, distinct_syms) for o in orders]
     first_order_list = make_order_lists(bs, orders, 1)
     first_col = bytes((x[1] for x in sorted(zip(first_order_list[0], bs),
                                             key=lambda x:x[0])))
-    possible_idx_runs = []
-    for p in it.permutations(list(range(len(bs)))):
-        idx_run = list(p) * 2
-        if idx_run[0] != start_index:
-            continue
-        for i in range(len(bs)):
-            if first_col[idx_run[i]] != bs[idx_run[i + 1]]:
-                break
-        else:
-            possible_idx_runs.append(idx_run[:len(idx_run) // 2])
-    return [bytes([bs[i] for i in idx_run]) for idx_run in possible_idx_runs]
+    result_idx = [start_idx]
+    while len(result_idx) < len(bs):
+        idx = result_idx[-1]
+        sym = first_col[idx]
+        num_in_first_col = sum(1 for i, b in enumerate(first_col)
+                               if b == sym and i < idx)
+        possible_idx = [i for i, b in enumerate(bs) if b == sym]
+        possible_idx.sort(key=lambda x:order_dicts[1][first_col[x]])
+        result_idx.append(possible_idx[num_in_first_col])
+    return bytes([bs[i] for i in result_idx])
 
 def mtf_partial_encode(bs):
     """Do a partial MTF encode of a byte sequence.
