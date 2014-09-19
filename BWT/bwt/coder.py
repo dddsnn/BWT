@@ -88,7 +88,6 @@ def make_order_lists(bs, orders, depth, start_depth=0):
     for d in range(start_depth, depth):
         try:
             order_dict = order_dicts[d]
-            offset = 0
         except IndexError:
             order_dict = order_dicts[-1]
             if None in order_dict and order_lists:
@@ -96,7 +95,6 @@ def make_order_lists(bs, orders, depth, start_depth=0):
                 # last order list
                 order_lists.append(order_lists[-1][:])
                 continue
-            offset = d - len(order_dicts) + 1
         order_list = []
         if None in order_dict:
             # only one general order
@@ -106,10 +104,10 @@ def make_order_lists(bs, orders, depth, start_depth=0):
             # lenght of prefix, assume all are equal
             l = len(next(iter(order_dict.keys())))
             for i, b in enumerate(bs):
-                if i >= l + offset or i < offset:
-                    prefix = bs[i - l - offset:i - offset]
+                if i >= l:
+                    prefix = bs[i - l:i]
                 else:
-                    prefix = bs[i - l - offset:] + bs[:i - offset]
+                    prefix = bs[i - l:] + bs[:i]
                 order_list.append(order_dict[prefix][b])
         order_lists.append(order_list)
     return order_lists
@@ -348,7 +346,7 @@ def bw_decode_2_orders(bs, start_idx, orders=None):
         second_order_dict = {}
         if isinstance(orders[1], Mapping):
             for prefix, order_list in orders[1].items():
-                second_order_dict[prefix] = order_list_to_dict(order_list,
+                second_order_dict[prefix[0]] = order_list_to_dict(order_list,
                                                         distinct_syms)
         else:
             # copy the general order for all prefixes
@@ -361,14 +359,14 @@ def bw_decode_2_orders(bs, start_idx, orders=None):
     result_idx = [start_idx]
     while len(result_idx) < len(bs):
         idx = result_idx[-1]
-        sym = bs[idx]
         next_sym = first_col[idx]
         num_in_first_col = sum(1 for i, b in enumerate(first_col)
                                if b == next_sym and i < idx)
         possible_idx = [i for i, b in enumerate(bs) if b == next_sym]
         if len(orders) == 2:
             # reordering is only necessary if there are 2 orders
-            possible_idx.sort(key=lambda x:second_order_dict[sym][first_col[x]])
+            possible_idx.sort(key=lambda x:second_order_dict[next_sym]
+                              [first_col[x]])
         result_idx.append(possible_idx[num_in_first_col])
     return bytes([bs[i] for i in result_idx])
 

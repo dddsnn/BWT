@@ -478,7 +478,7 @@ def assemble_multicol_orders(work_dir, metric):
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/book1/'
+    work_dir = '/home/dddsnn/tmp/book1_2col/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
@@ -513,7 +513,7 @@ if __name__ == '__main__':
 #     metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
 #                             'weighted': False, 'new_penalty_log': {}})]
 
-    metrics = []
+#     metrics = []
 
 #     make_aux_data(work_dir, in_file_path, col_depth=2)
 
@@ -527,16 +527,19 @@ if __name__ == '__main__':
 
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
-    natural_order = [bytes([x]) for x in range(256)]
-    orders = [natural_order, list(reversed(natural_order))]
+#     natural_order = [bytes([x]) for x in range(256)]
+#     orders = [natural_order, list(reversed(natural_order))]
     # [15,24,25,14,26,13,17,21,4,11,9,12,16,20,6,0,27,7,1,28,8,2,30,3,18,19,22,29,5,10,23]
-    in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
+#     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 #     in_bs = b'mississippi'
+    with open(in_file_path, 'rb') as in_file:
+        in_bs = in_file.read()
+    in_bs = in_bs[:10000]
+    orders = assemble_multicol_orders(work_dir, metrics[0])
     bw = cd.bw_encode(in_bs, orders)
     dec = cd.bw_decode_2_orders(bw.encoded, bw.start_index, orders)
-#     dec = cd.bw_decode_bruteforce(bw.encoded, bw.start_index, orders)
     print(in_bs == dec)
-    print(dec)
+#     print(dec)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
