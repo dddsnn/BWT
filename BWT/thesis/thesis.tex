@@ -188,6 +188,8 @@ the same context. If the input file is suitable for context-based
 compression, these sequences will consist of only a few distinct symbols with
 lots of repetition, leading to many small numbers in the MTF code.
 
+%TODO describe overwork better
+
 But any time the context changes, in the Burrows-Wheeler code a new sequence
 begins that is in general not related to the previous one. This incurs some
 overwork\cite{bitner1979heuristics} for the MTF coder as it has to adapt to the
@@ -370,6 +372,8 @@ reordering: instead of looking for a sort order by which the entire BW table
 will be sorted, we look for an order by which only the first column of the BW
 table will be sorted, all other columns will use the natural order (which was
 used to generate the context blocks that are fed to the metric).
+
+%still reversible, see next chapter
 
 This is equivalent to finding a reordering of the fixed context blocks the
 metric deals with. This means that recurring symbols in the partial MTF never
@@ -693,6 +697,35 @@ all cols:
 
 %-transition from last 2nd-order context in first 1st-order context to first
 % 2nd-order context in second 1st-order context relevant?
+
+%-generic vs specific orders
+
+The previous chapter showed that, when only the first column of the BW table is
+sorted according to the computed order and the rest as usual, there is much less
+potential for compression improvement than if the order is used for all columns.
+
+Furthermore, while the handpicked order and Chapin's metrics produce reliably
+better results when used on all columns compared to only the first column,
+results of the Badness metric are erratic: some variants are much better than
+Chapin's metrics or the handpicked order, while some actually make compression
+worse than the natural order although, when used only on the first column they
+produce good results.
+
+This makes to a point, since the Badness metric was designed for the very
+specific purpose of finding an ideal reordering of blocks of MTF code (for
+which only the order of the first column is changed), while Chapin's metrics
+find more general similarities between blocks of BW code.
+
+So in this chapter I try to make more specific orders for more columns than just
+the first.
+
+\section{Generic and specific orders}
+
+\section{Further Work}
+
+%-selecting only a limited number of distinct orders for more efficient format
+%-maybe make a selection of frequently useful orders that can be accessed in the
+%	decoder
 
 \chapter{Exceptions to MTF}
 

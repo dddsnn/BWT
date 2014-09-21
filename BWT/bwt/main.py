@@ -536,7 +536,7 @@ if __name__ == '__main__':
     with open(in_file_path, 'rb') as in_file:
         in_bs = in_file.read()
     in_bs = in_bs[:10000]
-    orders = assemble_multicol_orders(work_dir, metrics[0])
+    orders = assemble_multicol_orders(work_dir, metrics[10])
     bw = cd.bw_encode(in_bs, orders)
     dec = cd.bw_decode_2_orders(bw.encoded, bw.start_index, orders)
     print(in_bs == dec)
