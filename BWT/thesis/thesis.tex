@@ -720,7 +720,7 @@ So in this chapter I try to make specific orders for more columns than just the
 first to increase the compression gained from reordering.
 
 \section{Generic and specific orders}
-%TODO proper definitions
+%TODO proper definitions: order, specific order (dictionary), prefix
 
 During the sorting stage of the BWT, more than one sort order can be given. In
 the simplest case they are all generic orders: The rows are first sorted by
@@ -773,17 +773,21 @@ They would be sorted as follows:
 \texttt{ba} \\
 \end{tabular}
 
-This way, the transitions within different contexts can be optimized separately.
-For example, the transition in the BW code from \texttt{aa} to \texttt{ab} may
-be good for compression while the transition from \texttt{xa} to \texttt{xb}
-isn't especially good or even bad. Giving special orders for 2 columns allows to
-sort \texttt{b} after \texttt{a} if they're preceded by \texttt{a}, but sort
-them differently when they're preceded by something else.
+If the default order is a specific one, it has to be used for columns with depth
+greater than the prefix length of the order. In this case, the symbols
+immediately preceding the symbol to be sorted must be used as a prefix (instead
+of the symbols at the beginning of the row). This is important to allow
+reversibility (see next section).
 
-%TODO default order, symbols directly preceding it instead of symbols at
-% beginning of row
+Using specific orders, the transitions within different contexts can be
+optimized separately. For example, the transition in the BW code from
+\texttt{aa} to \texttt{ab} may be good for compression while the transition
+from \texttt{xa} to \texttt{xb} isn't especially good or even bad. Giving
+specific orders for 2 columns allows to sort \texttt{b} after \texttt{a} if
+they're preceded by \texttt{a}, but sort them differently when they're preceded
+by something else.
 
-Providing special orders for multiple columns increases the amount of
+Providing specific orders for multiple columns increases the amount of
 transitions that can be optimized: If the input has \(n\) distinct symbols,
 there are \(n - 1\) transitions in the first column. In the second column, there
 are up to \(n - 1\) transitions in the context of each of the \(n\) symbols. In
@@ -797,6 +801,24 @@ will of course also get smaller.
 %-overhead
 
 \section{Reversibility}
+
+In order for the BWT with multiple sort orders to be useful, the transformation
+needs to be reversible.
+
+I can show that it is, if only two sort orders are given (the second one can be
+specific). I have, however, been unable to show reversibility for an arbitrary
+number of sort orders. But I believe it is possible and will give my unfinished
+algorithm and point out the part where it fails in some cases.
+
+As with the regular BWT with only one order, the BW code (the last column of
+the BW table), the index of the first symbol in it and all the orders are given
+to the decoder. The first column of the BW table can be reconstructed by sorting
+the code according to the order for the first column. It is then easy, for any
+given index in the code to give the symbol that follows it.
+
+The tricky part is still
+
+\section{Results}
 
 \section{Further Work}
 
