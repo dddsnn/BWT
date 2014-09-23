@@ -373,7 +373,7 @@ will be sorted, we look for an order by which only the first column of the BW
 table will be sorted, all other columns will use the natural order (which was
 used to generate the context blocks that are fed to the metric).
 
-%still reversible, see next chapter
+%TODO still reversible, see next chapter
 
 This is equivalent to finding a reordering of the fixed context blocks the
 metric deals with. This means that recurring symbols in the partial MTF never
@@ -716,10 +716,87 @@ specific purpose of finding an ideal reordering of blocks of MTF code (for
 which only the order of the first column is changed), while Chapin's metrics
 find more general similarities between blocks of BW code.
 
-So in this chapter I try to make more specific orders for more columns than just
-the first.
+So in this chapter I try to make specific orders for more columns than just the
+first to increase the compression gained from reordering.
 
 \section{Generic and specific orders}
+%TODO proper definitions
+
+During the sorting stage of the BWT, more than one sort order can be given. In
+the simplest case they are all generic orders: The rows are first sorted by
+their first symbol according to the first sort order given. Subsequent symbols
+are used as tie breakers where the previous ones were all the same, with the
+\(n\)-th symbols of a row being sorted according to the \(n\)-th order given.
+
+To simplify, there don't need to be sort orders specified for each column; in
+this case, the last order is used as the default for all following columns.
+
+For example, the input \texttt{mississippi} sorted with the order \texttt{[i, m,
+p, s]} for the first and \texttt{[s, p, m, i]} for all following columns would
+yield the BW table
+
+\begin{tabular}{|r||ccccccccccc|}
+\hline
+0 & i & s & s & i & s & s & i & p & p & i & m \\
+1 & i & s & s & i & p & p & i & m & i & s & s \\
+2 & i & p & p & i & m & i & s & s & i & s & s \\
+3 & i & m & i & s & s & i & s & s & i & p & p \\
+4 & m & i & s & s & i & s & s & i & p & p & i \\
+5 & p & p & i & m & i & s & s & i & s & s & i \\
+6 & p & i & m & i & s & s & i & s & s & i & p \\
+7 & s & s & i & s & s & i & p & p & i & m & i \\
+8 & s & s & i & p & p & i & m & i & s & s & i \\
+9 & s & i & s & s & i & p & p & i & m & i & s \\
+10 & s & i & p & p & i & m & i & s & s & i & s \\
+\hline
+\end{tabular}
+
+and the BW code \texttt{msspiipiiss}.
+
+The more complex case is that of specific orders. Here, for the \(n\)-th column,
+multiple orders are given, one for each subsequence of symbols of length \(n -
+1\) that is the beginning of a row in the BW table (the prefix). The order
+for the first column is of course still a generic one, since there is only one
+prefix of length zero.
+
+For example, suppose the strings \texttt{aa}, \texttt{ab}, \texttt{ba} and
+\texttt{bb} appear at the beginning of rows in a BW table. The order for the
+first column shall be \texttt{[a, b]}. There are two prefixes of length \(1\),
+namely \texttt{a} and \texttt{b}. The orders for the second column shall be
+\texttt{[a, b]} for prefix \texttt{a} and \texttt{[b, a]} for prefix \texttt{b}.
+They would be sorted as follows:
+
+\begin{tabular}{c}
+\texttt{aa} \\
+\texttt{ab} \\
+\texttt{bb} \\ 
+\texttt{ba} \\
+\end{tabular}
+
+This way, the transitions within different contexts can be optimized separately.
+For example, the transition in the BW code from \texttt{aa} to \texttt{ab} may
+be good for compression while the transition from \texttt{xa} to \texttt{xb}
+isn't especially good or even bad. Giving special orders for 2 columns allows to
+sort \texttt{b} after \texttt{a} if they're preceded by \texttt{a}, but sort
+them differently when they're preceded by something else.
+
+%TODO default order, symbols directly preceding it instead of symbols at
+% beginning of row
+
+Providing special orders for multiple columns increases the amount of
+transitions that can be optimized: If the input has \(n\) distinct symbols,
+there are \(n - 1\) transitions in the first column. In the second column, there
+are up to \(n - 1\) transitions in the context of each of the \(n\) symbols. In
+general, if there are special orderings for \(k\) columns given, there are up to
+\(\sum_{i=0}^{k} n^{i} \cdot (n - 1)\) transitions. ``Up to'', because not every
+symbols has to appear after every other symbol. In fact, the further you get
+into the columns, the bigger the difference between the upper bound and the
+actual number of encountered transitions will be. The individual context blocks
+will of course also get smaller.
+
+%-overhead
+
+\section{Reversibility}
 
 \section{Further Work}
 
