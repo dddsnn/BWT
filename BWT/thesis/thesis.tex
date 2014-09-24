@@ -1,6 +1,7 @@
 \documentclass[a4paper]{scrreprt}
 \usepackage{multirow}
 \usepackage{pifont}
+\usepackage{algpseudocode}
 
 \begin{document}
 
@@ -14,7 +15,8 @@
 %-explain bw-mtf-entropy, mtf can be skipped
 %-explain simple version of bw used here, no rle
 %-definitions: context block, symbol (byte in this thesis), natural sort order,
-%	transition
+%	transition, order, sort something according to an order, sort by something
+% (key))
 
 The Burrows-Wheeler compression algorithm is a highly effective context-based
 compression method centered around the Burrows-Wheeler Transform (BWT) first
@@ -213,7 +215,7 @@ given costs is an instance of the traveling salesman problem, where the nodes
 are the context blocks and the distances between them are the cost of the
 transition.
 
-\section{Presious Work}
+\section{Related Work}
 
 chapin original \cite{chapin1998sort,chapin2001diss}
 merge with next section unless there's more
@@ -830,9 +832,54 @@ the last column are sorted by the same sequences.
 
 But with two orders, the sequences are sorted differently when they begin in the
 first column than when they begin in the second since the sort order for the
-first column is different from the other columns.
+first column is different from that of the other columns.
+
+This problem can be solved by ``looking ahead'' one more symbol and reordering
+accordingly. The following is the algorithm to match an index in the first
+column to an index in the last column.
+
+\begin{algorithmic}[1]
+\Procedure{next\_index}{$idx$, $first\_col$, $last\_col$, $second\_order$}
+\State $sym \gets first\_col[idx]$
+\State $num \gets$ number of appearances of $sym$ in $first\_col$ with index $<
+idx$
+\State $possible\_idx \gets [i | last\_col[i] = sym]$\Comment{this list must be
+sorted}
+\State sort $possible\_idx$ according to $second\_order$, using $first\_col[i]$
+as the key for element $i$\Comment{this must be a stable sort}
+\State \Return $possible\_idx[num]$
+\EndProcedure
+\end{algorithmic}
+
+In line 5, %TODO correct line?
+the possible indices are sorted as though the second order was used for the
+first column. Since all subsequent orders are the same (there are only two),
+this means the sequences at the beginning of the rows with those indices are in
+the same order as when they appear starting in the second column. We now have
+the same situation as if we were reversing a BWT with only one order and can
+return the appropriate index.
+
+%TODO specific order, why it's important default order uses symbol directly
+% before
 
 \subsection{More Orders}
+
+\section{Computing the Orders}
+
+Actually computing specific orders for more than one column is fairly
+straightforward: First, the order for the first column is computed as in the
+previous chapter. The \(n\)-th specific order is a collection of orders, one for
+each subsequence of length \(n - 1\). For each of these subsequences, the
+context block is extracted from the BW code and the order computed as if it were
+the first order.
+
+Unfortunately, with this approach the orders that are computed first are likely
+to get messed up again, as during calculating the \(n\)-th order context blocks
+of the \(n + 1\)-st order are assumed to be in an order that is likely to change
+when the \(n + 1\)-st order is computed.
+
+The alternative would be to first compute all the highest level orders, so that
+the %TODO
 
 \section{Results}
 
@@ -846,6 +893,8 @@ first column is different from the other columns.
 
 %-when removing blocks from the bw, transitions are ripped out and  the computed
 % order isn't correct anymore
+%-bzip2 has the ability to switch between multiple huffman tables. maybe that
+% makes exceptions to mtf superfluous
 
 This chapter doesn't have a strong relation to the previous chapters. It's about
 how some parts of the BW code don't contextualize very well and therefore aren't

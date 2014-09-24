@@ -315,8 +315,6 @@ def bw_decode(bs, start_idx, orders=None):
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
-    if len(orders) > 2:
-        raise NotImplementedError('Only 2 different orders for now.')
     distinct_syms = set(bs)
     order_dicts = [order_list_to_dict(o, distinct_syms) for o in orders]
     first_order_list = make_order_lists(bs, orders, 1)
