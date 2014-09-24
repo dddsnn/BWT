@@ -98,6 +98,9 @@ is the same whether they're preceded by \(c\), or they're the beginning of a
 row, i.e. the row beginning with \(s_i\) appears before the row beginning with
 \(s_j\) iff \(i<j\).
 
+%TODO algorithm to match first col index to last col index, see multi order
+% chapter
+
 \section{Move-To-Front Coding}
 
 Move-To-Front coding transforms an input string into a sequence of integers
@@ -810,13 +813,26 @@ specific). I have, however, been unable to show reversibility for an arbitrary
 number of sort orders. But I believe it is possible and will give my unfinished
 algorithm and point out the part where it fails in some cases.
 
+\subsection{Two Orders}
+
 As with the regular BWT with only one order, the BW code (the last column of
 the BW table), the index of the first symbol in it and all the orders are given
 to the decoder. The first column of the BW table can be reconstructed by sorting
 the code according to the order for the first column. It is then easy, for any
 given index in the code to give the symbol that follows it.
 
-The tricky part is still
+The tricky part is still to match an index in the first column to an index in
+the last column to continue decoding. With only one order, the \(i\)-th
+occurrence of a symbol in the first column would match the \(i\)-th occurrence
+of that symbol in the last column because symbols that compare equal are sorted
+by the sequences of symbols that follow, and the rows where that symbol is in
+the last column are sorted by the same sequences.
+
+But with two orders, the sequences are sorted differently when they begin in the
+first column than when they begin in the second since the sort order for the
+first column is different from the other columns.
+
+\subsection{More Orders}
 
 \section{Results}
 
@@ -831,6 +847,12 @@ The tricky part is still
 %-when removing blocks from the bw, transitions are ripped out and  the computed
 % order isn't correct anymore
 
+This chapter doesn't have a strong relation to the previous chapters. It's about
+how some parts of the BW code don't contextualize very well and therefore aren't
+very suitable for encoding using MTF. Excepting unsuitable contexts from the MTF
+phase, and instead compression them directly with an entropy coder, can increase
+overall compression.
+
 \section{Previous Work}
 
 chapin tried using two list update algos
@@ -838,6 +860,10 @@ chapin tried using two list update algos
 universally the best
 
 wirth, moffat, altered or no list update \cite{wirth2001ranks}
+
+\section{The Problem}
+
+
 
 \bibliographystyle{plain}
 \bibliography{bib}
