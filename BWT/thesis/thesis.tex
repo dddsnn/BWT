@@ -6,7 +6,7 @@
 \begin{document}
 
 \begin{abstract}
-
+%TODO
 \end{abstract}
 
 \chapter{Intro}
@@ -244,6 +244,7 @@ similarity between the two contexts.
 For the second metric, the symbol counts from the histograms are written to a
 list in decreasing order. The cost of a transition is the number of
 inversions\cite{sleator1985amortized} between the two corresponding lists.
+%TODO shitty cite
 
 The third metric is just the logarithm of the second metric.\footnote{Again, no
 base was specified, I use the natural logarithm.}
@@ -535,6 +536,8 @@ can't be evaluated, since predictions only happen in the right side of a
 transition, and the first block is not the right side of any transition that
 appears in the reordering.
 
+%TODO only describe the ones used, put the rest in appendix
+
 When we have all the pairs (actual value, predicted value), we can calculate
 indicators that can hint at the quality of the predictions:
 \begin{itemize}
@@ -596,10 +599,11 @@ TODO update in case parameters to LKH change
 \subsection{Results}
 
 book1
+
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-Metric & weighted & entropy length prediction & MTF prediction & out size all
-columns \\ \hline
+Metric & weighted & entropy length prediction & MTF prediction & out size
+all columns \\ \hline
 \multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139673 \\
 \cline{2-5} & \ding{55} & \ding{55} & generic mean & 2138203 \\ \cline{2-5}
 & \ding{55} & \ding{55} & generic median & 2142013 \\ \cline{2-5}
@@ -864,6 +868,25 @@ return the appropriate index.
 
 \subsection{More Orders}
 
+I have tried to modify the algorithm to work with more orders, but what I have
+so far can potentially create a livelock.
+
+The algorithm doesn't return only one index, but a sequence of indices. During
+execution, many possible sequences of indices may have to be saved to
+determine the correct one, so this is, first of all, an optimization -- if we
+have all those correct indices, why only return one? But it can also become
+necessary for correctness to return more than one index if there are multiple
+possible index sequences that would decode the whole file. They all give the
+correct result, but returning only the first index of one of them might make it
+impossible to correctly continue the sequence with the next call to the
+function.
+
+\begin{algorithmic}[1]
+\Procedure{next\_indices}{$idx$, $first\_col$, $last\_col$, $orders$, $history$}
+%TODO
+\EndProcedure
+\end{algorithmic}
+
 \section{Computing the Orders}
 
 Actually computing specific orders for more than one column is fairly
@@ -873,13 +896,16 @@ each subsequence of length \(n - 1\). For each of these subsequences, the
 context block is extracted from the BW code and the order computed as if it were
 the first order.
 
+%TODO describe both approaches, describe why i use the bad one
+
 Unfortunately, with this approach the orders that are computed first are likely
 to get messed up again, as during calculating the \(n\)-th order context blocks
 of the \(n + 1\)-st order are assumed to be in an order that is likely to change
 when the \(n + 1\)-st order is computed.
 
 The alternative would be to first compute all the highest level orders, so that
-the %TODO
+the transitions ``further into the table'' are already done and the lower next
+order can be computed with the correct higher level transitions. 
 
 \section{Results}
 
@@ -895,6 +921,7 @@ the %TODO
 % order isn't correct anymore
 %-bzip2 has the ability to switch between multiple huffman tables. maybe that
 % makes exceptions to mtf superfluous
+%-adaptive entropy coder might also limit the problem
 
 This chapter doesn't have a strong relation to the previous chapters. It's about
 how some parts of the BW code don't contextualize very well and therefore aren't
@@ -912,7 +939,84 @@ wirth, moffat, altered or no list update \cite{wirth2001ranks}
 
 \section{The Problem}
 
+%TODO entropy coder -> Huffman
 
+In the BW table, rows that begin with the same symbols are sorted one below the
+other, with the symbols immediately preceding them forming part of the BW code.
+In input files that are suitable for compression, the same sequences are likely
+to be preceded by a symbol from a small set of likely symbols, and so the BW
+code contains blocks in which only a small number of distinct symbols appear,
+with long runs of the same symbol.
+
+For example, consider rows beginning with ``\texttt{nd }'' in the BW table of an
+English language text file. The BW code corresponding to these rows is likely to
+contain many \texttt{a}'s and \texttt{A}'s for the word \emph{and}, but also
+some \texttt{e}'s (\emph{end}) or \texttt{u}'s (\emph{found}).
+
+Long runs of the same symbol in the BW code mean long runs of zeros in the MTF
+code. And if the current symbol in the BW code changes to one of the other
+likely symbols, it is likely to be close to the front of the MTF alphabet,
+meaning a low code will follow.
+
+When the resulting MTF code is passed to the (static) entropy coder, it
+recognizes that very low MTF codes (and especially 0) appear much more
+frequently than others and assigns them much shorter codes.
+
+But now consider that not all symbols contextualize well, i.e. that the BW code
+generated by the rows that begin with that symbol doesn't contain long runs and
+doesn't only contain symbols from a small set.
+
+For example, consider rows beginning with ``\texttt{. }''. These typically mark
+the end of a sentence and are followed by the next sentence. The symbols in the
+corresponding BW code would each be the last symbol of the last word of the
+sentence. They would be symbols that are likely to appear at the end of a
+word. But the way the next sentence starts doesn't really give any additional
+information, as it doesn't say anything about what the last symbol of the
+previous sentence was.
+
+If a BW code like this is encoded with MTF, there won't be any long runs of
+zeros and the codes will on average be much higher than in most of the other MTF
+code. The code will be erratically jumping, as there is no real connection
+between consecutive rows in the BW table.
+
+But since the entropy coder considers the whole MTF code to make the code
+book and assigns very short codes to low MTF codes, it also assigns very long
+codes to higher MTF codes. This means that this MTF code is encoded with some
+very long entropy codes and will get rather big.
+
+On top of that, even if there are still only few high MTF codes, their slightly
+increased frequency might actually affect the statistical analysis of the
+Huffman coder: If there are more high codes, they will get shorter Huffman
+codes, causing some of the lower codes to get longer ones.
+%TODO not clear how this is a problem
+
+\section{The Solution}
+
+Symbols that don't contextualize well are not suited for the MTF phase. They
+should skip that phase and be encoded with an entropy coder separately.
+
+Looking at the ``\texttt{. }'' example again: The order in which the symbols in
+the BW appear is not related to the beginning of the row and so the MTF code
+would be erratic. But they are all symbols appearing at the end of words, and so
+some symbols are more likely to appear than others -- a perfect candidate for
+entropy coding.
+%TODO format, overhead
+
+\subsection{Selecting symbols to be excepted}
+
+In order to find symbols that don't contextualize well and should be excepted
+from the MTF phase, first do a regular BWT and MTF encode. For each distinct
+symbol in the input, cut out the MTF code corresponding to the BW code from the
+rows starting with that symbol. Calculate the average of the codes. If it is
+above a threshold, consider the symbol not suitable for MTF. Additionally,
+require the MTF code to have a certain length to be excepted, in order not to
+let the overhead from the special treatment destroy the gains.
+
+\section{Results}
+
+\section{Future Work}
+
+%-except smaller contexts, e.g. '. ' instead of '.'
 
 \bibliographystyle{plain}
 \bibliography{bib}
