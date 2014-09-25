@@ -2,6 +2,11 @@
 \usepackage{multirow}
 \usepackage{pifont}
 \usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xparse}
+
+\NewDocumentCommand{\rot}{O{45} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
 
 \begin{document}
 
@@ -292,6 +297,7 @@ values the ratio of the original (floating-point) values and the ratio of their
 correspoding integers is computed and the relative error calculated. The maximum
 relative error for the examples is rarely greater than \(10^-4\).
 %TODO update in case this changes
+%TODO inverse of scaling factor
 LKH is run with default parameters, with the exception of the number of runs,
 which is 100 rather than the default 10.
 
@@ -348,7 +354,7 @@ alphabet when the transition occurrs, and so that first escape code would, in
 the full MTF be encoded as a 0 (and smaller codes are better). The ideal full
 MTF code for the next escape code is 1 (since the code 0 in the alphabet has
 already been taken by whatever symbol came before it) etc.
-%example? pseudo code?
+%TODO example? pseudo code?
 
 The metric can then compare the ideal codes with the actual codes in the
 combined partial MTF at the positions where the escape symbols are in the
@@ -591,54 +597,79 @@ for the code lengths for each MTF code.
 The resulting pairs of actual and predicted values can be evaluated with the
 same indicators as in the last section.
 
-%-TODO results for only first col and for all cols
+%TODO results for only first col and for all cols
 
-TODO update in case parameters to LKH change
+%TODO update in case parameters to LKH change
 \subsubsection{Feeding back correction values}
 
 \subsection{Results}
 
 book1
 
-\begin{tabular}{|c|c|c|c|c|}
-\hline
-Metric & weighted & entropy length prediction & MTF prediction & out size
-all columns \\ \hline
-\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139673 \\
-\cline{2-5} & \ding{55} & \ding{55} & generic mean & 2138203 \\ \cline{2-5}
-& \ding{55} & \ding{55} & generic median & 2142013 \\ \cline{2-5}
-& \ding{55} & \ding{55} & specific mean & 2134390 \\ \cline{2-5}
-& \ding{55} & \ding{55} & specific median & 2138527 \\ \cline{2-5}
-& \ding{55} & complete & \ding{55} & 2139013 \\ \cline{2-5}
-& \ding{55} & complete & generic mean & 2133935 \\ \cline{2-5}
-& \ding{55} & complete & generic median & 2135820 \\ \cline{2-5}
-& \ding{55} & complete & specific mean & 2135364 \\ \cline{2-5}
-& \ding{55} & complete & specific median & 2140979 \\ \cline{2-5}
-& \ding{55} & sparse & \ding{55} & 2139013 \\ \cline{2-5}
-& \ding{55} & sparse & generic mean & 2133644 \\ \cline{2-5}
-& \ding{55} & sparse & generic median & 2135622 \\ \cline{2-5}
-& \ding{55} & sparse & specific mean & 2136052 \\ \cline{2-5}
-& \ding{55} & sparse & specific median & 2138426 \\ \cline{2-5}
-& \ding{51} & \ding{55} & \ding{55} & 2135080 \\ \cline{2-5}
-& \ding{51} & \ding{55} & generic mean & 2133012 \\ \cline{2-5}
-& \ding{51} & \ding{55} & generic median & 2134234 \\ \cline{2-5}
-& \ding{51} & \ding{55} & specific mean & 2132082 \\ \cline{2-5}
-& \ding{51} & \ding{55} & specific median & 2140333 \\ \cline{2-5}
-& \ding{51} & complete & \ding{55} & 2136412 \\ \cline{2-5}
-& \ding{51} & complete & generic mean & 2134734 \\ \cline{2-5}
-& \ding{51} & complete & generic median & 2134390 \\ \cline{2-5}
-& \ding{51} & complete & specific mean & 2134469 \\ \cline{2-5}
-& \ding{51} & complete & specific median & 2136416 \\ \cline{2-5}
-& \ding{51} & sparse & \ding{55} & 2136417 \\ \cline{2-5}
-& \ding{51} & sparse & generic mean & 2135061 \\ \cline{2-5}
-& \ding{51} & sparse & generic median & 2134390 \\ \cline{2-5}
-& \ding{51} & sparse & specific mean & 2135461 \\ \cline{2-5}
-& \ding{51} & sparse & specific median & 2134783 \\ \hline
-\multicolumn{4}{|c|}{standard} & 2136995 \\ \hline
-\multicolumn{4}{|c|}{aeiou} & 2133488 \\ \hline
-\multicolumn{4}{|c|}{Chapin hst diff} & 2135905 \\ \hline
-\multicolumn{4}{|c|}{Chapin inv} & 2135217 \\ \hline
-\multicolumn{4}{|c|}{Chapin inv log} & x \\ \hline
+\begin{tabular}{ccccc}
+\rot{Metric} & \rot{weighted} & \rot{entropy length prediction} & \rot{MTF
+prediction} & \rot{out size all columns} \\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} &
+\multicolumn{1}{c|}{\ding{55}} & 2139673 \\ \cline{2-5}
+& \ding{55} & \ding{55} & \multicolumn{1}{c|}{generic mean} & 2138203 \\
+\cline{2-5}
+& \ding{55} & \ding{55} & \multicolumn{1}{c|}{generic median} & 2142013 \\
+\cline{2-5}
+& \ding{55} & \ding{55} & \multicolumn{1}{c|}{specific mean} & 2134390 \\
+\cline{2-5}
+& \ding{55} & \ding{55} & \multicolumn{1}{c|}{specific median} & 2138527 \\
+\cline{2-5}
+& \ding{55} & complete & \multicolumn{1}{c|}{\ding{55}} & 2139013 \\ \cline{2-5}
+& \ding{55} & complete & \multicolumn{1}{c|}{generic mean} & 2133935 \\
+\cline{2-5}
+& \ding{55} & complete & \multicolumn{1}{c|}{generic median} &
+2135820 \\ \cline{2-5}
+& \ding{55} & complete & \multicolumn{1}{c|}{specific
+mean} & 2135364 \\ \cline{2-5}
+& \ding{55} & complete & \multicolumn{1}{c|}{specific median} & 2140979 \\
+\cline{2-5}
+& \ding{55} & sparse & \multicolumn{1}{c|}{\ding{55}} & 2139013 \\
+\cline{2-5}
+& \ding{55} & sparse & \multicolumn{1}{c|}{generic mean} & 2133644 \\
+\cline{2-5}
+& \ding{55} & sparse & \multicolumn{1}{c|}{generic median} & 2135622 \\
+\cline{2-5}
+& \ding{55} & sparse & \multicolumn{1}{c|}{specific mean} & 2136052 \\
+\cline{2-5}
+& \ding{55} & sparse & \multicolumn{1}{c|}{specific median} &
+2138426 \\ \cline{2-5}
+& \ding{51} & \ding{55} & \multicolumn{1}{c|}{\ding{55}}
+& 2135080 \\ \cline{2-5}
+& \ding{51} & \ding{55} & \multicolumn{1}{c|}{generic mean} & 2133012 \\
+\cline{2-5}
+& \ding{51} & \ding{55} & \multicolumn{1}{c|}{generic median} &
+2134234 \\ \cline{2-5}
+& \ding{51} & \ding{55} & \multicolumn{1}{c|}{specific mean} & 2132082 \\
+\cline{2-5} & \ding{51} & \ding{55} & \multicolumn{1}{c|}{specific median} &
+2140333 \\ \cline{2-5}
+& \ding{51} & complete & \multicolumn{1}{c|}{\ding{55}} & 2136412 \\ \cline{2-5}
+& \ding{51} & complete & \multicolumn{1}{c|}{generic mean} & 2134734 \\
+\cline{2-5}
+& \ding{51} & complete & \multicolumn{1}{c|}{generic median} &
+2134390 \\ \cline{2-5}
+& \ding{51} & complete & \multicolumn{1}{c|}{specific
+mean} & 2134469 \\ \cline{2-5}
+& \ding{51} & complete & \multicolumn{1}{c|}{specific median} & 2136416 \\
+\cline{2-5}
+& \ding{51} & sparse & \multicolumn{1}{c|}{\ding{55}} & 2136417 \\ \cline{2-5}
+& \ding{51} & sparse & \multicolumn{1}{c|}{generic mean} & 2135061 \\
+\cline{2-5}
+& \ding{51} & sparse & \multicolumn{1}{c|}{generic median} & 2134390 \\
+\cline{2-5}
+& \ding{51} & sparse & \multicolumn{1}{c|}{specific mean} & 2135461 \\
+\cline{2-5}
+& \ding{51} & sparse & \multicolumn{1}{c|}{specific median} &
+2134783 \\ \hline
+\multicolumn{4}{c|}{standard} & 2136995 \\ \hline
+\multicolumn{4}{c|}{aeiou} & 2133488 \\ \hline
+\multicolumn{4}{c|}{Chapin hst diff} & 2135905 \\ \hline
+\multicolumn{4}{c|}{Chapin inv} & 2135217 \\ \hline
+\multicolumn{4}{c|}{Chapin inv log} & x \\ \hline
 \end{tabular}
 
 %-first column only, all columns, with feedback corrections, compare
@@ -706,8 +737,6 @@ all cols:
 
 %-transition from last 2nd-order context in first 1st-order context to first
 % 2nd-order context in second 1st-order context relevant?
-
-%-generic vs specific orders
 
 The previous chapter showed that, when only the first column of the BW table is
 sorted according to the computed order and the rest as usual, there is much less
@@ -855,6 +884,7 @@ as the key for element $i$\Comment{this must be a stable sort}
 \EndProcedure
 \end{algorithmic}
 
+%TODO line 5 only thing different from normal BW
 In line 5, %TODO correct line?
 the possible indices are sorted as though the second order was used for the
 first column. Since all subsequent orders are the same (there are only two),
@@ -883,7 +913,10 @@ function.
 
 \begin{algorithmic}[1]
 \Procedure{next\_indices}{$idx$, $first\_col$, $last\_col$, $orders$, $history$}
-%TODO
+\State $sym \gets first\_col[idx]$
+\State $num \gets$ number of appearances of $sym$ in $first\_col$ with index $<
+idx$
+\State $possible\_idx \gets [(i | last\_col[i] = sym]$
 \EndProcedure
 \end{algorithmic}
 
@@ -929,7 +962,7 @@ very suitable for encoding using MTF. Excepting unsuitable contexts from the MTF
 phase, and instead compression them directly with an entropy coder, can increase
 overall compression.
 
-\section{Previous Work}
+\section{Related Work}
 
 chapin tried using two list update algos
 \cite{chapin2000switching,chapin2001diss}. also assumes that one algo isn't
