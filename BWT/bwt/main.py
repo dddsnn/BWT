@@ -480,7 +480,7 @@ def assemble_multicol_orders(work_dir, metric):
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/book1/'
+    work_dir = '/home/dddsnn/tmp/book1_2orders/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
@@ -523,11 +523,11 @@ if __name__ == '__main__':
 
 #     write_tsplib_files(work_dir, metrics, print_rel_error=False)
 
-#     print_simulated_compression_results(work_dir, metrics, in_file_path)
+    print_simulated_compression_results(work_dir, metrics, in_file_path)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
-    print_entropy_length_prediction_evaluations(work_dir, metrics)
+#     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
 #     natural_order = [bytes([x]) for x in range(256)]
 #     orders = [natural_order, list(reversed(natural_order))]

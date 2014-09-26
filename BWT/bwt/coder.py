@@ -185,16 +185,16 @@ def bw_encode(bs, orders=None):
                         if num_chars > len(order_lists):
                             # we need new order lists with more elements for
                             # more columns
-                            if not isinstance(orders[-1], Mapping):
-                                # if the default order is a general one, we can
-                                # just copy to save time
-                                times = num_chars - len(order_lists)
-                                order_lists.extend(order_lists[-1:] * times)
-                            else:
+                            if len(orders) > len(order_lists):
+                                # there are orders we've not made lists for
                                 extension = make_order_lists(bs, orders,
                                                              num_chars,
                                                              len(order_lists))
                                 order_lists.extend(extension)
+                            else:
+                                # we're using the default order, can just copy
+                                times = num_chars - len(order_lists)
+                                order_lists.extend(order_lists[-1:] * times)
                         order_firsts = [order_lists[k][t[0] + k]
                                         for k in range(num_chars)]
                         long_tuples.append((t[0], order_firsts,
