@@ -608,65 +608,45 @@ same indicators as in the last section.
 
 book1
 
-\begin{tabular}{ccccc}
-\rot{Metric} & \rot{weighted} & \rot{entropy length prediction} & \rot{MTF
-prediction} & \rot{out size all columns} \\ \hline
-\multirow{30}{*}{Badness} & \ding{55} & \ding{55} &
-\multicolumn{1}{c|}{\ding{55}} & 2139673 \\ \cline{2-5}
-& \ding{55} & \ding{55} & \multicolumn{1}{c|}{generic mean} & 2138203 \\
+%TODO in parentheses, give percentage point increase/decrease of compression
+% compared to natural order
+\begin{tabular}{c|ccc|c|c}
+\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
+\multicolumn{1}{c}{\rot{entropy length prediction}} &
+\multicolumn{1}{c}{\rot{MTF prediction}} &
+\multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
+size first columns}} \\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139673 \\
 \cline{2-5}
-& \ding{55} & \ding{55} & \multicolumn{1}{c|}{generic median} & 2142013 \\
-\cline{2-5}
-& \ding{55} & \ding{55} & \multicolumn{1}{c|}{specific mean} & 2134390 \\
-\cline{2-5}
-& \ding{55} & \ding{55} & \multicolumn{1}{c|}{specific median} & 2138527 \\
-\cline{2-5}
-& \ding{55} & complete & \multicolumn{1}{c|}{\ding{55}} & 2139013 \\ \cline{2-5}
-& \ding{55} & complete & \multicolumn{1}{c|}{generic mean} & 2133935 \\
-\cline{2-5}
-& \ding{55} & complete & \multicolumn{1}{c|}{generic median} &
-2135820 \\ \cline{2-5}
-& \ding{55} & complete & \multicolumn{1}{c|}{specific
-mean} & 2135364 \\ \cline{2-5}
-& \ding{55} & complete & \multicolumn{1}{c|}{specific median} & 2140979 \\
-\cline{2-5}
-& \ding{55} & sparse & \multicolumn{1}{c|}{\ding{55}} & 2139013 \\
-\cline{2-5}
-& \ding{55} & sparse & \multicolumn{1}{c|}{generic mean} & 2133644 \\
-\cline{2-5}
-& \ding{55} & sparse & \multicolumn{1}{c|}{generic median} & 2135622 \\
-\cline{2-5}
-& \ding{55} & sparse & \multicolumn{1}{c|}{specific mean} & 2136052 \\
-\cline{2-5}
-& \ding{55} & sparse & \multicolumn{1}{c|}{specific median} &
-2138426 \\ \cline{2-5}
-& \ding{51} & \ding{55} & \multicolumn{1}{c|}{\ding{55}}
-& 2135080 \\ \cline{2-5}
-& \ding{51} & \ding{55} & \multicolumn{1}{c|}{generic mean} & 2133012 \\
-\cline{2-5}
-& \ding{51} & \ding{55} & \multicolumn{1}{c|}{generic median} &
-2134234 \\ \cline{2-5}
-& \ding{51} & \ding{55} & \multicolumn{1}{c|}{specific mean} & 2132082 \\
-\cline{2-5} & \ding{51} & \ding{55} & \multicolumn{1}{c|}{specific median} &
-2140333 \\ \cline{2-5}
-& \ding{51} & complete & \multicolumn{1}{c|}{\ding{55}} & 2136412 \\ \cline{2-5}
-& \ding{51} & complete & \multicolumn{1}{c|}{generic mean} & 2134734 \\
-\cline{2-5}
-& \ding{51} & complete & \multicolumn{1}{c|}{generic median} &
-2134390 \\ \cline{2-5}
-& \ding{51} & complete & \multicolumn{1}{c|}{specific
-mean} & 2134469 \\ \cline{2-5}
-& \ding{51} & complete & \multicolumn{1}{c|}{specific median} & 2136416 \\
-\cline{2-5}
-& \ding{51} & sparse & \multicolumn{1}{c|}{\ding{55}} & 2136417 \\ \cline{2-5}
-& \ding{51} & sparse & \multicolumn{1}{c|}{generic mean} & 2135061 \\
-\cline{2-5}
-& \ding{51} & sparse & \multicolumn{1}{c|}{generic median} & 2134390 \\
-\cline{2-5}
-& \ding{51} & sparse & \multicolumn{1}{c|}{specific mean} & 2135461 \\
-\cline{2-5}
-& \ding{51} & sparse & \multicolumn{1}{c|}{specific median} &
-2134783 \\ \hline
+& \ding{55} & \ding{55} & generic mean & 2138203 \\ \cline{2-5}
+& \ding{55} & \ding{55} & generic median & 2142013 \\ \cline{2-5}
+& \ding{55} & \ding{55} & specific mean & 2134390 \\ \cline{2-5}
+& \ding{55} & \ding{55} & specific median & 2138527 \\ \cline{2-5}
+& \ding{55} & complete & \ding{55} & 2139013 \\ \cline{2-5}
+& \ding{55} & complete & generic mean & 2133935 \\ \cline{2-5}
+& \ding{55} & complete & generic median & 2135820 \\ \cline{2-5}
+& \ding{55} & complete & specific mean & 2135364 \\ \cline{2-5}
+& \ding{55} & complete & specific median & 2140979 \\ \cline{2-5}
+& \ding{55} & sparse & \ding{55} & 2139013 \\ \cline{2-5}
+& \ding{55} & sparse & generic mean & 2133644 \\ \cline{2-5}
+& \ding{55} & sparse & generic median & 2135622 \\ \cline{2-5}
+& \ding{55} & sparse & specific mean & 2136052 \\ \cline{2-5}
+& \ding{55} & sparse & specific median & 2138426 \\ \cline{2-5}
+& \ding{51} & \ding{55} & \ding{55} & 2135080 \\ \cline{2-5}
+& \ding{51} & \ding{55} & generic mean & 2133012 \\ \cline{2-5}
+& \ding{51} & \ding{55} & generic median & 2134234 \\ \cline{2-5}
+& \ding{51} & \ding{55} & specific mean & 2132082 \\ \cline{2-5}
+& \ding{51} & \ding{55} & specific median & 2140333 \\ \cline{2-5}
+& \ding{51} & complete & \ding{55} & 2136412 \\ \cline{2-5}
+& \ding{51} & complete & generic mean & 2134734 \\ \cline{2-5}
+& \ding{51} & complete & generic median & 2134390 \\ \cline{2-5}
+& \ding{51} & complete & specific mean & 2134469 \\ \cline{2-5}
+& \ding{51} & complete & specific median & 2136416 \\ \cline{2-5}
+& \ding{51} & sparse & \ding{55} & 2136417 \\ \cline{2-5}
+& \ding{51} & sparse & generic mean & 2135061 \\ \cline{2-5}
+& \ding{51} & sparse & generic median & 2134390 \\ \cline{2-5}
+& \ding{51} & sparse & specific mean & 2135461 \\ \cline{2-5}
+& \ding{51} & sparse & specific median & 2134783 \\ \hline
 \multicolumn{4}{c|}{standard} & 2136995 \\ \hline
 \multicolumn{4}{c|}{aeiou} & 2133488 \\ \hline
 \multicolumn{4}{c|}{Chapin hst diff} & 2135905 \\ \hline
@@ -943,6 +923,52 @@ the transitions ``further into the table'' are already done and the lower next
 order can be computed with the correct higher level transitions. 
 
 \section{Results}
+
+book1
+
+\begin{tabular}{c|ccc|c|c}
+\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
+\multicolumn{1}{c}{\rot{entropy length prediction}} &
+\multicolumn{1}{c}{\rot{MTF prediction}} &
+\multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
+size first columns}} \\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2140704 &
+2132844 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 2137932 & 2131678\\ \cline{2-6}
+& \ding{55} & \ding{55} & generic median & 2140252 & 2132114 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific mean & 2139041 & 2131493 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific median & 2139429 & 2132034 \\ \cline{2-6}
+& \ding{55} & complete & \ding{55} & 2142693 & 2132211 \\ \cline{2-6}
+& \ding{55} & complete & generic mean & 2141060 & 2130990 \\ \cline{2-6}
+& \ding{55} & complete & generic median & 2141739 & 2131500 \\ \cline{2-6}
+& \ding{55} & complete & specific mean & 2139324 & 2130702 \\ \cline{2-6}
+& \ding{55} & complete & specific median & 2138707 & 2131341 \\ \cline{2-6}
+& \ding{55} & sparse & \ding{55} & 2142703 & 2132200 \\ \cline{2-6}
+& \ding{55} & sparse & generic mean & 2140673 & 2130893 \\ \cline{2-6}
+& \ding{55} & sparse & generic median & 2141777 & 2131554 \\ \cline{2-6}
+& \ding{55} & sparse & specific mean & 2140004 & 2130585 \\ \cline{2-6}
+& \ding{55} & sparse & specific median & 2138926 & 2131382 \\ \cline{2-6}
+& \ding{51} & \ding{55} & \ding{55} & 2140731 & 2131540 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic mean & 2138945 & 2131045 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic median & 2140855 & 2131261 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific mean & 2139157 & 2131166 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific median & 2138515 & 2131052 \\ \cline{2-6}
+& \ding{51} & complete & \ding{55} & 2140784 & 2130963 \\ \cline{2-6}
+& \ding{51} & complete & generic mean & 2138936 & 2130666 \\ \cline{2-6}
+& \ding{51} & complete & generic median & 2138882 & 2130715 \\ \cline{2-6}
+& \ding{51} & complete & specific mean & 2137581 & 2130521 \\ \cline{2-6}
+& \ding{51} & complete & specific median & 2138855 & 2130707 \\ \cline{2-6}
+& \ding{51} & sparse & \ding{55} & 2140777 & 2130958 \\ \cline{2-6}
+& \ding{51} & sparse & generic mean & 2138930 & 2130582 \\ \cline{2-6}
+& \ding{51} & sparse & generic median & 2138882 & 2130715 \\ \cline{2-6}
+& \ding{51} & sparse & specific mean & 2138153 & 2130583 \\ \cline{2-6}
+& \ding{51} & sparse & specific median & 2138909 & 2130750 \\ \hline
+\multicolumn{4}{c|}{standard} & 2136995 & 2136995 \\ \hline
+\multicolumn{4}{c|}{aeiou} & 2132079 & 2136451 \\ \hline
+\multicolumn{4}{c|}{Chapin hst diff} & 2139151 & 2135040 \\ \hline
+\multicolumn{4}{c|}{Chapin inv} & 2135684 & 2133483 \\ \hline
+\multicolumn{4}{c|}{Chapin inv log} & 2136573 & 2133527 \\ \hline
+\end{tabular}
 
 \section{Further Work}
 
