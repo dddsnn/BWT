@@ -7,6 +7,8 @@
 \usepackage{xparse}
 
 \NewDocumentCommand{\rot}{O{45} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
+\algnewcommand\True{\textbf{true}\space}
+\algnewcommand\False{\textbf{false}\space}
 
 \begin{document}
 
@@ -916,7 +918,7 @@ function.
 \State $sym \gets first\_col[idx]$
 \State $num \gets$ number of appearances of $sym$ in $first\_col$ with index $<
 idx$
-\State $possible\_idx \gets [(i | last\_col[i] = sym]$
+\State $possible\_idx \gets [([i], \True) | last\_col[i] = sym]$
 \EndProcedure
 \end{algorithmic}
 
@@ -955,6 +957,8 @@ order can be computed with the correct higher level transitions.
 %-bzip2 has the ability to switch between multiple huffman tables. maybe that
 % makes exceptions to mtf superfluous
 %-adaptive entropy coder might also limit the problem
+%-when encoded with mtf, no information about underlying symbols remains,
+% frequencies can't be exploited as well
 
 This chapter doesn't have a strong relation to the previous chapters. It's about
 how some parts of the BW code don't contextualize very well and therefore aren't
@@ -963,6 +967,12 @@ phase, and instead compression them directly with an entropy coder, can increase
 overall compression.
 
 \section{Related Work}
+
+adaptive coders, fenwick noticed that arithmetic coders without a sliding window
+were performing worse because frequencies of mtf change\cite{fenwick1996block}
+
+gagie, manzini overview of different list update algos that have been
+examined\cite{gagie2007listupdate}
 
 chapin tried using two list update algos
 \cite{chapin2000switching,chapin2001diss}. also assumes that one algo isn't

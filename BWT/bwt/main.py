@@ -112,7 +112,7 @@ def write_trivial_tour(path, transitions):
     with open(path + '.nodenames', 'xb') as names_file:
         pickle.dump(numbers_to_names, names_file)
 
-def write_tsplib_files(work_dir, metrics):
+def write_tsplib_files(work_dir, metrics, print_rel_error=False):
     """Create and write the .tsp and .par files for the LKH program as well as
     the file mapping the LKH node ids back to the node names."""
     file_names_list = [find_metric_file_names(work_dir, metric)
@@ -195,16 +195,18 @@ def write_tsplib_files(work_dir, metrics):
             tsp_text += '\n'
         # EOF at the end of the file
         tsp_text += 'EOF'
-        rel_errors = ((abs((t1[1] / t2[1]) - (t1[0] / t2[0])) / (t1[0] / t2[0]))  # @UndefinedVariable weird PyDev bug
-                        for t1 in (t for t in new_values if t != (0, 0.0))
-                        for t2 in (t for t in new_values if t != (0, 0.0)))
-        try:
-            max_error = max(rel_errors)
-            print('max relative error: {0}'.format(max_error))
-        except ValueError:
-            # argument to max is empty
-            print('all elements zero, no scaling, no errors')
-        print()
+        if print_rel_error:
+            rel_errors = ((abs((t1[1] / t2[1]) -  # @UndefinedVariable weird PyDev bug
+                               (t1[0] / t2[0])) / (t1[0] / t2[0]))  # @UndefinedVariable
+                            for t1 in (t for t in new_values if t != (0, 0.0))
+                            for t2 in (t for t in new_values if t != (0, 0.0)))
+            try:
+                max_error = max(rel_errors)
+                print('max relative error: {0}'.format(max_error))
+            except ValueError:
+                # argument to max is empty
+                print('all elements zero, no scaling, no errors')
+            print()
 
         # par file part
         par_text = 'PROBLEM_FILE = {0}\n'.format(file_name + '.atsp')
@@ -307,7 +309,7 @@ def print_mtf_prediction_evaluations(work_dir, metrics):
     for metric in metrics:
         if metric[0] != 'badness':
             continue
-        file_name = metric_unique_name(metric)
+        file_name = metric_unique_name(metric, b'')
         with open(work_dir + file_name + '.new_penalty_log', 'rb') as in_file:
             new_penalty_log = pickle.load(in_file)
         print('metric: {0}'.format(file_name))
@@ -391,7 +393,7 @@ def print_entropy_length_prediction_evaluations(work_dir, metrics):
                 continue
         else:
             continue
-        file_name = metric_unique_name(metric)
+        file_name = metric_unique_name(metric, b'')
         print('metric: {0}'.format(file_name))
         tsplib_tour = read_tsplib_files(work_dir + file_name + '.tour',
                                          work_dir + file_name + '.nodenames')
@@ -478,7 +480,7 @@ def assemble_multicol_orders(work_dir, metric):
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/book1_2col/'
+    work_dir = '/home/dddsnn/tmp/book1/'
     in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
@@ -515,15 +517,15 @@ if __name__ == '__main__':
 
 #     metrics = []
 
-#     make_aux_data(work_dir, in_file_path, col_depth=2)
+#     make_aux_data(work_dir, in_file_path, col_depth=1)
 
-#     make_transitions(work_dir, metrics, col_depth=2)
+#     make_transitions(work_dir, metrics, col_depth=1)
 
-#     write_tsplib_files(work_dir, metrics)
+#     write_tsplib_files(work_dir, metrics, print_rel_error=True)
 
-#     print_simulated_compression_results(work_dir, metrics, in_file_path, 0, 0)
+#     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
-#     print_mtf_prediction_evaluations(work_dir, metrics)
+    print_mtf_prediction_evaluations(work_dir, metrics)
 
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
 
@@ -531,15 +533,15 @@ if __name__ == '__main__':
 #     orders = [natural_order, list(reversed(natural_order))]
     # [15,24,25,14,26,13,17,21,4,11,9,12,16,20,6,0,27,7,1,28,8,2,30,3,18,19,22,29,5,10,23]
 #     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
-    in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+#     in_bs = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 #     in_bs = b'mississippi'
-    with open(in_file_path, 'rb') as in_file:
-        in_bs = in_file.read()
-    in_bs = in_bs[:10000]
-    orders = assemble_multicol_orders(work_dir, metrics[10])
-    bw = cd.bw_encode(in_bs, orders)
-    dec = cd.bw_decode_2_orders(bw.encoded, bw.start_index, orders)
-    print(in_bs == dec)
+#     with open(in_file_path, 'rb') as in_file:
+#         in_bs = in_file.read()
+#     in_bs = in_bs[:10000]
+#     orders = assemble_multicol_orders(work_dir, metrics[10])
+#     bw = cd.bw_encode(in_bs, orders)
+#     dec = cd.bw_decode_2_orders(bw.encoded, bw.start_index, orders)
+#     print(in_bs == dec)
 #     print(dec)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))
