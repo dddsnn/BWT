@@ -1,0 +1,561 @@
+metric: badness_entropy_code_len_complete_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.4636363636363636
+      mean deviation: 0.9727272727272728
+      standard deviation: 2.002271437415744
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.8876404494382022
+      mean deviation: 0.8876404494382022
+      standard deviation: 2.117344106992468
+    considering values where the prediction is < the actual value:
+      mean differences: 1.3333333333333333
+      mean deviation: 1.3333333333333333
+      standard deviation: 1.4142135623730951
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.6261682242990654
+      mean deviation: 1.0560747663551402
+      standard deviation: 2.1465033509207525
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.989010989010989
+      mean deviation: 0.989010989010989
+      standard deviation: 2.2385238464195574
+    considering values where the prediction is < the actual value:
+      mean differences: 1.4375
+      mean deviation: 1.4375
+      standard deviation: 1.5206906325745548
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_mean_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.41818181818181815
+      mean deviation: 0.9636363636363636
+      standard deviation: 1.9021518914592015
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.8837209302325582
+      mean deviation: 0.8837209302325582
+      standard deviation: 2.034584695637154
+    considering values where the prediction is < the actual value:
+      mean differences: 1.25
+      mean deviation: 1.25
+      standard deviation: 1.3228756555322954
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.2636363636363636
+      mean deviation: 0.8272727272727273
+      standard deviation: 1.7241598744685114
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.7058823529411765
+      mean deviation: 0.7058823529411765
+      standard deviation: 1.8278885279437134
+    considering values where the prediction is < the actual value:
+      mean differences: 1.24
+      mean deviation: 1.24
+      standard deviation: 1.3114877048604001
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_median_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.5545454545454546
+      mean deviation: 0.9
+      standard deviation: 1.9329675725070083
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.851063829787234
+      mean deviation: 0.851063829787234
+      standard deviation: 2.026421224406072
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1875
+      mean deviation: 1.1875
+      standard deviation: 1.25
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.2072072072072072
+      mean deviation: 0.9459459459459459
+      standard deviation: 1.8034001919297482
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.8205128205128205
+      mean deviation: 0.8205128205128205
+      standard deviation: 1.9741924671712983
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2424242424242424
+      mean deviation: 1.2424242424242424
+      standard deviation: 1.3142574813455419
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_mean_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.3055555555555556
+      mean deviation: 1.0648148148148149
+      standard deviation: 2.048034287907418
+    considering values where the prediction is >= the actual value:
+      mean differences: -1.0
+      mean deviation: 1.0
+      standard deviation: 2.3191331092411187
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2058823529411764
+      mean deviation: 1.2058823529411764
+      standard deviation: 1.2718675476729209
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.35714285714285715
+      mean deviation: 0.875
+      standard deviation: 1.9364916731037085
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.7931034482758621
+      mean deviation: 0.7931034482758621
+      standard deviation: 2.09816559179077
+    considering values where the prediction is < the actual value:
+      mean differences: 1.16
+      mean deviation: 1.16
+      standard deviation: 1.2165525060596438
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_median_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.43636363636363634
+      mean deviation: 0.6727272727272727
+      standard deviation: 1.5782614139961386
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.6161616161616161
+      mean deviation: 0.6161616161616161
+      standard deviation: 1.6111981864313267
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1818181818181819
+      mean deviation: 1.1818181818181819
+      standard deviation: 1.243163121016122
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.24074074074074073
+      mean deviation: 0.8333333333333334
+      standard deviation: 1.6611018208584503
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.7073170731707317
+      mean deviation: 0.7073170731707317
+      standard deviation: 1.759988913490581
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2307692307692308
+      mean deviation: 1.2307692307692308
+      standard deviation: 1.3008872711759818
+
+metric: badness_entropy_code_len_sparse_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: 0.05454545454545454
+      mean deviation: 0.4909090909090909
+      standard deviation: 0.8312094145936335
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.27906976744186046
+      mean deviation: 0.27906976744186046
+      standard deviation: 0.6287677132370127
+    considering values where the prediction is < the actual value:
+      mean differences: 1.25
+      mean deviation: 1.25
+      standard deviation: 1.3228756555322954
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.08333333333333333
+      mean deviation: 0.5277777777777778
+      standard deviation: 0.8975274678557507
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.3626373626373626
+      mean deviation: 0.3626373626373626
+      standard deviation: 0.7337993857053428
+    considering values where the prediction is < the actual value:
+      mean differences: 1.411764705882353
+      mean deviation: 1.411764705882353
+      standard deviation: 1.495090003192804
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_mean_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: 0.24761904761904763
+      mean deviation: 0.5333333333333333
+      standard deviation: 0.839500985563391
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.20833333333333334
+      mean deviation: 0.20833333333333334
+      standard deviation: 0.485912657903775
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2424242424242424
+      mean deviation: 1.2424242424242424
+      standard deviation: 1.3142574813455419
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: 0.08256880733944955
+      mean deviation: 0.44954128440366975
+      standard deviation: 0.795630267734819
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.23255813953488372
+      mean deviation: 0.23255813953488372
+      standard deviation: 0.5705974021574557
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2608695652173914
+      mean deviation: 1.2608695652173914
+      standard deviation: 1.335143698502964
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_median_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: 0.06363636363636363
+      mean deviation: 0.4636363636363636
+      standard deviation: 0.7804427647758092
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.26506024096385544
+      mean deviation: 0.26506024096385544
+      standard deviation: 0.6400301197731771
+    considering values where the prediction is < the actual value:
+      mean differences: 1.0740740740740742
+      mean deviation: 1.0740740740740742
+      standard deviation: 1.1055415967851334
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: 0.17117117117117117
+      mean deviation: 0.5135135135135135
+      standard deviation: 0.8436300798997814
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.2375
+      mean deviation: 0.2375
+      standard deviation: 0.5809475019311126
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2258064516129032
+      mean deviation: 1.2258064516129032
+      standard deviation: 1.2951522516054665
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_mean_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: 0.0
+      mean deviation: 0.48148148148148145
+      standard deviation: 0.7817359599705717
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.3058823529411765
+      mean deviation: 0.3058823529411765
+      standard deviation: 0.6324555320336759
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1304347826086956
+      mean deviation: 1.1304347826086956
+      standard deviation: 1.179535649239177
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.036036036036036036
+      mean deviation: 0.45045045045045046
+      standard deviation: 0.7710996009560598
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.2967032967032967
+      mean deviation: 0.2967032967032967
+      standard deviation: 0.6376467725891872
+    considering values where the prediction is < the actual value:
+      mean differences: 1.15
+      mean deviation: 1.15
+      standard deviation: 1.2041594578792296
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_median_weighted
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.07272727272727272
+      mean deviation: 0.38181818181818183
+      standard deviation: 0.7261354744623948
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.2631578947368421
+      mean deviation: 0.2631578947368421
+      standard deviation: 0.624078267696069
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1333333333333333
+      mean deviation: 1.1333333333333333
+      standard deviation: 1.1832159566199232
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: 0.1388888888888889
+      mean deviation: 0.4722222222222222
+      standard deviation: 0.7637626158259734
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.23376623376623376
+      mean deviation: 0.23376623376623376
+      standard deviation: 0.5810872031479765
+    considering values where the prediction is < the actual value:
+      mean differences: 1.064516129032258
+      mean deviation: 1.064516129032258
+      standard deviation: 1.0924964014113612
+
+metric: badness_entropy_code_len_complete
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.38317757009345793
+      mean deviation: 0.6822429906542056
+      standard deviation: 1.4756592064084253
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.6129032258064516
+      mean deviation: 0.6129032258064516
+      standard deviation: 1.5133811749341808
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1428571428571428
+      mean deviation: 1.1428571428571428
+      standard deviation: 1.1952286093343936
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.24545454545454545
+      mean deviation: 0.8454545454545455
+      standard deviation: 1.6486909407714407
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.7142857142857143
+      mean deviation: 0.7142857142857143
+      standard deviation: 1.7320508075688772
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2692307692307692
+      mean deviation: 1.2692307692307692
+      standard deviation: 1.3445044840729643
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_mean
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.11009174311926606
+      mean deviation: 0.7155963302752294
+      standard deviation: 1.4399286424725513
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.5421686746987951
+      mean deviation: 0.5421686746987951
+      standard deviation: 1.4685457112477285
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2692307692307692
+      mean deviation: 1.2692307692307692
+      standard deviation: 1.3445044840729643
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.20754716981132076
+      mean deviation: 0.7547169811320755
+      standard deviation: 1.4921176543220789
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.6296296296296297
+      mean deviation: 0.6296296296296297
+      standard deviation: 1.567415108851765
+    considering values where the prediction is < the actual value:
+      mean differences: 1.16
+      mean deviation: 1.16
+      standard deviation: 1.2165525060596438
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_median
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.46296296296296297
+      mean deviation: 0.8333333333333334
+      standard deviation: 1.6942167424418784
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.7608695652173914
+      mean deviation: 0.7608695652173914
+      standard deviation: 1.7507762253652943
+    considering values where the prediction is < the actual value:
+      mean differences: 1.25
+      mean deviation: 1.25
+      standard deviation: 1.3228756555322954
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.30973451327433627
+      mean deviation: 0.9646017699115044
+      standard deviation: 1.7923139737587757
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.8780487804878049
+      mean deviation: 0.8780487804878049
+      standard deviation: 1.9568516276618744
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1935483870967742
+      mean deviation: 1.1935483870967742
+      standard deviation: 1.2572371141874243
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_mean
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.2761904761904762
+      mean deviation: 0.6571428571428571
+      standard deviation: 1.4832396974191326
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.550561797752809
+      mean deviation: 0.550561797752809
+      standard deviation: 1.502806363538608
+    considering values where the prediction is < the actual value:
+      mean differences: 1.25
+      mean deviation: 1.25
+      standard deviation: 1.3693063937629153
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.42718446601941745
+      mean deviation: 0.7766990291262136
+      standard deviation: 1.6190612166625977
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.6888888888888889
+      mean deviation: 0.6888888888888889
+      standard deviation: 1.6397831834998458
+    considering values where the prediction is < the actual value:
+      mean differences: 1.3846153846153846
+      mean deviation: 1.3846153846153846
+      standard deviation: 1.4675987714106855
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_median
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.4247787610619469
+      mean deviation: 0.8672566371681416
+      standard deviation: 1.7548920245129371
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.8021978021978022
+      mean deviation: 0.8021978021978022
+      standard deviation: 1.866418089152718
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1363636363636365
+      mean deviation: 1.1363636363636365
+      standard deviation: 1.1870513506545997
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.5982142857142857
+      mean deviation: 0.9196428571428571
+      standard deviation: 1.8298126367784997
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.8585858585858586
+      mean deviation: 0.8585858585858586
+      standard deviation: 1.8721780110476955
+    considering values where the prediction is < the actual value:
+      mean differences: 1.3846153846153846
+      mean deviation: 1.3846153846153846
+      standard deviation: 1.4675987714106855
+
+metric: badness_entropy_code_len_sparse
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.1308411214953271
+      mean deviation: 0.411214953271028
+      standard deviation: 0.7612090726840087
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.30851063829787234
+      mean deviation: 0.30851063829787234
+      standard deviation: 0.6763481415000993
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1538461538461537
+      mean deviation: 1.1538461538461537
+      standard deviation: 1.2089410496539776
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: 0.20909090909090908
+      mean deviation: 0.5727272727272728
+      standard deviation: 0.9095453409658736
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.2597402597402597
+      mean deviation: 0.2597402597402597
+      standard deviation: 0.5810872031479765
+    considering values where the prediction is < the actual value:
+      mean differences: 1.303030303030303
+      mean deviation: 1.303030303030303
+      standard deviation: 1.403458930534474
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_mean
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.046296296296296294
+      mean deviation: 0.3425925925925926
+      standard deviation: 0.6871842709362768
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.22105263157894736
+      mean deviation: 0.22105263157894736
+      standard deviation: 0.5525062514530825
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2307692307692308
+      mean deviation: 1.2307692307692308
+      standard deviation: 1.3008872711759818
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.05660377358490566
+      mean deviation: 0.4528301886792453
+      standard deviation: 0.8009428406336273
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.3068181818181818
+      mean deviation: 0.3068181818181818
+      standard deviation: 0.6825753371673275
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1666666666666667
+      mean deviation: 1.1666666666666667
+      standard deviation: 1.224744871391589
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_median
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: -0.12962962962962962
+      mean deviation: 0.5185185185185185
+      standard deviation: 0.8923543557893895
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.3804347826086957
+      mean deviation: 0.3804347826086957
+      standard deviation: 0.7731921410338582
+    considering values where the prediction is < the actual value:
+      mean differences: 1.3125
+      mean deviation: 1.3125
+      standard deviation: 1.3919410907075054
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: -0.017699115044247787
+      mean deviation: 0.5132743362831859
+      standard deviation: 0.8518589770696552
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.3333333333333333
+      mean deviation: 0.3333333333333333
+      standard deviation: 0.699205898780101
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2173913043478262
+      mean deviation: 1.2173913043478262
+      standard deviation: 1.285369173834303
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_mean
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: 0.3238095238095238
+      mean deviation: 0.49523809523809526
+      standard deviation: 0.828078671210825
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.12857142857142856
+      mean deviation: 0.12857142857142856
+      standard deviation: 0.3964124835860459
+    considering values where the prediction is < the actual value:
+      mean differences: 1.2285714285714286
+      mean deviation: 1.2285714285714286
+      standard deviation: 1.3201731488169053
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: 0.009615384615384616
+      mean deviation: 0.4519230769230769
+      standard deviation: 0.8492077756084468
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.26136363636363635
+      mean deviation: 0.26136363636363635
+      standard deviation: 0.6306562238868912
+    considering values where the prediction is < the actual value:
+      mean differences: 1.5
+      mean deviation: 1.5
+      standard deviation: 1.5811388300841898
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_median
+  using the computed order for only the first column:
+    considering both sides of the actual value:
+      mean differences: 0.06363636363636363
+      mean deviation: 0.39090909090909093
+      standard deviation: 0.6941312425025845
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.21176470588235294
+      mean deviation: 0.21176470588235294
+      standard deviation: 0.5739440431835514
+    considering values where the prediction is < the actual value:
+      mean differences: 1.0
+      mean deviation: 1.0
+      standard deviation: 1.0
+  using the computed order for all columns:
+    considering both sides of the actual value:
+      mean differences: 0.06481481481481481
+      mean deviation: 0.4166666666666667
+      standard deviation: 0.7391185942027817
+    considering values where the prediction is >= the actual value:
+      mean differences: -0.22093023255813954
+      mean deviation: 0.22093023255813954
+      standard deviation: 0.5391638660171921
+    considering values where the prediction is < the actual value:
+      mean differences: 1.1818181818181819
+      mean deviation: 1.1818181818181819
+      standard deviation: 1.243163121016122
+
+time: 844s

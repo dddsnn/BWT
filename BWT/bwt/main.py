@@ -517,17 +517,17 @@ if __name__ == '__main__':
 
 #     metrics = []
 
-#     make_aux_data(work_dir, in_file_path, col_depth=1)
+#     make_aux_data(work_dir, in_file_path, col_depth=2)
 
-#     make_transitions(work_dir, metrics, col_depth=1)
+#     make_transitions(work_dir, metrics, col_depth=2)
 
-#     write_tsplib_files(work_dir, metrics, print_rel_error=True)
+#     write_tsplib_files(work_dir, metrics, print_rel_error=False)
 
 #     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
-    print_mtf_prediction_evaluations(work_dir, metrics)
+#     print_mtf_prediction_evaluations(work_dir, metrics)
 
-#     print_entropy_length_prediction_evaluations(work_dir, metrics)
+    print_entropy_length_prediction_evaluations(work_dir, metrics)
 
 #     natural_order = [bytes([x]) for x in range(256)]
 #     orders = [natural_order, list(reversed(natural_order))]
