@@ -1,0 +1,232 @@
+making tsplib for chapin_hst_diff
+min value: 0.08790548327635545
+max value: 2119.883709896443
+ratio: 24115.48894204923
+scaling with factor 4717
+max relative error: 0.001570445484466898
+
+making tsplib for chapin_inv
+min value: 2
+max value: 4551
+ratio: 2275.5
+scaling with factor 2197
+max relative error: 0.0
+
+making tsplib for chapin_inv_log
+min value: 0.6931471805599453
+max value: 8.423102268016642
+ratio: 12.151967870968189
+scaling with factor 1187211
+max relative error: 1.163398954885099e-06
+
+making tsplib for badness_weighted
+min value: 0.01818181818181818
+max value: 58.0
+ratio: 3190.0
+scaling with factor 172413
+max relative error: 0.00024946336369452155
+
+making tsplib for badness_new_penalty_generic_mean_weighted
+min value: 0.25
+max value: 78.98342541436465
+ratio: 315.9337016574586
+scaling with factor 126608
+max relative error: 3.0906858748061557e-06
+
+making tsplib for badness_new_penalty_generic_median_weighted
+min value: 0.25
+max value: 73.75
+ratio: 295.0
+scaling with factor 135593
+max relative error: 7.375066375725719e-06
+
+making tsplib for badness_new_penalty_specific_mean_weighted
+min value: 0.25
+max value: 77.75757575757576
+ratio: 311.03030303030306
+scaling with factor 128604
+max relative error: 2.962221310753212e-06
+
+making tsplib for badness_new_penalty_specific_median_weighted
+min value: 0.25
+max value: 76.0
+ratio: 304.0
+scaling with factor 131578
+max relative error: 1.5200340487726928e-05
+
+making tsplib for badness_entropy_code_len_complete_weighted
+min value: 0.03636363636363636
+max value: 15.0
+ratio: 412.5
+scaling with factor 666666
+max relative error: 1.9000380007777406e-05
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_mean_weighted
+min value: 0.25
+max value: 23.0
+ratio: 92.0
+scaling with factor 434782
+max relative error: 4.600027600244014e-06
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_median_weighted
+min value: 0.25
+max value: 17.0
+ratio: 68.0
+scaling with factor 588235
+max relative error: 5.100028560275663e-06
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_mean_weighted
+min value: 0.25
+max value: 17.0
+ratio: 68.0
+scaling with factor 588235
+max relative error: 5.100028560334744e-06
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_median_weighted
+min value: 0.25
+max value: 17.0
+ratio: 68.0
+scaling with factor 588235
+max relative error: 5.100028560261245e-06
+
+making tsplib for badness_entropy_code_len_sparse_weighted
+min value: 0.03636363636363636
+max value: 15.0
+ratio: 412.5
+scaling with factor 666666
+max relative error: 1.9000380007777406e-05
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_mean_weighted
+min value: 0.25
+max value: 18.0
+ratio: 72.0
+scaling with factor 555555
+max relative error: 5.400034560379528e-06
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_median_weighted
+min value: 0.25
+max value: 17.0
+ratio: 68.0
+scaling with factor 588235
+max relative error: 5.100028560294441e-06
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_mean_weighted
+min value: 0.25
+max value: 17.0
+ratio: 68.0
+scaling with factor 588235
+max relative error: 5.100028560334744e-06
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_median_weighted
+min value: 0.25
+max value: 17.0
+ratio: 68.0
+scaling with factor 588235
+max relative error: 5.100028560275663e-06
+
+making tsplib for badness
+min value: 1
+max value: 1021
+ratio: 1021.0
+scaling with factor 9794
+max relative error: 0.0
+
+making tsplib for badness_new_penalty_generic_mean
+min value: 1
+max value: 1615.7898605757878
+ratio: 1615.7898605757878
+scaling with factor 6188
+max relative error: 2.3621561257608717e-05
+
+making tsplib for badness_new_penalty_generic_median
+min value: 1
+max value: 1365.5
+ratio: 1365.5
+scaling with factor 7323
+max relative error: 1.0267383194741824e-06
+
+making tsplib for badness_new_penalty_specific_mean
+min value: 1
+max value: 1635.695573501146
+ratio: 1635.695573501146
+scaling with factor 6113
+max relative error: 3.466352293605801e-05
+
+making tsplib for badness_new_penalty_specific_median
+min value: 1.0
+max value: 1475.5
+ratio: 1475.5
+scaling with factor 6777
+max relative error: 3.2790755631937855e-06
+
+making tsplib for badness_entropy_code_len_complete
+min value: 1
+max value: 208
+ratio: 208.0
+scaling with factor 48076
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_mean
+min value: 1
+max value: 305
+ratio: 305.0
+scaling with factor 32786
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_median
+min value: 1
+max value: 254
+ratio: 254.0
+scaling with factor 39370
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_mean
+min value: 1
+max value: 303
+ratio: 303.0
+scaling with factor 33003
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_median
+min value: 1
+max value: 273
+ratio: 273.0
+scaling with factor 36630
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_sparse
+min value: 1
+max value: 209
+ratio: 209.0
+scaling with factor 47846
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_mean
+min value: 1
+max value: 272
+ratio: 272.0
+scaling with factor 36764
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_median
+min value: 1
+max value: 237
+ratio: 237.0
+scaling with factor 42194
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_mean
+min value: 1
+max value: 266
+ratio: 266.0
+scaling with factor 37593
+max relative error: 0.0
+
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_median
+min value: 1
+max value: 243
+ratio: 243.0
+scaling with factor 41152
+max relative error: 0.0
+
+time: 1662s

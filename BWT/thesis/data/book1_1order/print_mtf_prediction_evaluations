@@ -1,0 +1,3361 @@
+metric: badness_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 21.49342105263158
+          mean deviation: 21.49342105263158
+          standard deviation: 33.01484913123025
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 23.047619047619047
+          mean deviation: 23.047619047619047
+          standard deviation: 34.18767582229759
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 15.761220825852783
+          mean deviation: 15.761220825852783
+          standard deviation: 22.89626124881849
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 17.01356589147287
+          mean deviation: 17.01356589147287
+          standard deviation: 23.78851426324715
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.3898026315789473
+          mean deviation: 3.393092105263158
+          standard deviation: 4.824382971182074
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.634920634920635
+          mean deviation: 3.638447971781305
+          standard deviation: 4.99576540258567
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.9156193895870737
+          mean deviation: 2.919210053859964
+          standard deviation: 4.233744920312193
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.147286821705426
+          mean deviation: 3.1511627906976742
+          standard deviation: 4.398731318153261
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 21.39967105263158
+          mean deviation: 22.48519736842105
+          standard deviation: 33.358178788795755
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.8372093023255816
+          mean deviation: 3.8372093023255816
+          standard deviation: 5.218482359799148
+        considering values where the prediction is < the actual value:
+          mean differences: 25.557471264367816
+          mean deviation: 25.557471264367816
+          standard deviation: 35.93899151494253
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 15.553956834532373
+          mean deviation: 16.741007194244606
+          standard deviation: 23.252368951797227
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.8372093023255816
+          mean deviation: 3.8372093023255816
+          standard deviation: 5.218482359799148
+        considering values where the prediction is < the actual value:
+          mean differences: 19.102127659574467
+          mean deviation: 19.102127659574467
+          standard deviation: 25.191690625993022
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.3190789473684212
+          mean deviation: 3.5625
+          standard deviation: 4.877445405559198
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8255813953488372
+          mean deviation: 0.8488372093023255
+          standard deviation: 1.2056070554260303
+        considering values where the prediction is < the actual value:
+          mean differences: 4.001915708812261
+          mean deviation: 4.009578544061303
+          standard deviation: 5.241120935353794
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.805755395683453
+          mean deviation: 3.0719424460431655
+          standard deviation: 4.242216741009097
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8255813953488372
+          mean deviation: 0.8488372093023255
+          standard deviation: 1.2056070554260303
+        considering values where the prediction is < the actual value:
+          mean differences: 3.470212765957447
+          mean deviation: 3.478723404255319
+          standard deviation: 4.585128597468031
+
+metric: badness_new_penalty_generic_mean_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.168384254382584
+          mean deviation: 20.26303630203227
+          standard deviation: 31.056923557382447
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.81921225677136
+          mean deviation: 7.81921225677136
+          standard deviation: 9.524977826082432
+        considering values where the prediction is < the actual value:
+          mean differences: 30.596247081665883
+          mean deviation: 30.596247081665883
+          standard deviation: 41.111217457271785
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.301151878187205
+          mean deviation: 13.325234325092326
+          standard deviation: 18.93216448804313
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.81921225677136
+          mean deviation: 7.81921225677136
+          standard deviation: 9.524977826082432
+        considering values where the prediction is < the actual value:
+          mean differences: 19.12754457646192
+          mean deviation: 19.12754457646192
+          standard deviation: 25.308772624363225
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8185328185328185
+          mean deviation: 2.9845559845559846
+          standard deviation: 4.303181906145093
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2765957446808511
+          mean deviation: 1.2765957446808511
+          standard deviation: 1.527060867685706
+        considering values where the prediction is < the actual value:
+          mean differences: 4.3886925795053005
+          mean deviation: 4.402826855123675
+          standard deviation: 5.653105091287873
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.1244541484716157
+          mean deviation: 2.443231441048035
+          standard deviation: 3.5778918434838305
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2765957446808511
+          mean deviation: 1.2765957446808511
+          standard deviation: 1.527060867685706
+        considering values where the prediction is < the actual value:
+          mean differences: 3.6547085201793723
+          mean deviation: 3.672645739910314
+          standard deviation: 4.882016050515277
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.290005876004205
+          mean deviation: 21.060605976218724
+          standard deviation: 31.42627301192807
+        considering values where the prediction is >= the actual value:
+          mean differences: -9.62959533950029
+          mean deviation: 9.62959533950029
+          standard deviation: 11.79636719315968
+        considering values where the prediction is < the actual value:
+          mean differences: 28.792260419824395
+          mean deviation: 28.792260419824395
+          standard deviation: 39.515638002574605
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.404952950032288
+          mean deviation: 14.193535596126463
+          standard deviation: 19.481338965493503
+        considering values where the prediction is >= the actual value:
+          mean differences: -9.62959533950029
+          mean deviation: 9.62959533950029
+          standard deviation: 11.79636719315968
+        considering values where the prediction is < the actual value:
+          mean differences: 18.024312759318665
+          mean deviation: 18.024312759318665
+          standard deviation: 24.109696743693146
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7644787644787645
+          mean deviation: 3.142857142857143
+          standard deviation: 4.378342628196675
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.69377990430622
+          mean deviation: 1.7129186602870814
+          standard deviation: 2.1094456062080007
+        considering values where the prediction is < the actual value:
+          mean differences: 4.1035598705501615
+          mean deviation: 4.110032362459547
+          standard deviation: 5.396870722208659
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.0676855895196506
+          mean deviation: 2.626637554585153
+          standard deviation: 3.6491908536637108
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.69377990430622
+          mean deviation: 1.7129186602870814
+          standard deviation: 2.1094456062080007
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3855421686746987
+          mean deviation: 3.393574297188755
+          standard deviation: 4.556208527336991
+
+metric: badness_new_penalty_generic_median_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 15.843425605536332
+          mean deviation: 18.682525951557093
+          standard deviation: 31.009102637238342
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.852112676056338
+          mean deviation: 3.852112676056338
+          standard deviation: 5.293387672525336
+        considering values where the prediction is < the actual value:
+          mean differences: 27.336986301369862
+          mean deviation: 27.336986301369862
+          standard deviation: 38.811663266078305
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.403288201160542
+          mean deviation: 11.577369439071568
+          standard deviation: 17.838261639984907
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.852112676056338
+          mean deviation: 3.852112676056338
+          standard deviation: 5.293387672525336
+        considering values where the prediction is < the actual value:
+          mean differences: 16.99013157894737
+          mean deviation: 16.99013157894737
+          standard deviation: 22.83687864651799
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.3546712802768166
+          mean deviation: 2.887543252595156
+          standard deviation: 4.3765259326038874
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.676056338028169
+          mean deviation: 0.7230046948356808
+          standard deviation: 0.9543574393620703
+        considering values where the prediction is < the actual value:
+          mean differences: 4.123287671232877
+          mean deviation: 4.1506849315068495
+          standard deviation: 5.458937625582473
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.6131528046421664
+          mean deviation: 2.2088974854932304
+          standard deviation: 3.382169653747597
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.676056338028169
+          mean deviation: 0.7230046948356808
+          standard deviation: 0.9543574393620703
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2171052631578947
+          mean deviation: 3.25
+          standard deviation: 4.337717080871482
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 16.36764705882353
+          mean deviation: 19.86764705882353
+          standard deviation: 31.38317298669468
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.6194444444444445
+          mean deviation: 5.6194444444444445
+          standard deviation: 7.715154639481383
+        considering values where the prediction is < the actual value:
+          mean differences: 26.311557788944725
+          mean deviation: 26.311557788944725
+          standard deviation: 37.46220876332755
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.956479690522244
+          mean deviation: 12.869439071566731
+          standard deviation: 18.413173843378015
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.6194444444444445
+          mean deviation: 5.6194444444444445
+          standard deviation: 7.715154639481383
+        considering values where the prediction is < the actual value:
+          mean differences: 16.741839762611274
+          mean deviation: 16.741839762611274
+          standard deviation: 22.098511570914717
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.51038062283737
+          mean deviation: 3.115916955017301
+          standard deviation: 4.519278198177885
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9611111111111111
+          mean deviation: 0.9722222222222222
+          standard deviation: 1.4624940645653537
+        considering values where the prediction is < the actual value:
+          mean differences: 4.080402010050252
+          mean deviation: 4.085427135678392
+          standard deviation: 5.356628355288746
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.7756286266924566
+          mean deviation: 2.4526112185686655
+          standard deviation: 3.557214044748325
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9611111111111111
+          mean deviation: 0.9722222222222222
+          standard deviation: 1.4624940645653537
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2373887240356085
+          mean deviation: 3.2433234421364987
+          standard deviation: 4.274345525760698
+
+metric: badness_new_penalty_specific_mean_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 11.852829167861568
+          mean deviation: 18.911707944695326
+          standard deviation: 29.67564898307685
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.73320256242562
+          mean deviation: 7.73320256242562
+          standard deviation: 10.247201096123383
+        considering values where the prediction is < the actual value:
+          mean differences: 28.29707423834159
+          mean deviation: 28.29707423834159
+          standard deviation: 39.13902457921448
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 4.032815878857285
+          mean deviation: 12.124131393202175
+          standard deviation: 17.20166705763675
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.7597042227733715
+          mean deviation: 7.7597042227733715
+          standard deviation: 10.280943308222612
+        considering values where the prediction is < the actual value:
+          mean differences: 16.87823956099067
+          mean deviation: 16.87823956099067
+          standard deviation: 22.429422794070195
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.2040816326530612
+          mean deviation: 2.4471243042671613
+          standard deviation: 3.551633453149235
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3252032520325203
+          mean deviation: 1.3658536585365855
+          standard deviation: 1.7852147965773473
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3276450511945392
+          mean deviation: 3.354948805460751
+          standard deviation: 4.530895081427935
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.6816239316239316
+          mean deviation: 2.1004273504273505
+          standard deviation: 2.981782292694361
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3401639344262295
+          mean deviation: 1.3729508196721312
+          standard deviation: 1.7913727678634124
+        considering values where the prediction is < the actual value:
+          mean differences: 2.8839285714285716
+          mean deviation: 2.892857142857143
+          standard deviation: 3.883343551999635
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 12.116280002740979
+          mean deviation: 19.674357992007334
+          standard deviation: 30.200723115546875
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.933780781172295
+          mean deviation: 8.933780781172295
+          standard deviation: 11.509904489649065
+        considering values where the prediction is < the actual value:
+          mean differences: 27.548478905416935
+          mean deviation: 27.548478905416935
+          standard deviation: 38.51788494392272
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 4.203756049797455
+          mean deviation: 12.865730486153383
+          standard deviation: 17.67180198511657
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.968593000474707
+          mean deviation: 8.968593000474707
+          standard deviation: 11.550765501635444
+        considering values where the prediction is < the actual value:
+          mean differences: 16.50520598930782
+          mean deviation: 16.50520598930782
+          standard deviation: 21.89380534841293
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.2244897959183674
+          mean deviation: 2.6122448979591835
+          standard deviation: 3.661462546269803
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5745614035087718
+          mean deviation: 1.6096491228070176
+          standard deviation: 2.0953164145763243
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2765273311897105
+          mean deviation: 3.347266881028939
+          standard deviation: 4.473933076211356
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.6837606837606838
+          mean deviation: 2.2564102564102564
+          standard deviation: 3.0939698726150473
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5884955752212389
+          mean deviation: 1.6238938053097345
+          standard deviation: 2.104567304655047
+        considering values where the prediction is < the actual value:
+          mean differences: 2.8057851239669422
+          mean deviation: 2.847107438016529
+          standard deviation: 3.7915739552132224
+
+metric: badness_new_penalty_specific_median_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 12.159246575342467
+          mean deviation: 16.715753424657535
+          standard deviation: 28.790858399798715
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.452868852459017
+          mean deviation: 5.452868852459017
+          standard deviation: 7.621085396644681
+        considering values where the prediction is < the actual value:
+          mean differences: 24.798529411764704
+          mean deviation: 24.798529411764704
+          standard deviation: 37.17659565783132
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 4.916030534351145
+          mean deviation: 9.986641221374045
+          standard deviation: 14.905331030533036
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.467078189300412
+          mean deviation: 5.467078189300412
+          standard deviation: 7.635672723629977
+        considering values where the prediction is < the actual value:
+          mean differences: 13.895017793594306
+          mean deviation: 13.895017793594306
+          standard deviation: 19.07549619695756
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.6318493150684932
+          mean deviation: 2.518835616438356
+          standard deviation: 3.832762514577532
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.0573770491803278
+          mean deviation: 1.0573770491803278
+          standard deviation: 1.4343559701762767
+        considering values where the prediction is < the actual value:
+          mean differences: 3.5617647058823527
+          mean deviation: 3.5676470588235296
+          standard deviation: 4.874000651717353
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.9713740458015268
+          mean deviation: 1.9599236641221374
+          standard deviation: 2.9952252078602584
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.0617283950617284
+          mean deviation: 1.0617283950617284
+          standard deviation: 1.4373042897727597
+        considering values where the prediction is < the actual value:
+          mean differences: 2.7295373665480427
+          mean deviation: 2.736654804270463
+          standard deviation: 3.8656254989614087
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 12.722602739726028
+          mean deviation: 17.960616438356166
+          standard deviation: 29.306174836741214
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.858744394618834
+          mean deviation: 6.858744394618834
+          standard deviation: 9.15309499470331
+        considering values where the prediction is < the actual value:
+          mean differences: 24.818559556786703
+          mean deviation: 24.818559556786703
+          standard deviation: 36.573712234237284
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.5534351145038165
+          mean deviation: 11.383587786259541
+          standard deviation: 16.013204236618733
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.88063063063063
+          mean deviation: 6.88063063063063
+          standard deviation: 9.172704809025172
+        considering values where the prediction is < the actual value:
+          mean differences: 14.693708609271523
+          mean deviation: 14.693708609271523
+          standard deviation: 19.57214113502331
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.6917808219178083
+          mean deviation: 2.664383561643836
+          standard deviation: 3.89018786742178
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2331838565022422
+          mean deviation: 1.2600896860986548
+          standard deviation: 1.7577502947389052
+        considering values where the prediction is < the actual value:
+          mean differences: 3.4986149584487536
+          mean deviation: 3.53185595567867
+          standard deviation: 4.751147987825266
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.0553435114503817
+          mean deviation: 2.131679389312977
+          standard deviation: 3.101649401146685
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2342342342342343
+          mean deviation: 1.2612612612612613
+          standard deviation: 1.7604258289116015
+        considering values where the prediction is < the actual value:
+          mean differences: 2.73841059602649
+          mean deviation: 2.771523178807947
+          standard deviation: 3.7965651956430584
+
+metric: badness_entropy_code_len_complete_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 20.836120401337794
+          mean deviation: 20.836120401337794
+          standard deviation: 32.490492563570214
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 22.57246376811594
+          mean deviation: 22.57246376811594
+          standard deviation: 33.81717683774567
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 14.566420664206642
+          mean deviation: 14.566420664206642
+          standard deviation: 21.464679646449962
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 15.91733870967742
+          mean deviation: 15.91733870967742
+          standard deviation: 22.437952080089374
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.3244147157190636
+          mean deviation: 3.3377926421404682
+          standard deviation: 4.7411244309304115
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.601449275362319
+          mean deviation: 3.6159420289855073
+          standard deviation: 4.934718763553027
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.7712177121771218
+          mean deviation: 2.7859778597785976
+          standard deviation: 4.028496281222421
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.028225806451613
+          mean deviation: 3.0443548387096775
+          standard deviation: 4.211160287586063
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 21.38628762541806
+          mean deviation: 21.901337792642142
+          standard deviation: 32.882099103791596
+        considering values where the prediction is >= the actual value:
+          mean differences: -2.2318840579710146
+          mean deviation: 2.2318840579710146
+          standard deviation: 3.1805568740372347
+        considering values where the prediction is < the actual value:
+          mean differences: 24.466918714555767
+          mean deviation: 24.466918714555767
+          standard deviation: 34.9419989300119
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 15.358455882352942
+          mean deviation: 15.924632352941176
+          standard deviation: 22.423603963365977
+        considering values where the prediction is >= the actual value:
+          mean differences: -2.2318840579710146
+          mean deviation: 2.2318840579710146
+          standard deviation: 3.1805568740372347
+        considering values where the prediction is < the actual value:
+          mean differences: 17.913684210526316
+          mean deviation: 17.913684210526316
+          standard deviation: 23.966423881843752
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.3561872909698995
+          mean deviation: 3.483277591973244
+          standard deviation: 4.763819888819304
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.5362318840579711
+          mean deviation: 0.5362318840579711
+          standard deviation: 0.8075728530872482
+        considering values where the prediction is < the actual value:
+          mean differences: 3.8638941398865785
+          mean deviation: 3.8676748582230625
+          standard deviation: 5.05657968488986
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.827205882352941
+          mean deviation: 2.9669117647058822
+          standard deviation: 4.072414372768249
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.5362318840579711
+          mean deviation: 0.5362318840579711
+          standard deviation: 0.8075728530872482
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3157894736842106
+          mean deviation: 3.32
+          standard deviation: 4.347291958037906
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_mean_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.16101162655027
+          mean deviation: 20.666273432433922
+          standard deviation: 32.210074677274896
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.6826847571748225
+          mean deviation: 7.6826847571748225
+          standard deviation: 9.262911583201182
+        considering values where the prediction is < the actual value:
+          mean differences: 30.199074419916514
+          mean deviation: 30.199074419916514
+          standard deviation: 41.66816678312464
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.918256086654693
+          mean deviation: 13.284300908067456
+          standard deviation: 19.106847821840947
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.6826847571748225
+          mean deviation: 7.6826847571748225
+          standard deviation: 9.262911583201182
+        considering values where the prediction is < the actual value:
+          mean differences: 18.442455780347725
+          mean deviation: 18.442455780347725
+          standard deviation: 24.944595672133957
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8812260536398469
+          mean deviation: 3.0383141762452106
+          standard deviation: 4.36329166756535
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.339366515837104
+          mean deviation: 1.3574660633484164
+          standard deviation: 1.6613792449272722
+        considering values where the prediction is < the actual value:
+          mean differences: 4.245847176079734
+          mean deviation: 4.2724252491694354
+          standard deviation: 5.5668692478440125
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.1344902386117137
+          mean deviation: 2.4403470715835143
+          standard deviation: 3.543041819711644
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.339366515837104
+          mean deviation: 1.3574660633484164
+          standard deviation: 1.6613792449272722
+        considering values where the prediction is < the actual value:
+          mean differences: 3.4125
+          mean deviation: 3.4375
+          standard deviation: 4.644441121742565
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.467525036511956
+          mean deviation: 21.089033573864846
+          standard deviation: 32.46859950333324
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.11367947534792
+          mean deviation: 8.11367947534792
+          standard deviation: 9.931513028343929
+        considering values where the prediction is < the actual value:
+          mean differences: 30.033209700026983
+          mean deviation: 30.033209700026983
+          standard deviation: 41.38728410574129
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 6.207932639594061
+          mean deviation: 13.705606081021886
+          standard deviation: 19.399882035700685
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.11367947534792
+          mean deviation: 8.11367947534792
+          standard deviation: 9.931513028343929
+        considering values where the prediction is < the actual value:
+          mean differences: 18.508349496378926
+          mean deviation: 18.508349496378926
+          standard deviation: 24.79680369561957
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.049808429118774
+          mean deviation: 3.1839080459770117
+          standard deviation: 4.5783933670835655
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3708920187793427
+          mean deviation: 1.3708920187793427
+          standard deviation: 1.6950632544597617
+        considering values where the prediction is < the actual value:
+          mean differences: 4.407766990291262
+          mean deviation: 4.433656957928803
+          standard deviation: 5.781904592085043
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.2885032537960954
+          mean deviation: 2.5683297180043385
+          standard deviation: 3.7172284593033957
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3708920187793427
+          mean deviation: 1.3708920187793427
+          standard deviation: 1.6950632544597617
+        considering values where the prediction is < the actual value:
+          mean differences: 3.5725806451612905
+          mean deviation: 3.596774193548387
+          standard deviation: 4.818479213972378
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_median_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 17.782122905027933
+          mean deviation: 20.782122905027933
+          standard deviation: 32.29595739499899
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.475
+          mean deviation: 4.475
+          standard deviation: 6.195540510901549
+        considering values where the prediction is < the actual value:
+          mean differences: 29.00420168067227
+          mean deviation: 29.00420168067227
+          standard deviation: 39.36460502598166
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 11.430041152263374
+          mean deviation: 14.74485596707819
+          standard deviation: 21.82140848599735
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.475
+          mean deviation: 4.475
+          standard deviation: 6.195540510901549
+        considering values where the prediction is < the actual value:
+          mean differences: 20.785947712418302
+          mean deviation: 20.785947712418302
+          standard deviation: 27.086839893661214
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.6573556797020483
+          mean deviation: 3.0819366852886407
+          standard deviation: 4.52820665313348
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.6055555555555555
+          mean deviation: 0.6388888888888888
+          standard deviation: 0.8913161304747291
+        considering values where the prediction is < the actual value:
+          mean differences: 4.302521008403361
+          mean deviation: 4.313725490196078
+          standard deviation: 5.517479227945704
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.1152263374485596
+          mean deviation: 2.5843621399176953
+          standard deviation: 3.8925908306018493
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.6055555555555555
+          mean deviation: 0.6388888888888888
+          standard deviation: 0.8913161304747291
+        considering values where the prediction is < the actual value:
+          mean differences: 3.715686274509804
+          mean deviation: 3.7287581699346406
+          standard deviation: 4.8577813058727
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 17.65921787709497
+          mean deviation: 21.223463687150836
+          standard deviation: 32.413715859053156
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.662721893491124
+          mean deviation: 5.662721893491124
+          standard deviation: 7.777413816974983
+        considering values where the prediction is < the actual value:
+          mean differences: 28.369565217391305
+          mean deviation: 28.369565217391305
+          standard deviation: 38.79909232465872
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 11.164948453608247
+          mean deviation: 15.111340206185567
+          standard deviation: 21.772417053003025
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.662721893491124
+          mean deviation: 5.662721893491124
+          standard deviation: 7.777413816974983
+        considering values where the prediction is < the actual value:
+          mean differences: 20.164556962025316
+          mean deviation: 20.164556962025316
+          standard deviation: 26.36681362545527
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.7523277467411544
+          mean deviation: 3.355679702048417
+          standard deviation: 4.799130895868512
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9289940828402367
+          mean deviation: 0.9644970414201184
+          standard deviation: 1.365249180715296
+        considering values where the prediction is < the actual value:
+          mean differences: 4.442934782608695
+          mean deviation: 4.453804347826087
+          standard deviation: 5.7229989857857175
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.1752577319587627
+          mean deviation: 2.843298969072165
+          standard deviation: 4.146542467284001
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9289940828402367
+          mean deviation: 0.9644970414201184
+          standard deviation: 1.365249180715296
+        considering values where the prediction is < the actual value:
+          mean differences: 3.8354430379746836
+          mean deviation: 3.848101265822785
+          standard deviation: 5.039087721333211
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_mean_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.46201069791854
+          mean deviation: 17.462939947880955
+          standard deviation: 28.6663910776498
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.24192109484083
+          mean deviation: 8.24192109484083
+          standard deviation: 10.675665131982099
+        considering values where the prediction is < the actual value:
+          mean differences: 26.1600372751802
+          mean deviation: 26.1600372751802
+          standard deviation: 38.59195078867099
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.2636690828028903
+          mean deviation: 10.405042591111878
+          standard deviation: 14.459192585114058
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.275154647642607
+          mean deviation: 8.275154647642607
+          standard deviation: 10.697166996932392
+        considering values where the prediction is < the actual value:
+          mean differences: 13.032964033800324
+          mean deviation: 13.032964033800324
+          standard deviation: 18.050944720977956
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 0.9532163742690059
+          mean deviation: 2.4775828460038984
+          standard deviation: 3.5483296457423177
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5301204819277108
+          mean deviation: 1.5622489959839359
+          standard deviation: 1.990943349692991
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2954545454545454
+          mean deviation: 3.340909090909091
+          standard deviation: 4.552721463835969
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.25389755011135856
+          mean deviation: 1.982182628062361
+          standard deviation: 2.7550318410926393
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5362903225806452
+          mean deviation: 1.5685483870967742
+          standard deviation: 1.9949533101497436
+        considering values where the prediction is < the actual value:
+          mean differences: 2.462686567164179
+          mean deviation: 2.4925373134328357
+          standard deviation: 3.4705584737046262
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.660841107275264
+          mean deviation: 17.852712298281844
+          standard deviation: 28.93653533063472
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.718734275905375
+          mean deviation: 8.718734275905375
+          standard deviation: 11.28739833388799
+        considering values where the prediction is < the actual value:
+          mean differences: 25.945685472519852
+          mean deviation: 25.945685472519852
+          standard deviation: 38.29270234740135
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.4543478443293762
+          mean deviation: 10.81387996233916
+          standard deviation: 14.926865942755073
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.755062335388313
+          mean deviation: 8.755062335388313
+          standard deviation: 11.310889302760717
+        considering values where the prediction is < the actual value:
+          mean differences: 13.178072452617632
+          mean deviation: 13.178072452617632
+          standard deviation: 18.214247765731628
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.0545808966861598
+          mean deviation: 2.508771929824561
+          standard deviation: 3.6114934570414787
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5394190871369295
+          mean deviation: 1.5477178423236515
+          standard deviation: 2.013440316650507
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3529411764705883
+          mean deviation: 3.360294117647059
+          standard deviation: 4.58337789639655
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.32293986636971045
+          mean deviation: 1.9799554565701558
+          standard deviation: 2.7610881945018293
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5458333333333334
+          mean deviation: 1.5541666666666667
+          standard deviation: 2.017630623611104
+        considering values where the prediction is < the actual value:
+          mean differences: 2.4688995215311005
+          mean deviation: 2.4688995215311005
+          standard deviation: 3.4210158260809975
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_median_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.087412587412587
+          mean deviation: 17.777972027972027
+          standard deviation: 28.393725914868437
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.174019607843137
+          mean deviation: 5.174019607843137
+          standard deviation: 7.035884910271645
+        considering values where the prediction is < the actual value:
+          mean differences: 24.764945652173914
+          mean deviation: 24.764945652173914
+          standard deviation: 35.00969392151638
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.418786692759296
+          mean deviation: 12.545988258317026
+          standard deviation: 18.76127188908795
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.194581280788177
+          mean deviation: 5.194581280788177
+          standard deviation: 7.0528441665358255
+        considering values where the prediction is < the actual value:
+          mean differences: 17.391233766233768
+          mean deviation: 17.391233766233768
+          standard deviation: 23.47745187947889
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8566433566433567
+          mean deviation: 2.5384615384615383
+          standard deviation: 3.8051308754129574
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8725490196078431
+          mean deviation: 0.8921568627450981
+          standard deviation: 1.3321072794341935
+        considering values where the prediction is < the actual value:
+          mean differences: 3.369565217391304
+          mean deviation: 3.4510869565217392
+          standard deviation: 4.6391528462031495
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.487279843444227
+          mean deviation: 2.1996086105675148
+          standard deviation: 3.34336390358286
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8719211822660099
+          mean deviation: 0.8916256157635468
+          standard deviation: 1.3335385720528332
+        considering values where the prediction is < the actual value:
+          mean differences: 3.042207792207792
+          mean deviation: 3.061688311688312
+          standard deviation: 4.168138268265176
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.965034965034965
+          mean deviation: 17.91958041958042
+          standard deviation: 28.667691543993186
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.712121212121212
+          mean deviation: 5.712121212121212
+          standard deviation: 8.228890962009794
+        considering values where the prediction is < the actual value:
+          mean differences: 24.38235294117647
+          mean deviation: 24.38235294117647
+          standard deviation: 34.9439199304679
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.019646365422396
+          mean deviation: 12.459724950884086
+          standard deviation: 18.525111720138558
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.7360406091370555
+          mean deviation: 5.7360406091370555
+          standard deviation: 8.24944237463271
+        considering values where the prediction is < the actual value:
+          mean differences: 16.705128205128204
+          mean deviation: 16.705128205128204
+          standard deviation: 22.735378507899004
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.868881118881119
+          mean deviation: 2.673076923076923
+          standard deviation: 3.933227646638282
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.0757575757575757
+          mean deviation: 1.0858585858585859
+          standard deviation: 1.6345388253930133
+        considering values where the prediction is < the actual value:
+          mean differences: 3.427807486631016
+          mean deviation: 3.513368983957219
+          standard deviation: 4.716565414028818
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.4950884086444007
+          mean deviation: 2.3398821218074657
+          standard deviation: 3.4694852780063146
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.0710659898477157
+          mean deviation: 1.0812182741116751
+          standard deviation: 1.6324749980594926
+        considering values where the prediction is < the actual value:
+          mean differences: 3.1153846153846154
+          mean deviation: 3.1346153846153846
+          standard deviation: 4.237349195561796
+
+metric: badness_entropy_code_len_sparse_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 20.979899497487438
+          mean deviation: 20.979899497487438
+          standard deviation: 32.6693756781895
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 22.772727272727273
+          mean deviation: 22.772727272727273
+          standard deviation: 34.0366380136571
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 14.813653136531366
+          mean deviation: 14.813653136531366
+          standard deviation: 21.917953348038445
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 16.22020202020202
+          mean deviation: 16.22020202020202
+          standard deviation: 22.934910093787177
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.338358458961474
+          mean deviation: 3.355108877721943
+          standard deviation: 4.787441695723276
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.6236363636363635
+          mean deviation: 3.6418181818181816
+          standard deviation: 4.987803305883444
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.7859778597785976
+          mean deviation: 2.804428044280443
+          standard deviation: 4.073585145907645
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0505050505050506
+          mean deviation: 3.0707070707070705
+          standard deviation: 4.26259275203449
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 21.512562814070353
+          mean deviation: 22.03852596314908
+          standard deviation: 33.04707063753069
+        considering values where the prediction is >= the actual value:
+          mean differences: -2.242857142857143
+          mean deviation: 2.242857142857143
+          standard deviation: 3.1780497164141406
+        considering values where the prediction is < the actual value:
+          mean differences: 24.667931688804554
+          mean deviation: 24.667931688804554
+          standard deviation: 35.154362773507714
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 15.387453874538746
+          mean deviation: 15.966789667896679
+          standard deviation: 22.492147051066283
+        considering values where the prediction is >= the actual value:
+          mean differences: -2.242857142857143
+          mean deviation: 2.242857142857143
+          standard deviation: 3.1780497164141406
+        considering values where the prediction is < the actual value:
+          mean differences: 18.002118644067796
+          mean deviation: 18.002118644067796
+          standard deviation: 24.07126601277189
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.371859296482412
+          mean deviation: 3.4958123953098825
+          standard deviation: 4.817089900435502
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.5
+          mean deviation: 0.5
+          standard deviation: 0.7837638128197258
+        considering values where the prediction is < the actual value:
+          mean differences: 3.886148007590133
+          mean deviation: 3.893738140417457
+          standard deviation: 5.119075462067126
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.8339483394833946
+          mean deviation: 2.970479704797048
+          standard deviation: 4.136062266227468
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.5
+          mean deviation: 0.5
+          standard deviation: 0.7837638128197258
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3283898305084745
+          mean deviation: 3.336864406779661
+          standard deviation: 4.421873596304502
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_mean_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.902145207912609
+          mean deviation: 20.675738679873366
+          standard deviation: 31.214352701905035
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.563846043689541
+          mean deviation: 7.563846043689541
+          standard deviation: 9.364896875043987
+        considering values where the prediction is < the actual value:
+          mean differences: 31.30700297948189
+          mean deviation: 31.30700297948189
+          standard deviation: 41.14885988165466
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 6.266063133609677
+          mean deviation: 13.925654063928208
+          standard deviation: 19.317612474095874
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.563846043689541
+          mean deviation: 7.563846043689541
+          standard deviation: 9.364896875043987
+        considering values where the prediction is < the actual value:
+          mean differences: 20.450585366737084
+          mean deviation: 20.450585366737084
+          standard deviation: 25.80617608697173
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.796641791044776
+          mean deviation: 2.953358208955224
+          standard deviation: 4.16251036482955
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2708333333333333
+          mean deviation: 1.2708333333333333
+          standard deviation: 1.5234281516807195
+        considering values where the prediction is < the actual value:
+          mean differences: 4.283783783783784
+          mean deviation: 4.3175675675675675
+          standard deviation: 5.43076820010238
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.3248945147679325
+          mean deviation: 2.611814345991561
+          standard deviation: 3.765264292167738
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2708333333333333
+          mean deviation: 1.2708333333333333
+          standard deviation: 1.5234281516807195
+        considering values where the prediction is < the actual value:
+          mean differences: 3.9871794871794872
+          mean deviation: 3.9871794871794872
+          standard deviation: 5.132017813453772
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.902145207912609
+          mean deviation: 21.282665174229596
+          standard deviation: 31.36551965648381
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.990815231695276
+          mean deviation: 8.990815231695276
+          standard deviation: 11.150353937694506
+        considering values where the prediction is < the actual value:
+          mean differences: 29.840282222829472
+          mean deviation: 29.840282222829472
+          standard deviation: 39.77634764300822
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 6.314586340360731
+          mean deviation: 14.660490774845808
+          standard deviation: 19.674290105102145
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.990815231695276
+          mean deviation: 8.990815231695276
+          standard deviation: 11.150353937694506
+        considering values where the prediction is < the actual value:
+          mean differences: 19.57123337127539
+          mean deviation: 19.57123337127539
+          standard deviation: 24.79221835896927
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7369402985074627
+          mean deviation: 3.0615671641791047
+          standard deviation: 4.160268719793893
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5909090909090908
+          mean deviation: 1.5909090909090908
+          standard deviation: 2.0360389351519155
+        considering values where the prediction is < the actual value:
+          mean differences: 4.05379746835443
+          mean deviation: 4.0854430379746836
+          standard deviation: 5.145048006320424
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.229957805907173
+          mean deviation: 2.710970464135021
+          standard deviation: 3.7453205684343702
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5909090909090908
+          mean deviation: 1.5909090909090908
+          standard deviation: 2.0360389351519155
+        considering values where the prediction is < the actual value:
+          mean differences: 3.673228346456693
+          mean deviation: 3.6811023622047245
+          standard deviation: 4.752537656161006
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_median_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 17.575418994413408
+          mean deviation: 20.579143389199256
+          standard deviation: 32.090813295265406
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.480555555555555
+          mean deviation: 4.480555555555555
+          standard deviation: 6.195988845840329
+        considering values where the prediction is < the actual value:
+          mean differences: 28.69607843137255
+          mean deviation: 28.69607843137255
+          standard deviation: 39.11139195160608
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 11.201646090534979
+          mean deviation: 14.520576131687243
+          standard deviation: 21.48439475775373
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.480555555555555
+          mean deviation: 4.480555555555555
+          standard deviation: 6.195988845840329
+        considering values where the prediction is < the actual value:
+          mean differences: 20.426470588235293
+          mean deviation: 20.426470588235293
+          standard deviation: 26.65546639788711
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.6759776536312847
+          mean deviation: 3.1340782122905027
+          standard deviation: 4.58013685726583
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.6666666666666666
+          mean deviation: 0.6888888888888889
+          standard deviation: 0.9309493362512627
+        considering values where the prediction is < the actual value:
+          mean differences: 4.361344537815126
+          mean deviation: 4.366946778711484
+          standard deviation: 5.578319375835658
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.1296296296296298
+          mean deviation: 2.6358024691358026
+          standard deviation: 3.934389897851096
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.6666666666666666
+          mean deviation: 0.6888888888888889
+          standard deviation: 0.9309493362512627
+        considering values where the prediction is < the actual value:
+          mean differences: 3.7745098039215685
+          mean deviation: 3.781045751633987
+          standard deviation: 4.906644820923236
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 17.461824953445067
+          mean deviation: 21.033519553072626
+          standard deviation: 32.21981358321394
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.641176470588236
+          mean deviation: 5.641176470588236
+          standard deviation: 7.702749700021186
+        considering values where the prediction is < the actual value:
+          mean differences: 28.16348773841962
+          mean deviation: 28.16348773841962
+          standard deviation: 38.61999595019995
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 10.94639175257732
+          mean deviation: 14.901030927835052
+          standard deviation: 21.4513835374342
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.641176470588236
+          mean deviation: 5.641176470588236
+          standard deviation: 7.702749700021186
+        considering values where the prediction is < the actual value:
+          mean differences: 19.8984126984127
+          mean deviation: 19.8984126984127
+          standard deviation: 26.00927795388676
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.707635009310987
+          mean deviation: 3.2625698324022347
+          standard deviation: 4.695970775782348
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8647058823529412
+          mean deviation: 0.8764705882352941
+          standard deviation: 1.2295384117148813
+        considering values where the prediction is < the actual value:
+          mean differences: 4.362397820163488
+          mean deviation: 4.367847411444142
+          standard deviation: 5.618430162704526
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.1422680412371133
+          mean deviation: 2.756701030927835
+          standard deviation: 4.043322100482154
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8647058823529412
+          mean deviation: 0.8764705882352941
+          standard deviation: 1.2295384117148813
+        considering values where the prediction is < the actual value:
+          mean differences: 3.765079365079365
+          mean deviation: 3.7714285714285714
+          standard deviation: 4.935134806219133
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_mean_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.0978908095821
+          mean deviation: 17.226679998748786
+          standard deviation: 28.219236844840086
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.413454958437148
+          mean deviation: 8.413454958437148
+          standard deviation: 10.808279514945404
+        considering values where the prediction is < the actual value:
+          mean differences: 25.463039400058243
+          mean deviation: 25.463039400058243
+          standard deviation: 37.83325212230141
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.2050295744529114
+          mean deviation: 10.445448054445855
+          standard deviation: 14.407424374272797
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.446320016868544
+          mean deviation: 8.446320016868544
+          standard deviation: 10.829368860881821
+        considering values where the prediction is < the actual value:
+          mean differences: 12.859489458312796
+          mean deviation: 12.859489458312796
+          standard deviation: 17.793643610423885
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 0.9191729323308271
+          mean deviation: 2.3101503759398496
+          standard deviation: 3.328787627300542
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.4007782101167314
+          mean deviation: 1.424124513618677
+          standard deviation: 1.8630129147761076
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0872727272727274
+          mean deviation: 3.138181818181818
+          standard deviation: 4.26529333958724
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.25854700854700857
+          mean deviation: 1.8226495726495726
+          standard deviation: 2.5373281593113233
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.40625
+          mean deviation: 1.4296875
+          standard deviation: 1.8666480653835098
+        considering values where the prediction is < the actual value:
+          mean differences: 2.268867924528302
+          mean deviation: 2.297169811320755
+          standard deviation: 3.1630233924414903
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.400522388529469
+          mean deviation: 17.612955038786495
+          standard deviation: 28.47795892856945
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.703215477961658
+          mean deviation: 8.703215477961658
+          standard deviation: 11.275947097675484
+        considering values where the prediction is < the actual value:
+          mean differences: 25.571476852904077
+          mean deviation: 25.571476852904077
+          standard deviation: 37.70719709471704
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.5161722324131512
+          mean deviation: 10.85167259552588
+          standard deviation: 14.85587161384616
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.738028339873505
+          mean deviation: 8.738028339873505
+          standard deviation: 11.298476484967983
+        considering values where the prediction is < the actual value:
+          mean differences: 13.275576558429972
+          mean deviation: 13.275576558429972
+          standard deviation: 18.094079636210125
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.0018796992481203
+          mean deviation: 2.486842105263158
+          standard deviation: 3.5315442105795865
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.545816733067729
+          mean deviation: 1.5617529880478087
+          standard deviation: 2.0138959487595876
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2775800711743774
+          mean deviation: 3.3131672597864767
+          standard deviation: 4.470942165071739
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.31196581196581197
+          mean deviation: 1.9871794871794872
+          standard deviation: 2.7284509239574835
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.552
+          mean deviation: 1.568
+          standard deviation: 2.0179197209007103
+        considering values where the prediction is < the actual value:
+          mean differences: 2.44954128440367
+          mean deviation: 2.467889908256881
+          standard deviation: 3.363320770533876
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_median_weighted
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.012237762237762
+          mean deviation: 17.72902097902098
+          standard deviation: 28.30280818309291
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.288557213930348
+          mean deviation: 5.288557213930348
+          standard deviation: 7.243971588714954
+        considering values where the prediction is < the actual value:
+          mean differences: 24.46900269541779
+          mean deviation: 24.46900269541779
+          standard deviation: 34.736299632076246
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.356164383561644
+          mean deviation: 12.512720156555773
+          standard deviation: 18.669805672143898
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.31
+          mean deviation: 5.31
+          standard deviation: 7.261714673546463
+        considering values where the prediction is < the actual value:
+          mean differences: 17.144694533762056
+          mean deviation: 17.144694533762056
+          standard deviation: 23.212183573243216
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8391608391608392
+          mean deviation: 2.527972027972028
+          standard deviation: 3.789938833759242
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9104477611940298
+          mean deviation: 0.9104477611940298
+          standard deviation: 1.3289729697134007
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3288409703504045
+          mean deviation: 3.404312668463612
+          standard deviation: 4.603116253722365
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.4657534246575343
+          mean deviation: 2.1898238747553815
+          standard deviation: 3.327228591162224
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.91
+          mean deviation: 0.91
+          standard deviation: 1.3304134695650072
+        considering values where the prediction is < the actual value:
+          mean differences: 2.9935691318327975
+          mean deviation: 3.012861736334405
+          standard deviation: 4.129339771118093
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.839160839160838
+          mean deviation: 17.96853146853147
+          standard deviation: 28.59724545393223
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.151041666666667
+          mean deviation: 6.151041666666667
+          standard deviation: 8.66972101627267
+        considering values where the prediction is < the actual value:
+          mean differences: 23.939473684210526
+          mean deviation: 23.939473684210526
+          standard deviation: 34.54027016625514
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 7.8919449901768175
+          mean deviation: 12.528487229862476
+          standard deviation: 18.450166514175038
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.178010471204188
+          mean deviation: 6.178010471204188
+          standard deviation: 8.692085826827897
+        considering values where the prediction is < the actual value:
+          mean differences: 16.342767295597483
+          mean deviation: 16.342767295597483
+          standard deviation: 22.34925040601344
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.847902097902098
+          mean deviation: 2.673076923076923
+          standard deviation: 3.9398892462513806
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1614583333333333
+          mean deviation: 1.1614583333333333
+          standard deviation: 1.7245168405479065
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3684210526315788
+          mean deviation: 3.4368421052631577
+          standard deviation: 4.675805587782371
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.4675834970530452
+          mean deviation: 2.3477406679764243
+          standard deviation: 3.4813564639485888
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1570680628272252
+          mean deviation: 1.1570680628272252
+          standard deviation: 1.7229586145449214
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0440251572327046
+          mean deviation: 3.0628930817610063
+          standard deviation: 4.197183841727434
+
+metric: badness
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 19.814169570267133
+          mean deviation: 19.814169570267133
+          standard deviation: 30.910646392382183
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 21.56763590391909
+          mean deviation: 21.56763590391909
+          standard deviation: 32.24938380814518
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 13.696815286624204
+          mean deviation: 13.696815286624204
+          standard deviation: 18.915433660723945
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 15.037762237762237
+          mean deviation: 15.037762237762237
+          standard deviation: 19.819747163432172
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.9953542392566783
+          mean deviation: 3.002322880371661
+          standard deviation: 4.166260142770224
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.260429835651075
+          mean deviation: 3.2680151706700378
+          standard deviation: 4.346700508401115
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.521019108280255
+          mean deviation: 2.5286624203821657
+          standard deviation: 3.4881053569082057
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 2.767832167832168
+          mean deviation: 2.7762237762237763
+          standard deviation: 3.6548655184619254
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 19.76306620209059
+          mean deviation: 21.08246225319396
+          standard deviation: 31.437418245934296
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.580645161290323
+          mean deviation: 4.580645161290323
+          standard deviation: 6.932857717350924
+        considering values where the prediction is < the actual value:
+          mean differences: 23.85888738127544
+          mean deviation: 23.85888738127544
+          standard deviation: 33.860116105627384
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 13.79415501905972
+          mean deviation: 15.237611181702668
+          standard deviation: 20.125337882994696
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.580645161290323
+          mean deviation: 4.580645161290323
+          standard deviation: 6.932857717350924
+        considering values where the prediction is < the actual value:
+          mean differences: 17.23076923076923
+          mean deviation: 17.23076923076923
+          standard deviation: 21.720770133759526
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.1010452961672472
+          mean deviation: 3.389082462253194
+          standard deviation: 4.474213119976884
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.0
+          mean deviation: 1.0
+          standard deviation: 1.6263951827039393
+        considering values where the prediction is < the actual value:
+          mean differences: 3.791044776119403
+          mean deviation: 3.791044776119403
+          standard deviation: 4.789744811528669
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.656925031766201
+          mean deviation: 2.972045743329098
+          standard deviation: 3.898163644165842
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.0
+          mean deviation: 1.0
+          standard deviation: 1.6263951827039393
+        considering values where the prediction is < the actual value:
+          mean differences: 3.340874811463047
+          mean deviation: 3.340874811463047
+          standard deviation: 4.188434841959388
+
+metric: badness_new_penalty_generic_mean
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.011834428781349
+          mean deviation: 19.453252228994074
+          standard deviation: 30.43820067048132
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.924427159696965
+          mean deviation: 6.924427159696965
+          standard deviation: 8.635268745799747
+        considering values where the prediction is < the actual value:
+          mean differences: 27.562093918406564
+          mean deviation: 27.562093918406564
+          standard deviation: 38.44290409302935
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 7.016073054355908
+          mean deviation: 13.137668079595253
+          standard deviation: 19.213266343280743
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.924427159696965
+          mean deviation: 6.924427159696965
+          standard deviation: 8.635268745799747
+        considering values where the prediction is < the actual value:
+          mean differences: 18.05984595120299
+          mean deviation: 18.05984595120299
+          standard deviation: 24.546273674059126
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8019323671497585
+          mean deviation: 2.7648953301127213
+          standard deviation: 3.9868947957930136
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1926229508196722
+          mean deviation: 1.1926229508196722
+          standard deviation: 1.447156624240088
+        considering values where the prediction is < the actual value:
+          mean differences: 3.740053050397878
+          mean deviation: 3.782493368700265
+          standard deviation: 4.982728791224398
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.3333333333333333
+          mean deviation: 2.402173913043478
+          standard deviation: 3.5154936569668154
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1926229508196722
+          mean deviation: 1.1926229508196722
+          standard deviation: 1.447156624240088
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3344155844155843
+          mean deviation: 3.3603896103896105
+          standard deviation: 4.526616809523393
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.507808663886008
+          mean deviation: 20.32398387124412
+          standard deviation: 30.902916277016413
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.638458783202855
+          mean deviation: 8.638458783202855
+          standard deviation: 11.513290026903313
+        considering values where the prediction is < the actual value:
+          mean differences: 27.938222292973162
+          mean deviation: 27.938222292973162
+          standard deviation: 38.611979765228696
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 6.384869087534545
+          mean deviation: 14.053066195812438
+          standard deviation: 19.840913585776786
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.638458783202855
+          mean deviation: 8.638458783202855
+          standard deviation: 11.513290026903313
+        considering values where the prediction is < the actual value:
+          mean differences: 18.37416983128264
+          mean deviation: 18.37416983128264
+          standard deviation: 24.536429054833317
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7085346215780999
+          mean deviation: 2.9420289855072466
+          standard deviation: 4.11567836129003
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5387755102040817
+          mean deviation: 1.546938775510204
+          standard deviation: 2.1082926644998015
+        considering values where the prediction is < the actual value:
+          mean differences: 3.824468085106383
+          mean deviation: 3.851063829787234
+          standard deviation: 5.007972367539836
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.1992753623188406
+          mean deviation: 2.572463768115942
+          standard deviation: 3.6460222518341223
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5387755102040817
+          mean deviation: 1.546938775510204
+          standard deviation: 2.1082926644998015
+        considering values where the prediction is < the actual value:
+          mean differences: 3.3843648208469057
+          mean deviation: 3.3908794788273617
+          standard deviation: 4.511656997150255
+
+metric: badness_new_penalty_generic_median
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.692065491183879
+          mean deviation: 17.074937027707808
+          standard deviation: 27.759067096092046
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.784
+          mean deviation: 3.784
+          standard deviation: 5.310743827374844
+        considering values where the prediction is < the actual value:
+          mean differences: 23.182904411764707
+          mean deviation: 23.182904411764707
+          standard deviation: 33.3425362602293
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 9.033012379642367
+          mean deviation: 11.635488308115542
+          standard deviation: 16.836375762936974
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.784
+          mean deviation: 3.784
+          standard deviation: 5.310743827374844
+        considering values where the prediction is < the actual value:
+          mean differences: 15.750524109014675
+          mean deviation: 15.750524109014675
+          standard deviation: 20.426634070617865
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.1926952141057936
+          mean deviation: 2.6284634760705288
+          standard deviation: 3.835896999849042
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.66
+          mean deviation: 0.7
+          standard deviation: 0.9359487165438072
+        considering values where the prediction is < the actual value:
+          mean differences: 3.5036764705882355
+          mean deviation: 3.514705882352941
+          standard deviation: 4.590591401090355
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.7290233837689133
+          mean deviation: 2.202200825309491
+          standard deviation: 3.1971015071103914
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.66
+          mean deviation: 0.7
+          standard deviation: 0.9359487165438072
+        considering values where the prediction is < the actual value:
+          mean differences: 2.981132075471698
+          mean deviation: 2.989517819706499
+          standard deviation: 3.888379721085109
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 15.339420654911839
+          mean deviation: 18.646725440806044
+          standard deviation: 28.509560241941944
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.282296650717703
+          mean deviation: 6.282296650717703
+          standard deviation: 8.794300024371484
+        considering values where the prediction is < the actual value:
+          mean differences: 23.064102564102566
+          mean deviation: 23.064102564102566
+          standard deviation: 32.79553987812117
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 9.932784636488341
+          mean deviation: 13.534979423868313
+          standard deviation: 18.573400157635053
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.282296650717703
+          mean deviation: 6.282296650717703
+          standard deviation: 8.794300024371484
+        considering values where the prediction is < the actual value:
+          mean differences: 16.45
+          mean deviation: 16.45
+          standard deviation: 21.272951406386035
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.3198992443324937
+          mean deviation: 2.9420654911838793
+          standard deviation: 4.10473708034273
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1578947368421053
+          mean deviation: 1.1770334928229664
+          standard deviation: 1.6427308340995597
+        considering values where the prediction is < the actual value:
+          mean differences: 3.562393162393162
+          mean deviation: 3.572649572649573
+          standard deviation: 4.6802001564327895
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.8669410150891632
+          mean deviation: 2.539094650205761
+          standard deviation: 3.5142274028131886
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1578947368421053
+          mean deviation: 1.1770334928229664
+          standard deviation: 1.6427308340995597
+        considering values where the prediction is < the actual value:
+          mean differences: 3.082692307692308
+          mean deviation: 3.0865384615384617
+          standard deviation: 4.02850420799658
+
+metric: badness_new_penalty_specific_mean
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 12.722633592206217
+          mean deviation: 18.14174186901762
+          standard deviation: 28.617439318225973
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.280454163194499
+          mean deviation: 7.280454163194499
+          standard deviation: 9.545602217287204
+        considering values where the prediction is < the actual value:
+          mean differences: 24.58013406576847
+          mean deviation: 24.58013406576847
+          standard deviation: 35.361122314741046
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.2337720496925035
+          mean deviation: 11.397692703595764
+          standard deviation: 15.190563553397944
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.307879727225916
+          mean deviation: 7.307879727225916
+          standard deviation: 9.566193200698129
+        considering values where the prediction is < the actual value:
+          mean differences: 14.380390702285869
+          mean deviation: 14.380390702285869
+          standard deviation: 18.229144706384258
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.4368932038834952
+          mean deviation: 2.466019417475728
+          standard deviation: 3.4776214763378266
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.326086956521739
+          mean deviation: 1.3347826086956522
+          standard deviation: 1.753257837135845
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0747422680412373
+          mean deviation: 3.13659793814433
+          standard deviation: 4.176209004526059
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.9373848987108656
+          mean deviation: 2.0718232044198897
+          standard deviation: 2.820276490762249
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3187772925764192
+          mean deviation: 1.3275109170305677
+          standard deviation: 1.745862232393443
+        considering values where the prediction is < the actual value:
+          mean differences: 2.582802547770701
+          mean deviation: 2.6146496815286624
+          standard deviation: 3.395857348852858
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 12.68218051777256
+          mean deviation: 18.453738533280703
+          standard deviation: 28.84613560654748
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.143431172566336
+          mean deviation: 8.143431172566336
+          standard deviation: 10.58961583140519
+        considering values where the prediction is < the actual value:
+          mean differences: 24.112779415477345
+          mean deviation: 24.112779415477345
+          standard deviation: 35.03234679168901
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.120803572722997
+          mean deviation: 11.697967509224947
+          standard deviation: 15.508985777427386
+        considering values where the prediction is >= the actual value:
+          mean differences: -8.176199205468016
+          mean deviation: 8.176199205468016
+          standard deviation: 10.613660056873846
+        considering values where the prediction is < the actual value:
+          mean differences: 14.067552355579911
+          mean deviation: 14.067552355579911
+          standard deviation: 18.071264175058634
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.4951456310679612
+          mean deviation: 2.6537216828478964
+          standard deviation: 3.706025881144816
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.6027397260273972
+          mean deviation: 1.6118721461187215
+          standard deviation: 2.0618296613715246
+        considering values where the prediction is < the actual value:
+          mean differences: 3.1954887218045114
+          mean deviation: 3.225563909774436
+          standard deviation: 4.35199375275978
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.9538745387453874
+          mean deviation: 2.263837638376384
+          standard deviation: 3.038194744626003
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.610091743119266
+          mean deviation: 1.6192660550458715
+          standard deviation: 2.0665532177601578
+        considering values where the prediction is < the actual value:
+          mean differences: 2.6790123456790123
+          mean deviation: 2.697530864197531
+          standard deviation: 3.5451235852319596
+
+metric: badness_new_penalty_specific_median
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.904411764705882
+          mean deviation: 17.06350267379679
+          standard deviation: 28.601546506558783
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.862139917695473
+          mean deviation: 4.862139917695473
+          standard deviation: 7.255975258690765
+        considering values where the prediction is < the actual value:
+          mean differences: 22.934653465346535
+          mean deviation: 22.934653465346535
+          standard deviation: 34.443424698344025
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 6.9992559523809526
+          mean deviation: 10.515625
+          standard deviation: 14.747237937516106
+        considering values where the prediction is >= the actual value:
+          mean differences: -4.882231404958677
+          mean deviation: 4.882231404958677
+          standard deviation: 7.270951487748359
+        considering values where the prediction is < the actual value:
+          mean differences: 13.686046511627907
+          mean deviation: 13.686046511627907
+          standard deviation: 17.610349758157877
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8529411764705883
+          mean deviation: 2.4759358288770055
+          standard deviation: 3.6767807355810747
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9218106995884774
+          mean deviation: 0.9300411522633745
+          standard deviation: 1.4113006580190852
+        considering values where the prediction is < the actual value:
+          mean differences: 3.1881188118811883
+          mean deviation: 3.21980198019802
+          standard deviation: 4.366388271174869
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.2857142857142858
+          mean deviation: 1.9613095238095237
+          standard deviation: 2.818941037238731
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.9256198347107438
+          mean deviation: 0.9338842975206612
+          standard deviation: 1.4142135623730951
+        considering values where the prediction is < the actual value:
+          mean differences: 2.530232558139535
+          mean deviation: 2.5395348837209304
+          standard deviation: 3.3605093744570858
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.616978609625669
+          mean deviation: 17.9177807486631
+          standard deviation: 29.11530300347151
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.592213114754099
+          mean deviation: 6.592213114754099
+          standard deviation: 9.832563413407946
+        considering values where the prediction is < the actual value:
+          mean differences: 23.400793650793652
+          mean deviation: 23.400793650793652
+          standard deviation: 34.80360146023935
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 6.633184523809524
+          mean deviation: 11.420386904761905
+          standard deviation: 15.59386183040347
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.6193415637860085
+          mean deviation: 6.6193415637860085
+          standard deviation: 9.85277425367227
+        considering values where the prediction is < the actual value:
+          mean differences: 14.13986013986014
+          mean deviation: 14.13986013986014
+          standard deviation: 18.053242933600057
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7954545454545454
+          mean deviation: 2.6483957219251337
+          standard deviation: 3.791525873470714
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.278688524590164
+          mean deviation: 1.278688524590164
+          standard deviation: 1.868636743374304
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2837301587301586
+          mean deviation: 3.3115079365079363
+          standard deviation: 4.432250136199588
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.2380952380952381
+          mean deviation: 2.1726190476190474
+          standard deviation: 2.9875734699075163
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2839506172839505
+          mean deviation: 1.2839506172839505
+          standard deviation: 1.8724777273725242
+        considering values where the prediction is < the actual value:
+          mean differences: 2.6666666666666665
+          mean deviation: 2.675990675990676
+          standard deviation: 3.463428647357701
+
+metric: badness_entropy_code_len_complete
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 19.84795321637427
+          mean deviation: 19.84795321637427
+          standard deviation: 30.640797632114015
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 21.265664160401002
+          mean deviation: 21.265664160401002
+          standard deviation: 31.71623873505096
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 14.296815286624204
+          mean deviation: 14.296815286624204
+          standard deviation: 19.8512622133951
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 15.416208791208792
+          mean deviation: 15.416208791208792
+          standard deviation: 20.613762339810698
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.0292397660818713
+          mean deviation: 3.0385964912280703
+          standard deviation: 4.205537980758507
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.245614035087719
+          mean deviation: 3.255639097744361
+          standard deviation: 4.353145378541451
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.648407643312102
+          mean deviation: 2.6585987261146498
+          standard deviation: 3.6800373855758135
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 2.855769230769231
+          mean deviation: 2.866758241758242
+          standard deviation: 3.82139005834552
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 20.221052631578946
+          mean deviation: 21.743859649122808
+          standard deviation: 31.69608974720948
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.564102564102564
+          mean deviation: 5.564102564102564
+          standard deviation: 7.920006043337071
+        considering values where the prediction is < the actual value:
+          mean differences: 24.308943089430894
+          mean deviation: 24.308943089430894
+          standard deviation: 33.97013673363558
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 14.530012771392082
+          mean deviation: 16.192848020434226
+          standard deviation: 21.170686256644277
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.564102564102564
+          mean deviation: 5.564102564102564
+          standard deviation: 7.920006043337071
+        considering values where the prediction is < the actual value:
+          mean differences: 18.06006006006006
+          mean deviation: 18.06006006006006
+          standard deviation: 22.713782510095406
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.2093567251461987
+          mean deviation: 3.5789473684210527
+          standard deviation: 4.652861786795041
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3418803418803418
+          mean deviation: 1.3418803418803418
+          standard deviation: 1.9326258652524382
+        considering values where the prediction is < the actual value:
+          mean differences: 3.930894308943089
+          mean deviation: 3.9336043360433606
+          standard deviation: 4.948652330847149
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.8007662835249043
+          mean deviation: 3.2043422733077906
+          standard deviation: 4.132696774614219
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3418803418803418
+          mean deviation: 1.3418803418803418
+          standard deviation: 1.9326258652524382
+        considering values where the prediction is < the actual value:
+          mean differences: 3.5285285285285286
+          mean deviation: 3.5315315315315314
+          standard deviation: 4.407201314147497
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_mean
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.56544568558919
+          mean deviation: 19.13646574482381
+          standard deviation: 31.21179540884782
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.873919911797548
+          mean deviation: 6.873919911797548
+          standard deviation: 8.449357705615204
+        considering values where the prediction is < the actual value:
+          mean differences: 27.49116730139116
+          mean deviation: 27.49116730139116
+          standard deviation: 39.865525659379436
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.353199497645652
+          mean deviation: 11.620597064284611
+          standard deviation: 16.225526336138852
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.873919911797548
+          mean deviation: 6.873919911797548
+          standard deviation: 8.449357705615204
+        considering values where the prediction is < the actual value:
+          mean differences: 15.597542786638622
+          mean deviation: 15.597542786638622
+          standard deviation: 20.591957835459347
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8055555555555556
+          mean deviation: 2.792483660130719
+          standard deviation: 4.012032555794901
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1935483870967742
+          mean deviation: 1.2096774193548387
+          standard deviation: 1.4227415606451852
+        considering values where the prediction is < the actual value:
+          mean differences: 3.848901098901099
+          mean deviation: 3.870879120879121
+          standard deviation: 5.0679449418937
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.1102941176470589
+          mean deviation: 2.2095588235294117
+          standard deviation: 3.1183753311431825
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1935483870967742
+          mean deviation: 1.2096774193548387
+          standard deviation: 1.4227415606451852
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0405405405405403
+          mean deviation: 3.0472972972972974
+          standard deviation: 4.021899510887321
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.521328038530365
+          mean deviation: 19.513722655035515
+          standard deviation: 31.389104344214307
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.484378582247223
+          mean deviation: 7.484378582247223
+          standard deviation: 9.182927769476963
+        considering values where the prediction is < the actual value:
+          mean differences: 27.544211204989548
+          mean deviation: 27.544211204989548
+          standard deviation: 39.83374589741949
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.309166716108576
+          mean deviation: 12.050610659676863
+          standard deviation: 16.62711670590245
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.484378582247223
+          mean deviation: 7.484378582247223
+          standard deviation: 9.182927769476963
+        considering values where the prediction is < the actual value:
+          mean differences: 15.79217206091519
+          mean deviation: 15.79217206091519
+          standard deviation: 20.830168469428273
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.761437908496732
+          mean deviation: 2.8758169934640523
+          standard deviation: 4.068851871911234
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.363265306122449
+          mean deviation: 1.3714285714285714
+          standard deviation: 1.6951310827647228
+        considering values where the prediction is < the actual value:
+          mean differences: 3.8474114441416893
+          mean deviation: 3.880108991825613
+          standard deviation: 5.068468535662693
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.056985294117647
+          mean deviation: 2.2996323529411766
+          standard deviation: 3.197827847332697
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.363265306122449
+          mean deviation: 1.3714285714285714
+          standard deviation: 1.6951310827647228
+        considering values where the prediction is < the actual value:
+          mean differences: 3.040133779264214
+          mean deviation: 3.060200668896321
+          standard deviation: 4.0312325807873375
+
+metric: badness_entropy_code_len_complete_new_penalty_generic_median
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.826582278481013
+          mean deviation: 17.343037974683543
+          standard deviation: 28.72869601432589
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.8378378378378377
+          mean deviation: 3.8378378378378377
+          standard deviation: 5.255627614435941
+        considering values where the prediction is < the actual value:
+          mean differences: 23.930320150659135
+          mean deviation: 23.930320150659135
+          standard deviation: 34.84869096207553
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.786998616874136
+          mean deviation: 11.536652835408022
+          standard deviation: 17.048827446163955
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.8378378378378377
+          mean deviation: 3.8378378378378377
+          standard deviation: 5.255627614435941
+        considering values where the prediction is < the actual value:
+          mean differences: 15.83405172413793
+          mean deviation: 15.83405172413793
+          standard deviation: 20.91624306939301
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.149367088607595
+          mean deviation: 2.551898734177215
+          standard deviation: 3.79873396631502
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.6023166023166023
+          mean deviation: 0.61003861003861
+          standard deviation: 0.86991767240168
+        considering values where the prediction is < the actual value:
+          mean differences: 3.4915254237288136
+          mean deviation: 3.4990583804143127
+          standard deviation: 4.593453132022015
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.6459197786998616
+          mean deviation: 2.0857538035961274
+          standard deviation: 3.0959751679662904
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.6023166023166023
+          mean deviation: 0.61003861003861
+          standard deviation: 0.86991767240168
+        considering values where the prediction is < the actual value:
+          mean differences: 2.9008620689655173
+          mean deviation: 2.9094827586206895
+          standard deviation: 3.80958410256064
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.79873417721519
+          mean deviation: 18.555696202531646
+          standard deviation: 29.260506065170393
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.369098712446352
+          mean deviation: 6.369098712446352
+          standard deviation: 9.035219595175715
+        considering values where the prediction is < the actual value:
+          mean differences: 23.653500897666067
+          mean deviation: 23.653500897666067
+          standard deviation: 34.35371505210911
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.8439226519337
+          mean deviation: 12.943370165745856
+          standard deviation: 18.154113120844542
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.369098712446352
+          mean deviation: 6.369098712446352
+          standard deviation: 9.035219595175715
+        considering values where the prediction is < the actual value:
+          mean differences: 16.06313645621181
+          mean deviation: 16.06313645621181
+          standard deviation: 21.14776834340479
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.2531645569620253
+          mean deviation: 2.9949367088607595
+          standard deviation: 4.195537110498442
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2532188841201717
+          mean deviation: 1.261802575107296
+          standard deviation: 1.875983290096431
+        considering values where the prediction is < the actual value:
+          mean differences: 3.7199281867145424
+          mean deviation: 3.7199281867145424
+          standard deviation: 4.847031703787633
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.7569060773480663
+          mean deviation: 2.5662983425414363
+          standard deviation: 3.5878863104612972
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2532188841201717
+          mean deviation: 1.261802575107296
+          standard deviation: 1.875983290096431
+        considering values where the prediction is < the actual value:
+          mean differences: 3.185336048879837
+          mean deviation: 3.185336048879837
+          standard deviation: 4.1607221682423665
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_mean
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.438050059141469
+          mean deviation: 16.004850827405214
+          standard deviation: 26.902838607632223
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.483888461762683
+          mean deviation: 7.483888461762683
+          standard deviation: 10.186559179722778
+        considering values where the prediction is < the actual value:
+          mean differences: 22.66544135580508
+          mean deviation: 22.66544135580508
+          standard deviation: 34.761994956138544
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 3.117854936088568
+          mean deviation: 10.328245812869891
+          standard deviation: 14.382144860058366
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.5097842695888515
+          mean deviation: 7.5097842695888515
+          standard deviation: 10.2041677653455
+        considering values where the prediction is < the actual value:
+          mean differences: 12.930595288934493
+          mean deviation: 12.930595288934493
+          standard deviation: 17.36924774568842
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.0741301059001513
+          mean deviation: 2.172465960665658
+          standard deviation: 3.1608421099725135
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.2137931034482758
+          mean deviation: 1.2344827586206897
+          standard deviation: 1.726067885347383
+        considering values where the prediction is < the actual value:
+          mean differences: 2.862533692722372
+          mean deviation: 2.9056603773584904
+          standard deviation: 3.9334079515361164
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.6179401993355482
+          mean deviation: 1.8205980066445182
+          standard deviation: 2.6065340844797746
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.217993079584775
+          mean deviation: 1.2387543252595157
+          standard deviation: 1.7290515831410669
+        considering values where the prediction is < the actual value:
+          mean differences: 2.313099041533546
+          mean deviation: 2.357827476038339
+          standard deviation: 3.210406401871221
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.298867003165673
+          mean deviation: 17.08839495218479
+          standard deviation: 27.497094382695817
+        considering values where the prediction is >= the actual value:
+          mean differences: -9.064926011094455
+          mean deviation: 9.064926011094455
+          standard deviation: 12.562818588445726
+        considering values where the prediction is < the actual value:
+          mean differences: 23.132599671732976
+          mean deviation: 23.132599671732976
+          standard deviation: 34.73864103310661
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.928575160607849
+          mean deviation: 11.495759810028241
+          standard deviation: 15.617434092266999
+        considering values where the prediction is >= the actual value:
+          mean differences: -9.0969575517697
+          mean deviation: 9.0969575517697
+          standard deviation: 12.584994807980285
+        considering values where the prediction is < the actual value:
+          mean differences: 13.630542951811773
+          mean deviation: 13.630542951811773
+          standard deviation: 17.888923537203137
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.0423600605143721
+          mean deviation: 2.3978819969742813
+          standard deviation: 3.339807127517492
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.5528169014084507
+          mean deviation: 1.5598591549295775
+          standard deviation: 2.1697341954426674
+        considering values where the prediction is < the actual value:
+          mean differences: 2.9973474801061006
+          mean deviation: 3.029177718832891
+          standard deviation: 4.00132604014914
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.5856905158069884
+          mean deviation: 2.0665557404326123
+          standard deviation: 2.846605240926558
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.558303886925795
+          mean deviation: 1.5653710247349824
+          standard deviation: 2.1735642676124614
+        considering values where the prediction is < the actual value:
+          mean differences: 2.493710691823899
+          mean deviation: 2.5125786163522013
+          standard deviation: 3.3331760969204374
+
+metric: badness_entropy_code_len_complete_new_penalty_specific_median
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.210349462365592
+          mean deviation: 17.496639784946236
+          standard deviation: 28.489109643503603
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.072614107883817
+          mean deviation: 5.072614107883817
+          standard deviation: 7.582123001614934
+        considering values where the prediction is < the actual value:
+          mean differences: 23.4493041749503
+          mean deviation: 23.4493041749503
+          standard deviation: 34.248463563512345
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 7.93562874251497
+          mean deviation: 11.532934131736527
+          standard deviation: 16.426893022457335
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.027196652719665
+          mean deviation: 5.027196652719665
+          standard deviation: 7.491627125494682
+        considering values where the prediction is < the actual value:
+          mean differences: 15.157342657342657
+          mean deviation: 15.157342657342657
+          standard deviation: 19.720733826542627
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8790322580645162
+          mean deviation: 2.4838709677419355
+          standard deviation: 3.644114418136884
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8630705394190872
+          mean deviation: 0.9045643153526971
+          standard deviation: 1.341950027206182
+        considering values where the prediction is < the actual value:
+          mean differences: 3.1928429423459246
+          mean deviation: 3.2405566600397613
+          standard deviation: 4.333511746339913
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.4341317365269461
+          mean deviation: 2.0748502994011977
+          standard deviation: 3.0450706214832457
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8786610878661087
+          mean deviation: 0.9037656903765691
+          standard deviation: 1.3413288858129904
+        considering values where the prediction is < the actual value:
+          mean differences: 2.722610722610723
+          mean deviation: 2.727272727272727
+          standard deviation: 3.665500980206858
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.769489247311828
+          mean deviation: 18.566532258064516
+          standard deviation: 28.955361687088413
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.826754385964913
+          mean deviation: 7.826754385964913
+          standard deviation: 11.21084805155648
+        considering values where the prediction is < the actual value:
+          mean differences: 23.31201550387597
+          mean deviation: 23.31201550387597
+          standard deviation: 33.96086153617234
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 7.551569506726457
+          mean deviation: 12.823617339312406
+          standard deviation: 17.41517988089718
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.803097345132743
+          mean deviation: 7.803097345132743
+          standard deviation: 11.173362365406062
+        considering values where the prediction is < the actual value:
+          mean differences: 15.384875846501128
+          mean deviation: 15.384875846501128
+          standard deviation: 19.857576977847806
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7473118279569892
+          mean deviation: 2.6908602150537635
+          standard deviation: 3.719318934070233
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.4254385964912282
+          mean deviation: 1.4517543859649122
+          standard deviation: 2.014203947930708
+        considering values where the prediction is < the actual value:
+          mean differences: 3.14922480620155
+          mean deviation: 3.238372093023256
+          standard deviation: 4.26064558197391
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.2989536621823616
+          mean deviation: 2.3153961136023917
+          standard deviation: 3.158257262908533
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.4424778761061947
+          mean deviation: 1.4601769911504425
+          standard deviation: 2.022002862317766
+        considering values where the prediction is < the actual value:
+          mean differences: 2.6975169300225734
+          mean deviation: 2.7516930022573365
+          standard deviation: 3.6024195531016163
+
+metric: badness_entropy_code_len_sparse
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 19.8711943793911
+          mean deviation: 19.8711943793911
+          standard deviation: 30.658731960621843
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 21.265664160401002
+          mean deviation: 21.265664160401002
+          standard deviation: 31.71623873505096
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 14.315051020408163
+          mean deviation: 14.315051020408163
+          standard deviation: 19.863918422658728
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 15.416208791208792
+          mean deviation: 15.416208791208792
+          standard deviation: 20.613762339810698
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.0327868852459017
+          mean deviation: 3.0421545667447307
+          standard deviation: 4.216894758605226
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 3.245614035087719
+          mean deviation: 3.255639097744361
+          standard deviation: 4.362347440079701
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.6517857142857144
+          mean deviation: 2.6619897959183674
+          standard deviation: 3.6861918295283593
+        considering values where the prediction is >= the actual value:
+          mean differences: 0.0
+          mean deviation: 0.0
+          standard deviation: 0.0
+        considering values where the prediction is < the actual value:
+          mean differences: 2.855769230769231
+          mean deviation: 2.866758241758242
+          standard deviation: 3.825342044607483
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 20.24473067915691
+          mean deviation: 21.769320843091336
+          standard deviation: 31.71464174747935
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.612068965517241
+          mean deviation: 5.612068965517241
+          standard deviation: 7.954070742664434
+        considering values where the prediction is < the actual value:
+          mean differences: 24.308943089430894
+          mean deviation: 24.308943089430894
+          standard deviation: 33.97013673363558
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 14.548593350383632
+          mean deviation: 16.213554987212277
+          standard deviation: 21.18421817637473
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.612068965517241
+          mean deviation: 5.612068965517241
+          standard deviation: 7.954070742664434
+        considering values where the prediction is < the actual value:
+          mean differences: 18.06006006006006
+          mean deviation: 18.06006006006006
+          standard deviation: 22.713782510095406
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 3.269320843091335
+          mean deviation: 3.639344262295082
+          standard deviation: 4.724989622431388
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3448275862068966
+          mean deviation: 1.3620689655172413
+          standard deviation: 1.9564217865523148
+        considering values where the prediction is < the actual value:
+          mean differences: 3.994579945799458
+          mean deviation: 3.997289972899729
+          standard deviation: 5.023252166736536
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.860613810741688
+          mean deviation: 3.264705882352941
+          standard deviation: 4.200688044969644
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3448275862068966
+          mean deviation: 1.3620689655172413
+          standard deviation: 1.9564217865523148
+        considering values where the prediction is < the actual value:
+          mean differences: 3.593093093093093
+          mean deviation: 3.596096096096096
+          standard deviation: 4.478007654365114
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_mean
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.394183794237527
+          mean deviation: 19.07845034027252
+          standard deviation: 31.14069759584057
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.892732662121164
+          mean deviation: 6.892732662121164
+          standard deviation: 8.490981368532985
+        considering values where the prediction is < the actual value:
+          mean differences: 27.62865003709696
+          mean deviation: 27.62865003709696
+          standard deviation: 39.9947903580122
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.218524112650503
+          mean deviation: 11.608137602354084
+          standard deviation: 16.21620927179277
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.892732662121164
+          mean deviation: 6.892732662121164
+          standard deviation: 8.490981368532985
+        considering values where the prediction is < the actual value:
+          mean differences: 15.681990850038284
+          mean deviation: 15.681990850038284
+          standard deviation: 20.684912230876765
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7159090909090908
+          mean deviation: 2.667207792207792
+          standard deviation: 3.831050515452394
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1338582677165354
+          mean deviation: 1.141732283464567
+          standard deviation: 1.3889326327319538
+        considering values where the prediction is < the actual value:
+          mean differences: 3.7154696132596685
+          mean deviation: 3.7375690607734806
+          standard deviation: 4.8602003005355625
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.0492700729927007
+          mean deviation: 2.1076642335766422
+          standard deviation: 2.9685086820860804
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.1338582677165354
+          mean deviation: 1.141732283464567
+          standard deviation: 1.3889326327319538
+        considering values where the prediction is < the actual value:
+          mean differences: 2.935374149659864
+          mean deviation: 2.942176870748299
+          standard deviation: 3.8416797629891724
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.338988989042722
+          mean deviation: 19.45113685262294
+          standard deviation: 31.31043065615263
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.530166167930803
+          mean deviation: 7.530166167930803
+          standard deviation: 9.213825995755613
+        considering values where the prediction is < the actual value:
+          mean differences: 27.593876391347074
+          mean deviation: 27.593876391347074
+          standard deviation: 39.89972685857077
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 5.162039015650192
+          mean deviation: 12.032628584930142
+          standard deviation: 16.600779197225215
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.530166167930803
+          mean deviation: 7.530166167930803
+          standard deviation: 9.213825995755613
+        considering values where the prediction is < the actual value:
+          mean differences: 15.809862156238294
+          mean deviation: 15.809862156238294
+          standard deviation: 20.8701168275061
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.7272727272727273
+          mean deviation: 2.788961038961039
+          standard deviation: 3.992281514161005
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.292
+          mean deviation: 1.3
+          standard deviation: 1.6431676725154984
+        considering values where the prediction is < the actual value:
+          mean differences: 3.789617486338798
+          mean deviation: 3.8060109289617485
+          standard deviation: 4.998087065762249
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.0346715328467153
+          mean deviation: 2.2244525547445257
+          standard deviation: 3.141144428575019
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.292
+          mean deviation: 1.3
+          standard deviation: 1.6431676725154984
+        considering values where the prediction is < the actual value:
+          mean differences: 2.9865771812080535
+          mean deviation: 3.0
+          standard deviation: 3.9848707169583912
+
+metric: badness_entropy_code_len_sparse_new_penalty_generic_median
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.855513307984792
+          mean deviation: 17.415716096324463
+          standard deviation: 28.780824661353595
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.8697318007662833
+          mean deviation: 3.8697318007662833
+          standard deviation: 5.250068417726058
+        considering values where the prediction is < the actual value:
+          mean differences: 24.111742424242426
+          mean deviation: 24.111742424242426
+          standard deviation: 34.988174409146424
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.810249307479225
+          mean deviation: 11.60803324099723
+          standard deviation: 17.123027213136943
+        considering values where the prediction is >= the actual value:
+          mean differences: -3.8697318007662833
+          mean deviation: 3.8697318007662833
+          standard deviation: 5.250068417726058
+        considering values where the prediction is < the actual value:
+          mean differences: 15.989154013015185
+          mean deviation: 15.989154013015185
+          standard deviation: 21.06157690421052
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.134347275031686
+          mean deviation: 2.5602027883396703
+          standard deviation: 3.798805762578517
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.632183908045977
+          mean deviation: 0.6398467432950191
+          standard deviation: 0.9284766908852593
+        considering values where the prediction is < the actual value:
+          mean differences: 3.5018939393939394
+          mean deviation: 3.509469696969697
+          standard deviation: 4.597636085615909
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.634349030470914
+          mean deviation: 2.0997229916897506
+          standard deviation: 3.1106109170078327
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.632183908045977
+          mean deviation: 0.6398467432950191
+          standard deviation: 0.9284766908852593
+        considering values where the prediction is < the actual value:
+          mean differences: 2.9175704989154014
+          mean deviation: 2.9262472885032538
+          standard deviation: 3.829614027662276
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 14.927756653992395
+          mean deviation: 18.785804816223067
+          standard deviation: 29.450050083771142
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.504273504273504
+          mean deviation: 6.504273504273504
+          standard deviation: 9.256552310863947
+        considering values where the prediction is < the actual value:
+          mean differences: 23.963963963963963
+          mean deviation: 23.963963963963963
+          standard deviation: 34.59557853330472
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.976486860304288
+          mean deviation: 13.186721991701244
+          standard deviation: 18.468469635509372
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.504273504273504
+          mean deviation: 6.504273504273504
+          standard deviation: 9.256552310863947
+        considering values where the prediction is < the actual value:
+          mean differences: 16.38445807770961
+          mean deviation: 16.38445807770961
+          standard deviation: 21.52441900486358
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 2.1394169835234473
+          mean deviation: 2.9252217997465144
+          standard deviation: 4.117722677730627
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3205128205128205
+          mean deviation: 1.3205128205128205
+          standard deviation: 1.9248709580458128
+        considering values where the prediction is < the actual value:
+          mean differences: 3.5981981981981983
+          mean deviation: 3.601801801801802
+          standard deviation: 4.747877667162702
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.640387275242047
+          mean deviation: 2.4979253112033195
+          standard deviation: 3.513656424028026
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3205128205128205
+          mean deviation: 1.3205128205128205
+          standard deviation: 1.9248709580458128
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0572597137014315
+          mean deviation: 3.061349693251534
+          standard deviation: 4.059627150014767
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_mean
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 9.269020479047498
+          mean deviation: 16.046536989356706
+          standard deviation: 26.599757207417138
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.427884256247982
+          mean deviation: 7.427884256247982
+          standard deviation: 9.855335342808957
+        considering values where the prediction is < the actual value:
+          mean differences: 23.27744055357505
+          mean deviation: 23.27744055357505
+          standard deviation: 34.92389804879811
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 3.1776106337899277
+          mean deviation: 10.639815791507866
+          standard deviation: 14.716858495924589
+        considering values where the prediction is >= the actual value:
+          mean differences: -7.474852963070002
+          mean deviation: 7.474852963070002
+          standard deviation: 9.88851542586071
+        considering values where the prediction is < the actual value:
+          mean differences: 13.79408617795776
+          mean deviation: 13.79408617795776
+          standard deviation: 18.30267053010434
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.0798771121351767
+          mean deviation: 2.4162826420890937
+          standard deviation: 3.4353811022901595
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.4377104377104377
+          mean deviation: 1.4444444444444444
+          standard deviation: 1.9306145983268455
+        considering values where the prediction is < the actual value:
+          mean differences: 3.1920903954802258
+          mean deviation: 3.231638418079096
+          standard deviation: 4.3100198591701036
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.6209813874788495
+          mean deviation: 2.069373942470389
+          standard deviation: 2.8990342052450933
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.4440677966101696
+          mean deviation: 1.4508474576271186
+          standard deviation: 1.9362728481215867
+        considering values where the prediction is < the actual value:
+          mean differences: 2.679054054054054
+          mean deviation: 2.685810810810811
+          standard deviation: 3.611636598402298
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 8.837376853855485
+          mean deviation: 17.273479624961485
+          standard deviation: 27.261037695157526
+        considering values where the prediction is >= the actual value:
+          mean differences: -9.601228853129385
+          mean deviation: 9.601228853129385
+          standard deviation: 12.800439122413012
+        considering values where the prediction is < the actual value:
+          mean differences: 23.285161051657315
+          mean deviation: 23.285161051657315
+          standard deviation: 34.59901113415201
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 2.6367741923029433
+          mean deviation: 11.938304538048722
+          standard deviation: 15.985297438191672
+        considering values where the prediction is >= the actual value:
+          mean differences: -9.661800887306352
+          mean deviation: 9.661800887306352
+          standard deviation: 12.845157899265802
+        considering values where the prediction is < the actual value:
+          mean differences: 14.051137991678884
+          mean deviation: 14.051137991678884
+          standard deviation: 18.426952414429056
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 0.9662058371735791
+          mean deviation: 2.5053763440860215
+          standard deviation: 3.4541099542482527
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.6993006993006994
+          mean deviation: 1.7062937062937062
+          standard deviation: 2.2763607319179844
+        considering values where the prediction is < the actual value:
+          mean differences: 3.0547945205479454
+          mean deviation: 3.1315068493150684
+          standard deviation: 4.149599749637521
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 0.5
+          mean deviation: 2.1745762711864405
+          standard deviation: 2.949576240750525
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.7112676056338028
+          mean deviation: 1.7183098591549295
+          standard deviation: 2.2843620245387837
+        considering values where the prediction is < the actual value:
+          mean differences: 2.552287581699346
+          mean deviation: 2.5980392156862746
+          standard deviation: 3.4541818928683545
+
+metric: badness_entropy_code_len_sparse_new_penalty_specific_median
+  using the computed order for only the first column:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.568212824010914
+          mean deviation: 16.83424283765348
+          standard deviation: 27.1867436699929
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.029411764705882
+          mean deviation: 5.029411764705882
+          standard deviation: 7.555119584280127
+        considering values where the prediction is < the actual value:
+          mean differences: 22.51010101010101
+          mean deviation: 22.51010101010101
+          standard deviation: 32.665715817948794
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 8.02183734939759
+          mean deviation: 11.624246987951807
+          standard deviation: 16.395008699020682
+        considering values where the prediction is >= the actual value:
+          mean differences: -5.046413502109704
+          mean deviation: 5.046413502109704
+          standard deviation: 7.570763217549637
+        considering values where the prediction is < the actual value:
+          mean differences: 15.275175644028103
+          mean deviation: 15.275175644028103
+          standard deviation: 19.65133732212669
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.8581173260572987
+          mean deviation: 2.461118690313779
+          standard deviation: 3.598544498853936
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8949579831932774
+          mean deviation: 0.9117647058823529
+          standard deviation: 1.3826657968874305
+        considering values where the prediction is < the actual value:
+          mean differences: 3.1818181818181817
+          mean deviation: 3.206060606060606
+          standard deviation: 4.272770255532779
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.5045180722891567
+          mean deviation: 2.1521084337349397
+          standard deviation: 3.1462829474702634
+        considering values where the prediction is >= the actual value:
+          mean differences: -0.8945147679324894
+          mean deviation: 0.9113924050632911
+          standard deviation: 1.384056290165249
+        considering values where the prediction is < the actual value:
+          mean differences: 2.8360655737704916
+          mean deviation: 2.840749414519906
+          standard deviation: 3.7855264855543838
+  using the computed order for all columns:
+    error of mtf codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 13.509549795361528
+          mean deviation: 17.851978171896317
+          standard deviation: 27.724139284115214
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.8896103896103895
+          mean deviation: 6.8896103896103895
+          standard deviation: 9.736518040335753
+        considering values where the prediction is < the actual value:
+          mean differences: 22.89641434262948
+          mean deviation: 22.89641434262948
+          standard deviation: 32.84351100505916
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 7.868024132730015
+          mean deviation: 12.665912518853695
+          standard deviation: 17.21498128647882
+        considering values where the prediction is >= the actual value:
+          mean differences: -6.915217391304348
+          mean deviation: 6.915217391304348
+          standard deviation: 9.757438633968045
+        considering values where the prediction is < the actual value:
+          mean differences: 15.72055427251732
+          mean deviation: 15.72055427251732
+          standard deviation: 20.07986363966471
+    error of huffman codes:
+      considering all errors:
+        considering both sides of the actual value:
+          mean differences: 1.815825375170532
+          mean deviation: 2.7435197817189634
+          standard deviation: 3.765463795989625
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.3852813852813852
+          mean deviation: 1.3852813852813852
+          standard deviation: 1.897822858364711
+        considering values where the prediction is < the actual value:
+          mean differences: 3.2888446215139444
+          mean deviation: 3.3685258964143427
+          standard deviation: 4.36415131876379
+      not considering errors where the actual value fetches a new symbol to the front:
+        considering both sides of the actual value:
+          mean differences: 1.4796380090497738
+          mean deviation: 2.4720965309200604
+          standard deviation: 3.379246392912489
+        considering values where the prediction is >= the actual value:
+          mean differences: -1.391304347826087
+          mean deviation: 1.391304347826087
+          standard deviation: 1.901944085494583
+        considering values where the prediction is < the actual value:
+          mean differences: 3.004618937644342
+          mean deviation: 3.046189376443418
+          standard deviation: 3.945061519496204
+
+time: 3112s
