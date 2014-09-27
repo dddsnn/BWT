@@ -1,0 +1,142 @@
+simulating compression for file /home/dddsnn/Dokumente/Studium/BA/calgary/obj1
+in size: 172032
+
+natural order: 93678
+
+handpicked order aeiou...:
+all columns      : 94139
+first column only: 93752
+
+chapin_hst_diff:
+using the last specified as default: 94531
+using the natural order as default : 93643
+
+chapin_inv:
+using the last specified as default: 93732
+using the natural order as default : 92660
+
+chapin_inv_log:
+using the last specified as default: 94064
+using the natural order as default : 92823
+
+badness_weighted:
+using the last specified as default: 94509
+using the natural order as default : 92358
+
+badness_new_penalty_generic_mean_weighted:
+using the last specified as default: 94120
+using the natural order as default : 92547
+
+badness_new_penalty_generic_median_weighted:
+using the last specified as default: 93979
+using the natural order as default : 92485
+
+badness_new_penalty_specific_mean_weighted:
+using the last specified as default: 94205
+using the natural order as default : 92481
+
+badness_new_penalty_specific_median_weighted:
+using the last specified as default: 94344
+using the natural order as default : 92591
+
+badness_entropy_code_len_complete_weighted:
+using the last specified as default: 95078
+using the natural order as default : 92399
+
+badness_entropy_code_len_complete_new_penalty_generic_mean_weighted:
+using the last specified as default: 94315
+using the natural order as default : 92166
+
+badness_entropy_code_len_complete_new_penalty_generic_median_weighted:
+using the last specified as default: 94591
+using the natural order as default : 92263
+
+badness_entropy_code_len_complete_new_penalty_specific_mean_weighted:
+using the last specified as default: 94525
+using the natural order as default : 92198
+
+badness_entropy_code_len_complete_new_penalty_specific_median_weighted:
+using the last specified as default: 94691
+using the natural order as default : 92301
+
+badness_entropy_code_len_sparse_weighted:
+using the last specified as default: 95071
+using the natural order as default : 92399
+
+badness_entropy_code_len_sparse_new_penalty_generic_mean_weighted:
+using the last specified as default: 94315
+using the natural order as default : 92166
+
+badness_entropy_code_len_sparse_new_penalty_generic_median_weighted:
+using the last specified as default: 94591
+using the natural order as default : 92263
+
+badness_entropy_code_len_sparse_new_penalty_specific_mean_weighted:
+using the last specified as default: 94525
+using the natural order as default : 92198
+
+badness_entropy_code_len_sparse_new_penalty_specific_median_weighted:
+using the last specified as default: 94691
+using the natural order as default : 92301
+
+badness:
+using the last specified as default: 95282
+using the natural order as default : 92738
+
+badness_new_penalty_generic_mean:
+using the last specified as default: 93995
+using the natural order as default : 92349
+
+badness_new_penalty_generic_median:
+using the last specified as default: 94105
+using the natural order as default : 92463
+
+badness_new_penalty_specific_mean:
+using the last specified as default: 93770
+using the natural order as default : 92346
+
+badness_new_penalty_specific_median:
+using the last specified as default: 94376
+using the natural order as default : 92635
+
+badness_entropy_code_len_complete:
+using the last specified as default: 95578
+using the natural order as default : 92641
+
+badness_entropy_code_len_complete_new_penalty_generic_mean:
+using the last specified as default: 94184
+using the natural order as default : 92066
+
+badness_entropy_code_len_complete_new_penalty_generic_median:
+using the last specified as default: 94123
+using the natural order as default : 92160
+
+badness_entropy_code_len_complete_new_penalty_specific_mean:
+using the last specified as default: 94083
+using the natural order as default : 92155
+
+badness_entropy_code_len_complete_new_penalty_specific_median:
+using the last specified as default: 94494
+using the natural order as default : 92228
+
+badness_entropy_code_len_sparse:
+using the last specified as default: 95578
+using the natural order as default : 92641
+
+badness_entropy_code_len_sparse_new_penalty_generic_mean:
+using the last specified as default: 94184
+using the natural order as default : 92066
+
+badness_entropy_code_len_sparse_new_penalty_generic_median:
+using the last specified as default: 94123
+using the natural order as default : 92160
+
+badness_entropy_code_len_sparse_new_penalty_specific_mean:
+using the last specified as default: 94083
+using the natural order as default : 92155
+
+badness_entropy_code_len_sparse_new_penalty_specific_median:
+using the last specified as default: 94494
+using the natural order as default : 92228
+
+time: 670s

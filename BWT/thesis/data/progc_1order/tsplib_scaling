@@ -1,0 +1,166 @@
+making tsplib for chapin_hst_diff
+min value: 0.22090341150416276
+max value: 987.5470175389495
+ratio: 4470.492378612903
+scaling with factor 10126
+making tsplib for chapin_inv
+min value: 10
+max value: 4514
+ratio: 451.4
+scaling with factor 2215
+making tsplib for chapin_inv_log
+min value: 2.302585092994046
+max value: 8.414938957377482
+ratio: 3.654561554741743
+scaling with factor 1188362
+making tsplib for badness_weighted
+min value: 0.012345679012345678
+max value: 54.125
+ratio: 4384.125
+scaling with factor 184757
+making tsplib for badness_new_penalty_generic_mean_weighted
+min value: 0.5
+max value: 66.2442396313364
+ratio: 132.4884792626728
+scaling with factor 150956
+making tsplib for badness_new_penalty_generic_median_weighted
+min value: 0.5
+max value: 62.0
+ratio: 124.0
+scaling with factor 161290
+making tsplib for badness_new_penalty_specific_mean_weighted
+min value: 0.5
+max value: 66.2
+ratio: 132.4
+scaling with factor 151057
+making tsplib for badness_new_penalty_specific_median_weighted
+min value: 0.5
+max value: 67.5
+ratio: 135.0
+scaling with factor 148148
+making tsplib for badness_entropy_code_len_complete_weighted
+min value: 0.012345679012345678
+max value: 10.0
+ratio: 810.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_mean_weighted
+min value: 0.5
+max value: 10.0
+ratio: 20.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_median_weighted
+min value: 0.5
+max value: 10.0
+ratio: 20.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_mean_weighted
+min value: 0.5
+max value: 11.0
+ratio: 22.0
+scaling with factor 909090
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_median_weighted
+min value: 0.3333333333333333
+max value: 10.0
+ratio: 30.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_sparse_weighted
+min value: 0.012345679012345678
+max value: 10.0
+ratio: 810.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_mean_weighted
+min value: 0.5
+max value: 10.0
+ratio: 20.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_median_weighted
+min value: 0.5
+max value: 10.0
+ratio: 20.0
+scaling with factor 1000000
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_mean_weighted
+min value: 0.5
+max value: 10.5
+ratio: 21.0
+scaling with factor 952380
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_median_weighted
+min value: 0.3333333333333333
+max value: 10.0
+ratio: 30.0
+scaling with factor 1000000
+making tsplib for badness
+min value: 1
+max value: 1489
+ratio: 1489.0
+scaling with factor 6715
+making tsplib for badness_new_penalty_generic_mean
+min value: 1
+max value: 2275.5966514010697
+ratio: 2275.5966514010697
+scaling with factor 4394
+making tsplib for badness_new_penalty_generic_median
+min value: 1
+max value: 2065.0
+ratio: 2065.0
+scaling with factor 4842
+making tsplib for badness_new_penalty_specific_mean
+min value: 1
+max value: 2279.431920203979
+ratio: 2279.431920203979
+scaling with factor 4387
+making tsplib for badness_new_penalty_specific_median
+min value: 1
+max value: 2145.5
+ratio: 2145.5
+scaling with factor 4660
+making tsplib for badness_entropy_code_len_complete
+min value: 1
+max value: 138
+ratio: 138.0
+scaling with factor 72463
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_mean
+min value: 1
+max value: 208
+ratio: 208.0
+scaling with factor 48076
+making tsplib for badness_entropy_code_len_complete_new_penalty_generic_median
+min value: 1
+max value: 176
+ratio: 176.0
+scaling with factor 56818
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_mean
+min value: 1
+max value: 202
+ratio: 202.0
+scaling with factor 49504
+making tsplib for badness_entropy_code_len_complete_new_penalty_specific_median
+min value: 1
+max value: 184
+ratio: 184.0
+scaling with factor 54347
+making tsplib for badness_entropy_code_len_sparse
+min value: 1
+max value: 139
+ratio: 139.0
+scaling with factor 71942
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_mean
+min value: 1
+max value: 198
+ratio: 198.0
+scaling with factor 50505
+making tsplib for badness_entropy_code_len_sparse_new_penalty_generic_median
+min value: 1
+max value: 174
+ratio: 174.0
+scaling with factor 57471
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_mean
+min value: 1
+max value: 186
+ratio: 186.0
+scaling with factor 53763
+making tsplib for badness_entropy_code_len_sparse_new_penalty_specific_median
+min value: 1
+max value: 176
+ratio: 176.0
+scaling with factor 56818
+time: 1s

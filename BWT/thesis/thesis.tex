@@ -5,10 +5,12 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{xparse}
+\usepackage{array}
 
 \NewDocumentCommand{\rot}{O{45} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
 \algnewcommand\True{\textbf{true}\space}
 \algnewcommand\False{\textbf{false}\space}
+\newcolumntype{t}{>{\fontfamily{\ttdefault}\selectfont}c}
 
 \title{Burrows-Wheeler compression with modified sort orders and exceptions to
 the MTF phase, and their impact on the compression rate}
@@ -72,7 +74,8 @@ transform is the last column of the sorted table.
 
 For example, the string \texttt{mississippi} yields the following table:
 
-\begin{tabular}{|r||cccccccccc|c|}
+\begin{table}
+\begin{tabular}{|r||tttttttttt|t|}
 \hline
 0 & i & m & i & s & s & i & s & s & i & p & p \\
 1 & i & p & p & i & m & i & s & s & i & s & s \\
@@ -87,6 +90,9 @@ For example, the string \texttt{mississippi} yields the following table:
 10 & s & s & i & s & s & i & p & p & i & m & i \\
 \hline
 \end{tabular}
+%TODO
+\caption{example table}
+\end{table}
 
 The output of the transformation in this case is \texttt{pssmipissii}. In
 addition, the index of the row where the first character of the input string
@@ -188,7 +194,7 @@ assigned shorter codes than those that occur only rarely.
 %			code lengths and that many symbols 
 %	-describe things needed for an ideal badness metric (new penalty,entropy
 %		len, weighting?), then give approximations
-%	-another point of non-optimality: which transition to choose as a starting
+%TODO	-another point of non-optimality: which transition to choose as a starting
 %		point? need to break up the baddest transition
 %	-need need a new penalty dict that is specific for the symbol being encoded
 %		i.e. what is the average code for e.g. 'a' given that the minimum
@@ -815,7 +821,8 @@ For example, the input \texttt{mississippi} sorted with the order \texttt{[i, m,
 p, s]} for the first and \texttt{[s, p, m, i]} for all following columns would
 yield the BW table
 
-\begin{tabular}{|r||ccccccccccc|}
+\begin{table}
+\begin{tabular}{|r||ttttttttttt|}
 \hline
 0 & i & s & s & i & s & s & i & p & p & i & m \\
 1 & i & s & s & i & p & p & i & m & i & s & s \\
@@ -830,6 +837,9 @@ yield the BW table
 10 & s & i & p & p & i & m & i & s & s & i & s \\
 \hline
 \end{tabular}
+%TODO
+\caption{example table}
+\end{table}
 
 and the BW code \texttt{msspiipiiss}.
 
