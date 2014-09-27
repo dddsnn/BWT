@@ -10,9 +10,17 @@
 \algnewcommand\True{\textbf{true}\space}
 \algnewcommand\False{\textbf{false}\space}
 
+\title{Burrows-Wheeler compression with modified sort orders and exceptions to
+the MTF phase, and their impact on the compression rate}
+\date{September 29, 2014}
+\author{Marc Lehmann}
+
 \begin{document}
 
+\maketitle
+
 \begin{abstract}
+asdf
 %TODO
 \end{abstract}
 %TODO eidestattl erkl.
@@ -606,8 +614,6 @@ same indicators as in the last section.
 
 \subsection{Results}
 
-book1
-
 %TODO in parentheses, give percentage point increase/decrease of compression
 % compared to natural order
 \begin{table}
@@ -617,45 +623,95 @@ book1
 \multicolumn{1}{c}{\rot{MTF prediction}} &
 \multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
 size first columns}} \\ \hline
-\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139673 \\
-\cline{2-5}
-& \ding{55} & \ding{55} & generic mean & 2138203 \\ \cline{2-5}
-& \ding{55} & \ding{55} & generic median & 2142013 \\ \cline{2-5}
-& \ding{55} & \ding{55} & specific mean & 2134390 \\ \cline{2-5}
-& \ding{55} & \ding{55} & specific median & 2138527 \\ \cline{2-5}
-& \ding{55} & complete & \ding{55} & 2139013 \\ \cline{2-5}
-& \ding{55} & complete & generic mean & 2133935 \\ \cline{2-5}
-& \ding{55} & complete & generic median & 2135820 \\ \cline{2-5}
-& \ding{55} & complete & specific mean & 2135364 \\ \cline{2-5}
-& \ding{55} & complete & specific median & 2140979 \\ \cline{2-5}
-& \ding{55} & sparse & \ding{55} & 2139013 \\ \cline{2-5}
-& \ding{55} & sparse & generic mean & 2133644 \\ \cline{2-5}
-& \ding{55} & sparse & generic median & 2135622 \\ \cline{2-5}
-& \ding{55} & sparse & specific mean & 2136052 \\ \cline{2-5}
-& \ding{55} & sparse & specific median & 2138426 \\ \cline{2-5}
-& \ding{51} & \ding{55} & \ding{55} & 2135080 \\ \cline{2-5}
-& \ding{51} & \ding{55} & generic mean & 2133012 \\ \cline{2-5}
-& \ding{51} & \ding{55} & generic median & 2134234 \\ \cline{2-5}
-& \ding{51} & \ding{55} & specific mean & 2132082 \\ \cline{2-5}
-& \ding{51} & \ding{55} & specific median & 2140333 \\ \cline{2-5}
-& \ding{51} & complete & \ding{55} & 2136412 \\ \cline{2-5}
-& \ding{51} & complete & generic mean & 2134734 \\ \cline{2-5}
-& \ding{51} & complete & generic median & 2134390 \\ \cline{2-5}
-& \ding{51} & complete & specific mean & 2134469 \\ \cline{2-5}
-& \ding{51} & complete & specific median & 2136416 \\ \cline{2-5}
-& \ding{51} & sparse & \ding{55} & 2136417 \\ \cline{2-5}
-& \ding{51} & sparse & generic mean & 2135061 \\ \cline{2-5}
-& \ding{51} & sparse & generic median & 2134390 \\ \cline{2-5}
-& \ding{51} & sparse & specific mean & 2135461 \\ \cline{2-5}
-& \ding{51} & sparse & specific median & 2134783 \\ \hline
-\multicolumn{4}{c|}{standard} & 2136995 \\ \hline
-\multicolumn{4}{c|}{aeiou} & 2133488 \\ \hline
-\multicolumn{4}{c|}{Chapin hst diff} & 2135905 \\ \hline
-\multicolumn{4}{c|}{Chapin inv} & 2135217 \\ \hline
-\multicolumn{4}{c|}{Chapin inv log} & x \\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139678 &
+2136205 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 2138206 & 2136016 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic median & 2142001 & 2136027 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific mean & 2134375 & 2136170 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific median & 2138527 & 2136233 \\ \cline{2-6}
+& \ding{55} & complete & \ding{55} & 2136792 & 2136132 \\ \cline{2-6}
+& \ding{55} & complete & generic mean & 2134218 & 2135969 \\ \cline{2-6}
+& \ding{55} & complete & generic median & 2136246 & 2136057 \\ \cline{2-6}
+& \ding{55} & complete & specific mean & 2136068 & 2135825 \\ \cline{2-6}
+& \ding{55} & complete & specific median & 2140188 & 2136234 \\ \cline{2-6}
+& \ding{55} & sparse & \ding{55} & 2136801 & 2136132 \\ \cline{2-6}
+& \ding{55} & sparse & generic mean & 2133870 & 2135927 \\ \cline{2-6}
+& \ding{55} & sparse & generic median & 2134948 & 2136050 \\ \cline{2-6}
+& \ding{55} & sparse & specific mean & 2134038 & 2135851 \\ \cline{2-6}
+& \ding{55} & sparse & specific median & 2139348 & 2136143 \\ \cline{2-6}
+& \ding{51} & \ding{55} & \ding{55} & 2135073 & 2135997 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic mean & 2133035 & 2135943 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic median & 2134234 & 2135925 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific mean & 2132082 & 2135981 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific median & 2140333 & 2135895 \\ \cline{2-6}
+& \ding{51} & complete & \ding{55} & 2136417 & 2135969 \\ \cline{2-6}
+& \ding{51} & complete & generic mean & 2134739 & 2135988 \\ \cline{2-6}
+& \ding{51} & complete & generic median & 2134416 & 2136048 \\ \cline{2-6}
+& \ding{51} & complete & specific mean & 2134474 & 2135831 \\ \cline{2-6}
+& \ding{51} & complete & specific median & 2136421 & 2136078 \\ \cline{2-6}
+& \ding{51} & sparse & \ding{55} & 2136388 & 2135969 \\ \cline{2-6}
+& \ding{51} & sparse & generic mean & 2135061 & 2135922 \\ \cline{2-6}
+& \ding{51} & sparse & generic median & 2134390 & 2136036 \\ \cline{2-6}
+& \ding{51} & sparse & specific mean & 2135461 & 2135815 \\ \cline{2-6}
+& \ding{51} & sparse & specific median & 2136453 & 2136061 \\ \hline
+\multicolumn{4}{c|}{natural order} & 2136995 & 2136995 \\ \hline
+\multicolumn{4}{c|}{aeiou} & 2132079 & 2136451 \\ \hline
+\multicolumn{4}{c|}{Chapin hst diff} & 2134757 & 2136377 \\ \hline
+\multicolumn{4}{c|}{Chapin inv} & 2134449 & 2136168 \\ \hline
+\multicolumn{4}{c|}{Chapin inv log} & 2134371 & 2136131 \\ \hline
 \end{tabular}
 %TODO
-\caption{Simulated compression results for book1 of the Calgary Corpus}
+\caption{Simulated compression results for book1 of the Calgary Corpus using
+one order, in size 6150168}
+\end{table}
+
+\begin{table}
+\begin{tabular}{c|ccc|c|c}
+\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
+\multicolumn{1}{c}{\rot{entropy length prediction}} &
+\multicolumn{1}{c}{\rot{MTF prediction}} &
+\multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
+size first columns}} \\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 147160 & 145360
+\\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 146329 & 145027 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic median & 146346 & 145046 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific mean & 146075 & 145026 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific median & 146509 & 145088 \\ \cline{2-6}
+& \ding{55} & complete & \ding{55} & 146995 & 145395 \\ \cline{2-6}
+& \ding{55} & complete & generic mean & 145952 & 144928 \\ \cline{2-6}
+& \ding{55} & complete & generic median & 146225 & 145067 \\ \cline{2-6}
+& \ding{55} & complete & specific mean & 145671 & 144939 \\ \cline{2-6}
+& \ding{55} & complete & specific median & 146124 & 145119 \\ \cline{2-6}
+& \ding{55} & sparse & \ding{55} & 147000 & 145395 \\ \cline{2-6}
+& \ding{55} & sparse & generic mean & 145519 & 144941 \\ \cline{2-6}
+& \ding{55} & sparse & generic median & 145910 & 144995 \\ \cline{2-6}
+& \ding{55} & sparse & specific mean & 146043 & 144966 \\ \cline{2-6}
+& \ding{55} & sparse & specific median & 146904 & 145121 \\ \cline{2-6}
+& \ding{51} & \ding{55} & \ding{55} & 146494 & 144961 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic mean & 145900 & 144853 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic median & 146071 & 144992 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific mean & 145637 & 144922 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific median & 145831 & 144882 \\ \cline{2-6}
+& \ding{51} & complete & \ding{55} & 146354 & 144992 \\ \cline{2-6}
+& \ding{51} & complete & generic mean & 145978 & 144798 \\ \cline{2-6}
+& \ding{51} & complete & generic median & 145801 & 144976 \\ \cline{2-6}
+& \ding{51} & complete & specific mean & 146815 & 145015 \\ \cline{2-6}
+& \ding{51} & complete & specific median & 146061 & 144945 \\ \cline{2-6}
+& \ding{51} & sparse & \ding{55} & 146354 & 144987 \\ \cline{2-6}
+& \ding{51} & sparse & generic mean & 145976 & 144798 \\ \cline{2-6}
+& \ding{51} & sparse & generic median & 145801 & 144976 \\ \cline{2-6}
+& \ding{51} & sparse & specific mean & 146011 & 144959 \\ \cline{2-6}
+& \ding{51} & sparse & specific median & 145862 & 144998 \\ \hline
+\multicolumn{4}{c|}{natural order} & 145457 & 145457 \\ \hline
+\multicolumn{4}{c|}{aeiou} & 144742 & 145378 \\ \hline
+\multicolumn{4}{c|}{Chapin hst diff} & 145226 & 145237 \\ \hline
+\multicolumn{4}{c|}{Chapin inv} & 145004 & 144970 \\ \hline
+\multicolumn{4}{c|}{Chapin inv log} & 145613 & 145071 \\ \hline
+\end{tabular}
+%TODO
+\caption{Simulated compression results for paper1 of the Calgary Corpus using
+one order, in size 425288}
 \end{table}
 
 %-first column only, all columns, with feedback corrections, compare
@@ -928,8 +984,7 @@ order can be computed with the correct higher level transitions.
 
 \section{Results}
 
-book1
-
+\begin{table}
 \begin{tabular}{c|ccc|c|c}
 \multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
 \multicolumn{1}{c}{\rot{entropy length prediction}} &
@@ -967,12 +1022,16 @@ size first columns}} \\ \hline
 & \ding{51} & sparse & generic median & 2138882 & 2130715 \\ \cline{2-6}
 & \ding{51} & sparse & specific mean & 2138153 & 2130583 \\ \cline{2-6}
 & \ding{51} & sparse & specific median & 2138909 & 2130750 \\ \hline
-\multicolumn{4}{c|}{standard} & 2136995 & 2136995 \\ \hline
+\multicolumn{4}{c|}{natural order} & 2136995 & 2136995 \\ \hline
 \multicolumn{4}{c|}{aeiou} & 2132079 & 2136451 \\ \hline
 \multicolumn{4}{c|}{Chapin hst diff} & 2139151 & 2135040 \\ \hline
 \multicolumn{4}{c|}{Chapin inv} & 2135684 & 2133483 \\ \hline
 \multicolumn{4}{c|}{Chapin inv log} & 2136573 & 2133527 \\ \hline
 \end{tabular}
+%TODO
+\caption{Simulated compression results for book1 of the Calgary Corpus using
+two orders, in size 6150168}
+\end{table}
 
 \section{Further Work}
 
