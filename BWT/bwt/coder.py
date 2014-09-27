@@ -171,15 +171,14 @@ def bw_encode(bs, orders=None):
             # using more characters
             for t in tuples[i:i + num_affected]:
                 others = [x for x in tuples[i:i + num_affected] if x != t]
-                # if the j-th character in the string is different from all the
-                # other affected strings, add the string of length j to the
-                # long tuples
+                # find j such that the string starting at t[0] with length j is
+                # unique, then add the string to the long tuples
                 for j in range(num_chars, l):
-                    # make a list of chars the other strings have a position j
-                    other_chars = [bs[o[0] + j] for o in others]
-                    # if the current string's char doesn't appear in it,
-                    # j characters are enough
-                    if not bs[t[0] + j] in other_chars:
+                    # exclude tuples from others where the symbol at offset j is
+                    # different; these are already distinct
+                    others = [o for o in others if bs[t[0] + j] == bs[o[0] + j]]
+                    # if the others is empty, j symbols are enough
+                    if not others:
                         # make the list the tuple will be sorted by, see above
                         num_chars = j + 1
                         if num_chars > len(order_lists):

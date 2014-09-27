@@ -480,8 +480,8 @@ def assemble_multicol_orders(work_dir, metric):
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/book1_2orders/'
-    in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
+    work_dir = '/home/dddsnn/tmp/obj1_1order/'
+    in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/obj1'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
 #     metrics = []
@@ -517,13 +517,13 @@ if __name__ == '__main__':
 
 #     metrics = []
 
-#     make_aux_data(work_dir, in_file_path, col_depth=2)
+#     make_aux_data(work_dir, in_file_path, col_depth=1)
 
-#     make_transitions(work_dir, metrics, col_depth=2)
+    make_transitions(work_dir, metrics, col_depth=1)
 
 #     write_tsplib_files(work_dir, metrics, print_rel_error=False)
 
-    print_simulated_compression_results(work_dir, metrics, in_file_path)
+#     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
