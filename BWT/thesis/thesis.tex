@@ -2,10 +2,12 @@
 \usepackage{multirow}
 \usepackage{pifont}
 \usepackage{algpseudocode}
+\usepackage{algorithm}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{xparse}
 \usepackage{array}
+\usepackage{hyperref}
 
 \NewDocumentCommand{\rot}{O{45} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
 \algnewcommand\True{\textbf{true}\space}
@@ -15,36 +17,34 @@
 \title{Burrows-Wheeler compression with modified sort orders and exceptions to
 the MTF phase, and their impact on the compression rate}
 \date{September 29, 2014}
+%TODO bachelor thesis
 \author{Marc Lehmann}
 
 \begin{document}
-
+%TODO README
+%TODO comments in code
 \maketitle
 
 \begin{abstract}
 asdf
 %TODO
 \end{abstract}
-%TODO eidestattl erkl.
-\chapter{Intro}
 
-%-def compression (decompression necessary)
-%-explain bw-mtf-entropy, mtf can be skipped
-%-explain simple version of bw used here, no rle
-%-definitions: context block, symbol (byte in this thesis), natural sort order,
-%	transition, order, sort something according to an order, sort by something
-% (key))
+\tableofcontents
+%TODO eidestattl erkl.
+%TODO remove apostrophes
+\chapter{Introduction}
 
 The Burrows-Wheeler compression algorithm is a highly effective context-based
 compression method centered around the Burrows-Wheeler Transform (BWT) first
 described in 1994\cite{burrowswheeler1994bwt}.
-The basic compression is done in three stages:
+
+The basic compression is done in three stages, applied successively:
 \begin{enumerate}
   \item Burrows-Wheeler Transform of the input, to produce a permutation that
   groups ``similar'' symbols together.
-  \item Move-To-Front (MTF) coding of the first stage's output, to produce a
-  sequence of natural numbers, with lower values occurring much more frequently
-  than higher ones.
+  \item Move-To-Front (MTF) coding, to produce a sequence of natural numbers,
+  with lower values occurring much more frequently than higher ones.
   \item Compression of the MTF code with an entropy coder, such as Huffman
   coding.
 \end{enumerate}
@@ -53,13 +53,29 @@ output of the second stage to make use of long runs of zeros that tend to occur.
 This modification was already proposed by Burrows and Wheeler in their original
 paper and can lead to considerable compression gains.
 
-However, I will focus on only the three core stages, as these (in particular
-the first two) are the ones affected by the modifications I
-examine\footnote{I'm also lazy.}
+However, this thesis will focus on only the three core stages, as these (in
+particular the first two) are the ones affected by the modifications examined.
 
-I will briefly describe the stages as I use them in my implementation.
+%TODO link to tag
+I wrote a program\footnote{If not distributed with this thesis, it is available
+at ----------------------TODO----------------.} to test the effect of the
+modifications on the achieved compression ratio. It uses a ``vanilla'' version
+of BW compression with the three stages mentioned as a baseline. After a few
+definitions, I will briefly describe the stages as I use them in my
+implementation.
 
-\section{The Burrows-Wheeler Transtorm}
+\begin{description}
+\item[symbol] The smallest logical unit of data. In the examples in this thesis,
+they are letters of the English alphabet, in the program they are byte values,
+but they may also be of variable lenght, like UTF-8 symbols.
+\item[string] In this thesis, a string refers to a sequence of symbols.
+%TODO alphabet? source?
+\end{description}
+
+%TODO definitions: context block, natural sort order, transition, order, sort
+% something according to an order, sort by something (key))
+
+\section{The Burrows-Wheeler Transform}
 
 The Burrows-Wheeler Transform transforms an input string into a permutation of
 that string that is more suited for compression. It does not itself perform any
@@ -69,12 +85,14 @@ input.
 
 To perform the transformation, all cyclic shifts of the input are created and
 placed one below the other so they form a table that has as many rows and
-columns as the input string is long. The table is then sorted; the output of the
-transform is the last column of the sorted table.
+columns as the input string is long. The table is then sorted lexicographically;
+I will refer to this table as the \emph{BW table}. The output of the transform
+is the last column of this table and is called the \emph{BW code}.
 
-For example, the string \texttt{mississippi} yields the following table:
-
+For example, the string \texttt{mississippi} yields the BW
+table~\ref{tab:example1}.
 \begin{table}
+\centering
 \begin{tabular}{|r||tttttttttt|t|}
 \hline
 0 & i & m & i & s & s & i & s & s & i & p & p \\
@@ -90,12 +108,12 @@ For example, the string \texttt{mississippi} yields the following table:
 10 & s & s & i & s & s & i & p & p & i & m & i \\
 \hline
 \end{tabular}
-%TODO
-\caption{example table}
+\label{tab:example1}
+\caption{BW table for the input \texttt{mississippi}. The last column is
+separated by a line to show the output of the transform.}
 \end{table}
-
 The output of the transformation in this case is \texttt{pssmipissii}. In
-addition, the index of the row where the first character of the input string
+addition, the index of the row where the first symbol of the input string
 appears in the last column is saved (3 in this case).
 
 To perform the inverse transform, it is important to note that every index of
@@ -104,15 +122,15 @@ therefore every column is a permutation of the input.
 
 Given only the last column of the table, the first column can be reconstructed
 by simply sorting the last. Since the rows wrap around from the last column to
-the first, the \(i\)-th character in the last column is followed by the \(i\)-th
-character in the first column, so it's easy to find the next character for any
-character in the last column.
+the first, the \(i\)-th symbol in the last column is followed by the \(i\)-th
+symbol in the first column, so it is easy to find the next symbol for any
+symbol in the last column.
 
 The trickier part is, given an index in the first column, to find the correct
-index in the last column at which to continue decoding. If the character \(c\)
+index in the last column at which to continue decoding. If the symbol \(c\)
 at the given index occurs for the \(i\)-th time in the first column, it
 corresponds to the index in the last column at which \(c\) occurs for the
-\(i\)-th time. This is due to the fact that the table is sorted: All the \(c\)'s
+\(i\)-th time. This is due to the fact that the table is sorted: All the \(c\)
 are grouped together in the first column and are sorted based on the strings
 \(s_i\) succeeding them, with \(s_i\) denoting the string preceded by the
 \(i\)-th occurrence of \(c\) in the first column. Each of the \(s_i\) is also
@@ -121,38 +139,50 @@ is the same whether they're preceded by \(c\), or they're the beginning of a
 row, i.e. the row beginning with \(s_i\) appears before the row beginning with
 \(s_j\) iff \(i<j\).
 
-%TODO algorithm to match first col index to last col index, see multi order
-% chapter
+The \emph{context block} corresponding to a string is the part of the BW code
+that stems from the rows of the BW table that begin with the string. For
+example, in table~\ref{tab:example1} the context block corresponding to
+\texttt{i} is \texttt{pssm}.
 
 \section{Move-To-Front Coding}
 
-Move-To-Front coding transforms an input string into a sequence of integers
-denoting the index of the encoded character in the coders alphabet. When
-starting encoding, the alphabet is initialized to a known value (usually
-something trivial, e.g. [a, b, c, \ldots, x, y, z] if only lowercase letters
-have to be encoded). The alphabet is updated after each character is encoded, so
-that the character is moved to the front of the alphabet (and thus its index
-becomes 0), with all characters before its previous position being shifted to
-the back.
+Move-To-Front (MTF) coding is a list-update algorithm that transforms an input
+string into a sequence of non-negative integers (\emph{MTF codes}). Each integer
+denotes the index of the encoded symbol in the coders alphabet. At the beginning
+of the encoding process, the alphabet is initialized to a known value (e.g.
+\texttt{[a, b, c, \ldots, x, y, z]} if only lowercase letters have to be
+encoded or the byte values \texttt{[0x00, 0x01, \ldots, 0xff]} in the program
+belonging to this thesis).
 
-For example, the MTF code of the string \texttt{aabccca} with the starting
-alphabet [a, b, c] is [0, 0, 1, 2, 0, 0, 2].
+The alphabet is updated after each symbol is encoded, so that the symbol is
+moved to the front of the alphabet (and thus its index becomes 0), with all
+symbols before its previous position being shifted to the back.
+
+For example, the \emph{MTF code} of the string \texttt{aabccca} with the
+starting alphabet \texttt{[a, b, c]} is \texttt{[0, 0, 1, 2, 0, 0, 2]}.
 
 MTF coding is easily reversible, as the starting alphabet is known, and the
-alphabet can be updated with every decoded character, just as during encoding.
+alphabet can be updated with every decoded symbol, just as during encoding.
 
-Starting alphabet in my implementation [0x00, 0x01, \ldots, 0xff] because byte
-values are symbols.
+\section{Huffman Coding}
+%TODO find all occurences of ``entropy'' in document, replace by huffman
 
-\section{Entropy Coding}
-
-Entropy coding encodes input characters into variable length codes, based on
-statistical properties of the input. Characters that occur more frequently are
+Huffman coding encodes input symbols into variable length codes, based on
+statistical properties of the input. Symbols that occur more frequently are
 assigned shorter codes than those that occur only rarely.
 
-%Huffman coding, optimal, arithmetic coding, my implementation
+My implementation uses the simpler two-pass, or \emph{static} (as opposed
+to adaptive) coder that first reads the entire input and counts the number of
+occurrences of every symbol. With this information, the Huffman tree is
+constructed: The graph is initialized with each symbol having its own one-node
+tree, given a weight equal to the symbol's number of occurrences. The two trees
+with lowest weights are combined into one by connecting their root nodes to a
+new node. The new tree's weight is the sum of the weights of the combined trees.
+This process is repeated until there is only one tree left.
 
-\section{Definitions}
+The \emph{Huffman code} for a symbol is given by the path from the root node to
+the symbol's node; going ``left'' in the tree means a 0 bit, going ``right'' a 1
+bit.
 
 \chapter{Simple Sorting}
 
@@ -209,25 +239,48 @@ assigned shorter codes than those that occur only rarely.
 %		added to every prediction, so that the average is 0
 
 The reason Burrows-Wheeler based compression algorithms are so effective is that
-the Burrows-Wheeler Transform (BWT) creates sequences of symbols that appear in
-the same context. If the input file is suitable for context-based
-compression, these sequences will consist of only a few distinct symbols with
-lots of repetition, leading to many small numbers in the MTF code.
+the BWT creates sequences of symbols that appear in the same context. If the
+input file is suitable for context-based compression, these sequences will
+consist of only a few distinct symbols with lots of repetition. For example,
+these are the first 50 symbols of the context block corresponding to \texttt{b}
+of book1 of the Calgary Corpus:\\
+\texttt{ommmmmooooooooooooabmammmoommmmamorurormraarrummr}.
 
-%TODO describe overwork better
+This locality leads to smaller numbers generally appearing more frequently than
+higher ones. Especially zeros, which are caused by runs of the same symbol make
+up about half the MTF codes for book1. Skewed probabilities like this make the
+MTF code easily compressible with an entropy coder.
 
-But any time the context changes, in the Burrows-Wheeler code a new sequence
-begins that is in general not related to the previous one. This incurs some
-overwork\cite{bitner1979heuristics} for the MTF coder as it has to adapt to the
-new context, resulting in larger codes for symbols that were not requested in
-the previous sequence.
+But any time the symbol in the first column of the BW table changes, a new
+context block begins in the BW code that is in general not related to the
+previous one. This means some \emph{overwork} for the MTF coder, which is the
+cost incurred when the probabilities of the input
+change\cite{bitner1979heuristics}. The symbols that occur in the new context
+block (but didn't in the old one) have to be ``fetched to the front'' of the
+alphabet, resulting in larger codes until the coder has adapted.
 
-%TODO why doesn't this affect decompressibility
-%TODO overhead needed to store reordering
+In this chapter I examine the effect of using different sort orders during the
+sorting stage in the BWT. Chapin\cite{chapin1998sort,chapin2001diss} already did
+this, and I will expand on his ideas.
 
-The idea behind using different sort orders is to order the contexts in a way
-that reduces the overwork caused by a transition from one context to the next,
-resulting in lower MTF codes and higher compression.
+A \emph{sort order} (or simply \emph{order}) gives instructions how symbols of a
+given set should be sorted. It can be represented by a list containing all
+symbols in their correct order. For example, according to order \texttt{[c, a,
+b]}, \texttt{c} is sorted before \texttt{a} is sorted before \texttt{b}.
+
+The \emph{natural sort order} is the order that is without any modifications
+(the one that comes natural), e.g. \texttt{[0x00, 0x01, \ldots, 0xff]} when
+symbols are bytes.
+
+The reasoning behind using different sort orders is to order the context blocks
+in a way that reduces the overwork caused by a transition from one block to the
+next, resulting in lower MTF codes and higher compression.
+
+Using a different order does not affect the reversibility of the BWT as long as
+the order is known to the decoder. Assuming there are 256 distinct symbols
+(bytes), there are \(256!\) permutations and thus orders, so it takes \(\lceil
+log_{2}256! \rceil = 1684\) bits to store an order (or 211 bytes, when
+padding to byte boundaries).
 
 In order to find a suitable reordering, you need to do the BWT on the input data
 to get the context blocks, rank all possible transitions between blocks with a
@@ -236,14 +289,7 @@ given costs is an instance of the traveling salesman problem, where the nodes
 are the context blocks and the distances between them are the cost of the
 transition.
 
-\section{Related Work}
-
-chapin original \cite{chapin1998sort,chapin2001diss}
-merge with next section unless there's more
-
 \section{Chapin's Metrics}
-
-%TODO aeiou
 
 Chapin uses four different cost metrics, three of which I have reimplemented for
 comparison with my own metric.\footnote{The fourth uses the Kullback-Leibler
@@ -251,107 +297,119 @@ distance, but is unclear about how to deal with zeros in the PMF.} All of them
 analyze the histograms of symbol appearances for every context block and try to
 give a measure of how similar they are. That means: For each context block
 (generated by BW encoding the input with the natural sort order), make a
-histogram of the number of symbol appearances in that block, i.e.
-a mapping from each possible symbol to the number of times it appears in that
-block.
+histogram of the number of symbol appearances in that block, i.e. a mapping from
+each possible symbol to the number of times it appears in that block.
 
 In Chapin's first metric, two histograms are compared by taking the
 logarithm\footnote{Chapin doesn't specify to which base. In my implementation,
 I use the natural logarithm.} of all of the symbol counts, calculating, for each
 symbol, the differences between the logarithms in both histograms and summing up
-the squares of all of the differences. The result is used as a measure of
-similarity between the two contexts.
+the squares of all of the differences.
 
 For the second metric, the symbol counts from the histograms are written to a
-list in decreasing order. The cost of a transition is the number of
-inversions\cite{sleator1985amortized} between the two corresponding lists.
-%TODO shitty cite
+list in decreasing order. The cost of a transition is the number of inversions
+between the two corresponding lists. An inversion between two lists occurs when
+\(x\) appears before \(y\) in the first list, but after \(y\) in the second
+list.
 
 The third metric is just the logarithm of the second metric.\footnote{Again, no
 base was specified, I use the natural logarithm.}
 
--not comparable with my data because of variations in tsp and the actual
-compression algo
+Chapin also examines one handpicked sort order\footnote{This order is
+\texttt{AEIOUBCDGFHRLSMNPQJKTWVXYZ}. In my implementation I first use the
+lowercase version of the string, then the uppercase. All other symbols are
+sorted as they usually are, after the handpicked order.}, for which he assembled
+an order by hand by grouping similar symbols together.
+
+Chapin's results are unfortunately not directly comparable to mine, as he likely
+uses a modified version of bzip2\footnote{Though it is not made explicit.}
+whereas I use a very basic ``vanilla'' version of BW compression.
 
 \section{The Badness Metric}
 
 My own metric attempts to give a value denoting how bad any given transition is
-and is hence called the badness metric.\footnote{Only after I had given it that
-name and used it all over my code did it come to my mind that assigning a
-badness value is really the purpose of any such metric.} Other than Chapin's
-metrics, it doesn't operate on the BW code, but on the MTF code it generates
-and so, in a sense, is ``closer to the compression''.
+and is hence called the badness metric. Other than Chapin's metrics, it doesn't
+operate on the BW code, but on the MTF code it generates and so, in a sense, is
+``closer to the compression''.
 
-
-\subsection{Ugly LKH}
+\subsection{Workaround for some problems with the TSP heuristic}
 
 The badness values generated are not necessarily symmetric, i.e. the badness of
-the transition from context x to y is not necessarily the badness of y to x.
+the transition from context \(x\) to \(y\) is not necessarily the badness of
+\(y\) to \(x\).
+
 This has the unfortunate consequence that I now need a heuristic solver for the
 asymmetrical traveling salesman problem, which is much harder to find than a
 heuristic for the ``ordinary'' symmetrical TSP. I finally found
-LKH\cite{helsgaun2000lkh}\footnote{http://www.akira.ruc.dk/~keld/research/LKH/},
-which can approximate solutions to the asymmetrical TSP. Unfortunately, it can
-not handle floating point input, so I have to do some ugly scaling.
+LKH\cite{helsgaun2000lkh}\footnote{\url{http://www.akira.ruc.dk/~keld/research/LKH/}},
+which can approximate solutions to the asymmetrical TSP.
 
-The transition data is exported as a .atsp file in full matrix format according
-to the TSPLIB specification\cite{reinelt1991tsplib}. LKH doesn't allow floating
-point numbers in the matrix, so the original values have to be converted into
-integers while preserving the ratios between all of the values as best as
-possible. Since just rounding to the nearest integer would incur large relative
-errors for values close to zero, they are first scaled up. If all values are
-multiplied with the same factor, the solution to the TSP remains the same. This
-factor is the greatest number such that the absolute greatest original value,
-when multiplied with the factor, is less than or equal to a preset maximum. If
-this maximum is too large, LKH will fail an assertion, probably because the
-variable overflows. I have chosen \(10^7\), as this seems to be small
-enough to not cause problems.
-%TODO still 2*10^7?
+Unfortunately, LKH can only handle integer input while the badness metric
+generally outputs floating points, so I have to scale floats to integers. The
+original values have to be converted into integers while preserving the ratios
+between all of the values as best as possible. Since just rounding to the
+nearest integer would incur large relative errors for values close to zero, they
+are first scaled up.
 
-To get a picture of the accuracy of this transformation, for every pair of
-values the ratio of the original (floating-point) values and the ratio of their
-correspoding integers is computed and the relative error calculated. The maximum
-relative error for the examples is rarely greater than \(10^-4\).
-%TODO update in case this changes
-%TODO inverse of scaling factor
-LKH is run with default parameters, with the exception of the number of runs,
-which is 100 rather than the default 10.
+If all values are multiplied with the same factor, the solution to the TSP
+remains the same\footnote{This can be thought of as ``zooming out'' of the
+original problem.''}.
+This factor is chosen as the greatest number such that the absolute greatest
+original value, when multiplied with the factor, is less than or equal to a
+preset maximum. If this maximum is too large, LKH will fail an assertion,
+probably because the variable overflows. I have chosen \(10^7\), as this seems
+to be small enough to not cause problems.
+
+To get a picture of the accuracy of this transformation, the option exists to
+calculate the relative error between the ratio of the original (floating-point)
+values and the ratio of their correspoding integers for every pair of values and
+to output the maximum. When scaling values for book1, the worst case for the
+relative error for one metric is \(1.5 \cdot 10^{-3}\), but the other cases are
+typically around \(10^{-6}\).
+
+The scaled transition data is then exported as a \texttt{.atsp} file in full
+matrix format according to the TSPLIB specification\cite{reinelt1991tsplib}. LKH
+is run with default parameters, with the exception of the number of runs, which
+is 100 rather than the default 10.
 
 \subsection{Basic Operation}
 
-To explain the badness metric, I need to introduce the partial MTF code that
-will be used on appropriate parts of the BW code. This is not absolutely
-necessary to get the actual badness value, but useful to understand why the
-metric does what it does.
+To explain the badness metric, I will introduce the partial MTF code that will
+be used on appropriate parts of the BW code. This is not absolutely necessary to
+get the actual badness value, but useful to understand why the metric does what
+it does.
 
 The partial MTF differs from the regular MTF code only in that you start with an
-empty alphabet and encode an escape code (I will use -1) anytime a symbol
-appears that isn't already in the alphabet.
-E.g., the ASCII encoded string ``aabcab'' encoded (byte-wise) with regular MTF
-would yield \([97, 0, 98, 99, 2, 2]\), encoded with partial MTF it would be
-\([-1, 0, -1, -1, 2, 2]\).
+empty alphabet and encode an escape code (I will use \texttt{-1}) anytime a
+symbol appears that isn't already in the alphabet.
 
-%TODO property non-escape codes are the same
+For example, the ASCII encoded string ``aabcab'' encoded (byte-wise) with
+regular MTF would yield \texttt{[97, 0, 98, 99, 2, 2]}, encoded with partial MTF
+it would be \texttt{[-1, 0, -1, -1, 2, 2]}.
 
-Of course this means that it can't be decoded anymore, but we only need it to
+Observe that the MTF and partial MTF differ only in the positions where the
+partial MTF has an escape code; this is because once a symbol has been
+introduced to the alphabet of the partial MTF coder, it will operate in the same
+way on the symbols it already knows as a regular MTF coder.
+
+Of course, partial MTF can not be decoded anymore, but we only need it to
 illustrate the operation of the metric.
 
 To compute the badness value of a transition, the metric needs the context
 blocks for both sides of the transition, i.e. the BW code belonging to the
-symbol that's being transitioned from or to, respectively.
+symbol that's being transitioned from and transitioned to, respectively.
 
-It then produces the partial MTF code of the destination block (the right
-side), and of the concatenation of the source and destination block (combined
-partial MTF).
-So it  basically pretends that the two blocks were sorted one after the other,
-and then attempts to give an indication of how bad this would be for the
-compression.
+It then produces the partial MTF code of the destination block (the \emph{right
+side}), and of the concatenation of the source and destination block
+(\emph{combined partial MTF}). So it  basically pretends that the two blocks
+were sorted one after the other, and then attempts to give an indication of how
+bad this would be for the compression.
 
-Looking at the partial MTF code of the destination side of the transition, the
-metric assumes that all recurring codes (i.e. those that aren't escape codes)
-are not interesting for the purposes of ranking transitions, as they would be
-the same no matter what comes before or after.\footnote{This assumtion is not
-actually correct, as I will explain in the next section.}
+Looking at the partial MTF code of the right side, the metric assumes that all
+\emph{recurring codes} (i.e. those that aren't escape codes) are not interesting
+for the purposes of ranking transitions, as they would be the same no matter
+what comes before or after.\footnote{This assumtion is not actually correct, as
+I will explain in the next section.}
 
 What is of interest, are the escape codes on the right side of the transition,
 because this is where what has previously been encoded can influence the MTF
@@ -363,45 +421,44 @@ contexts.
 The metric compiles the ideal MTF alphabet the left side can ``leave'' for the
 right side.
 
-E.g., the first code in the partial MTF of the right side is necessarily an
-escape code. It would be ideal, if the last symbol of the left side were the
-first symbol of the right side. That would mean that it is at the front of the
-alphabet when the transition occurrs, and so that first escape code would, in
+The first code in the partial MTF of the right side is necessarily an escape
+code. It would be ideal, if the last symbol of the left side were the first
+symbol of the right side. That would mean that it is at the front of the
+alphabet when the transition happens, and so that first escape code would, in
 the full MTF be encoded as a 0 (and smaller codes are better). The ideal full
 MTF code for the next escape code is 1 (since the code 0 in the alphabet has
 already been taken by whatever symbol came before it) etc.
-%TODO example? pseudo code?
 
 The metric can then compare the ideal codes with the actual codes in the
 combined partial MTF at the positions where the escape symbols are in the
-partial MTF of just the right side. The differences between actual code and
-ideal code are summed up to form the badness of the transition.
+partial MTF of the right side. In the basic variant of the metric, the
+differences between actual code and ideal code are summed up to form the badness
+of the transition.
 
 What can also happen is that the part of the combined partial MTF belonging to
 the right side still contains escape codes. This means that the symbols encoded
 by them do not appear in the left side of the transition at all. In this case,
-the metric assumes the best possible code for that symbol, which is equal to the
-number of escape symbols in the combined partial MTF up to that point (i.e. the
-metric assumes that whatever context block ends up preceding the left side
-of this transition will leave an ideal alphabet).
+the basic variant of the metric assumes the best possible code for that symbol,
+which is equal to the number of escape symbols in the combined partial MTF up to
+that point (i.e. the metric assumes that whatever context block ends up
+preceding the left side of this transition will leave an ideal alphabet).
 
-\subsection{Ideality, under some circumstances}
+\subsection{Theoretical Ideality}
 
 The metric assumes that the partial MTF codes of the right side of the
-transition that are not escape codes don't change no matter the order that is
+transition that are not escape codes do not change no matter the order that is
 finally selected, and thus aren't interesting. This assumption is incorrect
 since, when a different reordering is selected, the BW code of the context
 blocks is also reordered, and so the generated MTF code will (probably) be
-different. For Chapin's metrics, this doesn't matter because they only care
+different. For Chapin's metrics, this does not matter because they only care
 which symbol occurrs how often, not in which order.
 
-So we'll consider a slightly different problem than finding an ideal global
-reordering: instead of looking for a sort order by which the entire BW table
-will be sorted, we look for an order by which only the first column of the BW
-table will be sorted, all other columns will use the natural order (which was
-used to generate the context blocks that are fed to the metric).
-
-%TODO still reversible, see next chapter
+So we'll consider a slightly different problem: instead of looking for a sort
+order by which the entire BW table will be sorted, we look for an order by which
+only the first column of the BW table will be sorted, all other columns will use
+the natural order\footnote{The next chapter will show that a BWT using two
+different orders is still reversible.} (which was used to generate the
+context blocks that are fed to the metric).
 
 This is equivalent to finding a reordering of the fixed context blocks the
 metric deals with. This means that recurring symbols in the partial MTF never
@@ -411,38 +468,42 @@ assumption the metric makes is true.
 Let's further assume that we have two oracles that know which reordering will
 finally be selected. When the metric encounters an escape symbol in the right
 side of the combined partial MTF (i.e. a symbol that appears in the right side
-doesn't appear in the left side), it has to assume the best possible code for
-lack of information. The first oracle can provide the actual codes that will be
-at those positions in the final computed order.
+but not in the left side), it assumes the best possible code for lack of
+information. The first oracle can provide the actual codes that will be at those
+positions in the final computed order.
 
-The second oracle can provide the codeword lengths in bits of the entropy coder
-for every MTF code appearing in the final reordered and MTF encoded file.
+The second oracle can provide the Huffman codeword lengths in bits for every MTF
+code appearing in the final reordered and MTF encoded file.
 
-If the badness metric is modified to use the predictions of the MTF code oracle
-and sums up the differences between the entropy codeword lengths of the actual
-and ideal MTF codes instead of the differences between the codes themselves, it
-is the ideal metric for generating a reordering for only the first column.
+The badness metric is modified to use the predictions of the MTF code oracle
+instead of assuming the best possible codes. It is further modified to use the
+differences between the Huffman codeword lengths of the actual and ideal MTF
+codes provided by the second oracle instead of the differences between the
+codes themselves. A thusly modified metric it is the ideal metric for generating
+a reordering for only the first column.
 
-Since only the first column gets reordered, recurring symbols within a
-context block are fixed and have no influence, good or bad, on the compression
-rate. The only thing that can make a difference are the MTF codes of symbols
-occurring for the first time in the block. The badness metric records the
-difference between the number of bits that are used if the left side of the
-transition leaves an ideal alphabet for the right side, and the number of bits
-that are actually used.
+Since only the first column gets reordered, recurring symbols within a context
+block are fixed and have no influence, good or bad, on the compression rate. The
+only thing that can make a difference are the MTF codes of symbols occurring for
+the first time in the block. The badness metric records the difference between
+the number of bits that are used if the left side of the transition leaves an
+ideal alphabet for the right side, and the number of bits that are actually used.
 
-That way, if the transition (a,b) has a badness of n, and the transition (a,c)
-has a badness of n+m, all other transition's badness values being equal, if the
-transition (a,c) is used, the result will be m bits larger than if the
-transition (a,b) was used.
+That way, if the transition \(a \rightarrow b\) has a badness of \(n\), and the
+transition \(a \rightarrow c\) has a badness of \(n + m\), all other
+transition's badness values being equal, if the transition \(a \rightarrow c\)
+is used, the result will be \(m\) bits larger than if the transition \(a
+\rightarrow b\) was used.
 
 If the badness values of all possible transitions are provided as input to an
-exact TSP solver, it will generate the best possible reordering for only the
-first column of the BW table.
+exact TSP solver, it will generate the best possible reordering, given that it
+is only used for the first column of the BW table.
 
 \subsection{Variants}
 
-There are three variants of the badness metric, two of which are attempting to
+This section introduces three variants of the badness metric. One seeks to
+alleviate the problem where transitions with longer context blocks on the right
+side tend to have worse badness values. The other two of are attempting to
 approximate the predictions of the oracles from the previous section.
 
 \subsubsection{Weighting by number of symbols}
@@ -450,36 +511,36 @@ approximate the predictions of the oracles from the previous section.
 The computed badness value is divided by the number of distinct symbols in the
 right side of the transition (i.e. the number of escape codes in the partial
 MTF). This is supposed to counteract the effect where transitions whose right
-side has many differenct symbols get a much worse rating than if they have less,
+side has many different symbols get a much worse rating than if they have less,
 because every escape code leads to some badness being added to the total value.
-The resulting value can be characterized as badness per distinct symbol.
+The resulting value can be thought of as badness per distinct symbol.
 
-\subsubsection{Predicting code lengths of the entropy coder}
+\subsubsection{Predicting code lengths of the Huffman coder}
 
 %TODO: arithmetic coding? otherwise just call it Huffman coding
 This modification tries to approximate the behavior of the oracle predicting the
-code lengths of the entropy coder.
+code lengths of the Huffman coder.
 
 When adding to the badness value, instead of adding the difference between the
 actual and the ideal MTF codes, the difference between a prediction of the
-entropy code lengths of the actual and ideal MTF codes is added.
+Huffman code lengths of the actual and ideal MTF codes is added.
 
-Getting pretty good predictions for a static entropy coder is relatively easy:
-since different reorderings only has a little effect on the produced MTF code,
-the entropy code lengths for any reordering should be within a small margin of
-error of each other. In the case of static Huffman coding, many of the codes for
-low MTF codes may not change at all.
+Getting fairly good predictions for a static Huffman coder is relatively easy:
+since different reorderings only have a small effect on the produced MTF code,
+the Huffman code lengths for any two reordering should be within a small margin
+of error of each other. In fact, many of the codes for low MTF codes may not
+change at all.
 
 So in order to get the predictions, the input file is simply BW- and MTF encoded
-with the natural sort order and the lengths of the codewords are recorded that
-the entropy coder would use for each MTF code.
+with the natural sort order and the lengths of the Huffman codewords for each
+MTF code are recorded.
 
 There is a problem with this simple method when not all possible MTF codes
 appear in the code that is used to make the predictions. This is usually the
 case with e.g. ASCII text files, which tend to use less than 100 distinct
-symbols\footnote{book1 from the calgary corpus uses 82 different characters:
+symbols\footnote{book1 from the calgary corpus uses 82 different symbols:
 upper- and lowercase alphabet, 10 digits and some punctuation and control
-characters.}, so MTF codes above that number only occur once when that symbol is
+symbols.}, so MTF codes above that number only occur once when that symbol is
 fetched to the front of the MTF alphabet, and may not occur at all.
 When a different reordering is chosen, a different MTF alphabet will probably be
 in place at the time such a symbol is requested, and the resulting MTF code may
@@ -490,12 +551,12 @@ To solve this, I have developed two strategies, ``complete'' and ``sparse''
 predictions.
 The ``complete'' method modifies the symbol frequencies of the MTF code that are
 used as weights by the entropy coder. Every MTF code that doesn't appear but is
-smaller than the maximum code that does gets the weight \(\frac{1}{256}\). In
-the case of Huffman coding this means that all these codes get a longer or
-equally long entropy code than the codes that actually appear.
+smaller than the maximum code that does gets the weight \(\frac{1}{256}\). This
+means that all these codes get a longer or equally long entropy code than the
+codes that actually appear.
 
 All other MTF codes that don't appear, but are greater than the maximum code
-that does get weight \(\frac{1}{256^2}\), so their entropy codes are guaranteed
+that does, get weight \(\frac{1}{256^2}\), so their entropy codes are guaranteed
 to be longer or equal to the ones with weight \(\frac{1}{256}\). The reasoning
 behind this is that these codes are unlikely to appear in any reordering, e.g.
 when encoding an ASCII text file, no codes above 127 will appear.
@@ -503,27 +564,31 @@ when encoding an ASCII text file, no codes above 127 will appear.
 The ``sparse'' method assumes that no matter the reordering, there will always
 be (high) MTF codes that don't appear (the histogram of MTF codes will be
 sparse for high values).
-It lets the entropy coder compute the codeword lengths with unaltered weights,
-but inserts entropy code lengths for the missing MTF codes manually afterwards.
+
+It lets the Huffman coder compute the codeword lengths with unaltered weights,
+but inserts Huffman code lengths for the missing MTF codes manually afterwards.
 Each missing MTF code is assigned the same code length as the next smaller MTF
 code that does appear. The reasoning is that, when MTF codes appear for one
 reordering that didn't for another, they're just shifted around from codes that
-don't appear anymore. Of course this means that there isn't actually an entropy
-code with the code lengths that were predicted (since the predictor has
-manually introduced collisions).
+don't appear anymore.
+
+Of course this means that there isn't actually a Huffman code with the code
+lengths that were predicted (since the predictor has manually introduced
+collisions).
 
 \subsubsection{Predicting MTF codes for new symbols}
 
 This modification aims at approximating the oracle that can predict MTF codes of
-escape codes in the right side of the combined partial MTF of a transition. When
-the metric encounters an escape code, instead of assuming that whatever
+escape codes in the right side of the combined partial MTF of a transition.
+
+When the metric encounters an escape code, instead of assuming that whatever
 context came before left an ideal alphabet, it can use the prediction, which is
 hopefully more accurate.
 
-Making these predictions is more complicated than those for the entropy code
+Making these predictions is more complicated than those for the Huffman code
 lengths. I have again developed two strategies, ``generic'' and ``specific'',
-which assume that the distribution of MTF codes will be similar no matter the
-order.
+both of which assume that the distribution of MTF codes will be similar no
+matter the order.
 
 The generic predictor does a BW encode on the input file with the natural order,
 then encodes this with MTF. It then records, for every possible MTF code, the
@@ -535,7 +600,7 @@ value of the MTF codes that are greater or equal to it and that encode the
 underlying symbol.
 
 The averaging function for both predictors can be the arithmetic mean or the
-median.
+median, so all in all there are four possible predictors.
 
 \subsection{Evaluating the performance of the predictors}
 
@@ -623,6 +688,7 @@ same indicators as in the last section.
 %TODO in parentheses, give percentage point increase/decrease of compression
 % compared to natural order
 \begin{table}
+\centering
 \begin{tabular}{c|ccc|c|c}
 \multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
 \multicolumn{1}{c}{\rot{entropy length prediction}} &
@@ -672,6 +738,7 @@ one order, in size 6150168}
 \end{table}
 
 \begin{table}
+\centering
 \begin{tabular}{c|ccc|c|c}
 \multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
 \multicolumn{1}{c}{\rot{entropy length prediction}} &
@@ -822,6 +889,7 @@ p, s]} for the first and \texttt{[s, p, m, i]} for all following columns would
 yield the BW table
 
 \begin{table}
+\centering
 \begin{tabular}{|r||ttttttttttt|}
 \hline
 0 & i & s & s & i & s & s & i & p & p & i & m \\
@@ -896,9 +964,9 @@ In order for the BWT with multiple sort orders to be useful, the transformation
 needs to be reversible.
 
 I can show that it is, if only two sort orders are given (the second one can be
-specific). I have, however, been unable to show reversibility for an arbitrary
-number of sort orders. But I believe it is possible and will give my unfinished
-algorithm and point out the part where it fails in some cases.
+either generic or specific). I have, however, been unable to show reversibility
+for an arbitrary number of sort orders. But I believe it is possible and will
+give my unfinished algorithm and point out the part where it fails in some cases.
 
 \subsection{Two Orders}
 
@@ -923,6 +991,7 @@ This problem can be solved by ``looking ahead'' one more symbol and reordering
 accordingly. The following is the algorithm to match an index in the first
 column to an index in the last column.
 
+\begin{algorithm}
 \begin{algorithmic}[1]
 \Procedure{next\_index}{$idx$, $first\_col$, $last\_col$, $second\_order$}
 \State $sym \gets first\_col[idx]$
@@ -935,6 +1004,7 @@ as the key for element $i$\Comment{this must be a stable sort}
 \State \Return $possible\_idx[num]$
 \EndProcedure
 \end{algorithmic}
+\end{algorithm}
 
 %TODO line 5 only thing different from normal BW
 In line 5, %TODO correct line?
@@ -995,6 +1065,7 @@ order can be computed with the correct higher level transitions.
 \section{Results}
 
 \begin{table}
+\centering
 \begin{tabular}{c|ccc|c|c}
 \multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
 \multicolumn{1}{c}{\rot{entropy length prediction}} &
