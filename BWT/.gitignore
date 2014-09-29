@@ -4,4 +4,5 @@
 /thesis/*.log
 /thesis/*.pdf
 /thesis/*.synctex.gz
-/thesis
+/thesis/*.toc
+/thesis/*.out

@@ -8,8 +8,9 @@
 \usepackage{xparse}
 \usepackage{array}
 \usepackage{hyperref}
+\usepackage[toc,page]{appendix}
 
-\NewDocumentCommand{\rot}{O{45} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
+\NewDocumentCommand{\rot}{O{25} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
 \algnewcommand\True{\textbf{true}\space}
 \algnewcommand\False{\textbf{false}\space}
 \newcolumntype{t}{>{\fontfamily{\ttdefault}\selectfont}c}
@@ -165,7 +166,6 @@ MTF coding is easily reversible, as the starting alphabet is known, and the
 alphabet can be updated with every decoded symbol, just as during encoding.
 
 \section{Huffman Coding}
-%TODO find all occurences of ``entropy'' in document, replace by huffman
 
 Huffman coding encodes input symbols into variable length codes, based on
 statistical properties of the input. Symbols that occur more frequently are
@@ -186,58 +186,6 @@ bit.
 
 \chapter{Simple Sorting}
 
-%-overwork in context transitions
-%-metrics to rank transitions, tsp to find a tour
-%-problem finding atsp heuristic, only one i found only supports ints, give 
-%	error bounds for the scaling
-%-chapins metrics work on the bw code
-%-badness works on the mtf of the bw, with modifications attempts to give the
-%	number of bits a transition costs:
-%	-make a list of the best possible alphabet the left side of a transition
-%		can leave for the right side
-%	-compare those with the actual codes you get when you mtf encode the left
-%		and right side together
-%	-the sum of all the differences is the badness
-%	-variants:
-%		-weighting: divide the badness by the number of new symbols on the right
-%			side, so transitions to a larger context don't get a massive
-%			penalty
-%		-new penalty: new symbols in the right side that didn't appear in the
-%			left side need to receive a penalty instead of assuming the minimum
-%			possible (mean mtf code for mtf codes of at least the min possible,
-%			symbol specific)
-%			prediction for the block that ends up as the first will be way off
-%		-entropy code len: don't take the plain difference but the difference
-%			between the number of bits the entropy coder will use. this can
-%			give you the exact number of bits this transition costs
-%			approximation with const values for zeros: zeros will all get the
-%			same (longest possible) code length, other rare symbols may be
-%			affected
-%			approximation with curve fitting: zeros will get about the same
-%			code lengths as the surrounding symbols, but all of the rarer
-%			symbols (>10?) will have (significantly) longer codes as there are
-%			more symbols to encode. higher value mtf codes are usually sparse,
-%			but can't be sure how many zeros will remain after reordering
-%			curve fitting sparse: assume there will be the same amount of
-%			zeros after reordering. give zeros the same length as their
-%			neighbors, even though there can't be a huffman code with those
-%			code lengths and that many symbols 
-%	-describe things needed for an ideal badness metric (new penalty,entropy
-%		len, weighting?), then give approximations
-%TODO	-another point of non-optimality: which transition to choose as a starting
-%		point? need to break up the baddest transition
-%	-need need a new penalty dict that is specific for the symbol being encoded
-%		i.e. what is the average code for e.g. 'a' given that the minimum
-%		possible is n
-%	-new penalty predictor that gives the average code for a specific symbol
-% 		that is new in the block, with a given mimimum
-%	-much higher compression benefit when sorting all columns instead of just
-%		the first one -> a lot of the compression benefit comes from the higher
-% 		order transitions
-%	-after comparing predictions with actual values, do another pass of
-%		calculating transitions, but pass a compensation summand that will be
-%		added to every prediction, so that the average is 0
-
 The reason Burrows-Wheeler based compression algorithms are so effective is that
 the BWT creates sequences of symbols that appear in the same context. If the
 input file is suitable for context-based compression, these sequences will
@@ -249,7 +197,7 @@ of book1 of the Calgary Corpus:\\
 This locality leads to smaller numbers generally appearing more frequently than
 higher ones. Especially zeros, which are caused by runs of the same symbol make
 up about half the MTF codes for book1. Skewed probabilities like this make the
-MTF code easily compressible with an entropy coder.
+MTF code easily compressible with a Huffman coder.
 
 But any time the symbol in the first column of the BW table changes, a new
 context block begins in the BW code that is in general not related to the
@@ -287,7 +235,11 @@ to get the context blocks, rank all possible transitions between blocks with a
 cost metric and find a sort order based on the costs. Finding the ordering with
 given costs is an instance of the traveling salesman problem, where the nodes
 are the context blocks and the distances between them are the cost of the
-transition.
+transition\footnote{One small difference is that the tour through the context
+blocks does not need to return to its starting node. To get the absolutely
+best possible order, the first symbol would have to manually be chosen as a
+symbol from the transition with the worst ranking. My implementation however
+does not do this, as the gains are likely to be very small.}.
 
 \section{Chapin's Metrics}
 
@@ -550,13 +502,13 @@ may not be requested at all, but a code that is requested has no prediction.
 To solve this, I have developed two strategies, ``complete'' and ``sparse''
 predictions.
 The ``complete'' method modifies the symbol frequencies of the MTF code that are
-used as weights by the entropy coder. Every MTF code that doesn't appear but is
+used as weights by the Huffman coder. Every MTF code that doesn't appear but is
 smaller than the maximum code that does gets the weight \(\frac{1}{256}\). This
-means that all these codes get a longer or equally long entropy code than the
+means that all these codes get a longer or equally long Huffman code than the
 codes that actually appear.
 
 All other MTF codes that don't appear, but are greater than the maximum code
-that does, get weight \(\frac{1}{256^2}\), so their entropy codes are guaranteed
+that does, get weight \(\frac{1}{256^2}\), so their Huffman codes are guaranteed
 to be longer or equal to the ones with weight \(\frac{1}{256}\). The reasoning
 behind this is that these codes are unlikely to appear in any reordering, e.g.
 when encoding an ASCII text file, no codes above 127 will appear.
@@ -602,88 +554,16 @@ underlying symbol.
 The averaging function for both predictors can be the arithmetic mean or the
 median, so all in all there are four possible predictors.
 
-\subsection{Evaluating the performance of the predictors}
+\subsection{Compression results}
 
-Besides just trying out how much of an impact the different predictors have on
-the final comression rate, we can also evaluate their performance by simply
-comparing the values they predicted with the values that actually appear in the
-reordered MTF code.
-
-\subsubsection{MTF predictor}
-
-For this purpose, every prediction of the MTF code predictor is logged while the
-metric is computed. It is recorded in which transition the prediction happened,
-which symbol of the underlying BW code is encoded by the MTF code that has to be
-predicted, and the predicted value itself.
-
-Once the TSP heuristic has computed the reordering according to the metric,
-only the predictions of the transitions that occur in the reordering can be
-evaluated. The predictions for the first context block in the reordering also
-can't be evaluated, since predictions only happen in the right side of a
-transition, and the first block is not the right side of any transition that
-appears in the reordering.
-
-%TODO only describe the ones used, put the rest in appendix
-
-When we have all the pairs (actual value, predicted value), we can calculate
-indicators that can hint at the quality of the predictions:
-\begin{itemize}
-  \item The mean difference, i.e. the mean over all the (actual - predicted)
-  pairs
-  \item The mean deviation, i.e. the same as the mean difference, only with the
-  absolute of the difference
-  \item The (kind of) standard deviation, i.e. the square root of the mean of
-  the squared differences between actual and predicted value.\footnote{This is
-  not a real standard deviation, because we don't measure it with the distances
-  from a single expected value, since each prediction gets its own actual
-  value, the distance to which matters for the deviation. It's also not clear
-  that the distances follow a normal distribution, and the distribution is much
-  more spread out when the predicted value is less than the actual value than
-  when it is greater.}
-\end{itemize}
-
-The mean difference can tell us how well the predictions are on average and
-should be close to zero. If it is significantly greater or less, it means that
-the predictor is too optimistic or pessimistic, respectively.
-
-The deviations can tell us how far the predictions are spread around the correct
-value, and should be as low as possible.
-
-We can also calculate these indicators with just a subset of the
-(predicted, actual) pairs:
-\begin{itemize}
-  \item We can exclude pairs where the actual value is
-  greater than the number of distinct symbols in the input file. They only occur
-  when a symbol that's never been encoded before needs to be fetched to the
-  front of the MTF alphabet. They occur at most as many times as there are
-  distinct symbols in the input, but they skew the averages significantly.
-  \item We can only take pairs where the prediction is either greater than or
-  equal, or less than the actual value. With this we can learn how far spread
-  out the distribution is to either side.
-\end{itemize}
-
-Finally, we can calculate all these indicators while not using the difference
-between the codes themselves, but between their entropy code lengths. This can
-give us an indication of how big the error is in bits a prediction is likely to
-cause.
-
-\subsubsection{Entropy length predictor}
-
-Evaluating the predictions for the entropy code lengths is less complicated
-since there's no logging involved. The predicted values are easily computed in
-advance. To get the actual values, we simply encode the input file according to
-the computed order until we have the MTF code, and then ask the entropy coder
-for the code lengths for each MTF code.
-
-The resulting pairs of actual and predicted values can be evaluated with the
-same indicators as in the last section.
-
-%TODO results for only first col and for all cols
-
-%TODO update in case parameters to LKH change
-\subsubsection{Feeding back correction values}
-
-\subsection{Results}
+Compression results of the file book1 from the Calgary corpus using all the
+different metrics can be seen in table~\ref{tab:resultsbook1}. More results can
+be found in appendix~\ref{app:resultsoneorder}.
+All the results are sizes of the Huffman code in bits. The overhead for storing
+the order and the start index for reversing the BWT are not taken into account.
+The left result column shows the size when the computed order is used for all
+columns of the BW table, the right column when only the first column is
+reordered.
 
 %TODO in parentheses, give percentage point increase/decrease of compression
 % compared to natural order
@@ -691,10 +571,10 @@ same indicators as in the last section.
 \centering
 \begin{tabular}{c|ccc|c|c}
 \multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
-\multicolumn{1}{c}{\rot{entropy length prediction}} &
+\multicolumn{1}{c}{\rot{Huffman prediction}} &
 \multicolumn{1}{c}{\rot{MTF prediction}} &
-\multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
-size first columns}} \\ \hline
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first column}}
+\\ \hline
 \multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2139678 &
 2136205 \\ \cline{2-6}
 & \ding{55} & \ding{55} & generic mean & 2138206 & 2136016 \\ \cline{2-6}
@@ -727,119 +607,119 @@ size first columns}} \\ \hline
 & \ding{51} & sparse & specific mean & 2135461 & 2135815 \\ \cline{2-6}
 & \ding{51} & sparse & specific median & 2136453 & 2136061 \\ \hline
 \multicolumn{4}{c|}{natural order} & 2136995 & 2136995 \\ \hline
-\multicolumn{4}{c|}{aeiou} & 2132079 & 2136451 \\ \hline
-\multicolumn{4}{c|}{Chapin hst diff} & 2134757 & 2136377 \\ \hline
-\multicolumn{4}{c|}{Chapin inv} & 2134449 & 2136168 \\ \hline
-\multicolumn{4}{c|}{Chapin inv log} & 2134371 & 2136131 \\ \hline
+\multicolumn{4}{c|}{``aeiou\ldots''} & 2132079 & 2136451 \\ \hline
+\multicolumn{4}{c|}{histogram differences} & 2134757 & 2136377 \\ \hline
+\multicolumn{4}{c|}{number of inversions} & 2134449 & 2136168 \\ \hline
+\multicolumn{4}{c|}{number of inversions log} & 2134371 & 2136131 \\ \hline
 \end{tabular}
-%TODO
-\caption{Simulated compression results for book1 of the Calgary Corpus using
-one order, in size 6150168}
+\label{tab:resultsbook1}
+%TODO parentheses
+\caption{Simulated compression results for book1 of the Calgary Corpus using one
+order computed with different metrics. All sizes in bits without overhead, size
+of the input is 6150168 bits.}
 \end{table}
 
-\begin{table}
-\centering
-\begin{tabular}{c|ccc|c|c}
-\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
-\multicolumn{1}{c}{\rot{entropy length prediction}} &
-\multicolumn{1}{c}{\rot{MTF prediction}} &
-\multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
-size first columns}} \\ \hline
-\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 147160 & 145360
-\\ \cline{2-6}
-& \ding{55} & \ding{55} & generic mean & 146329 & 145027 \\ \cline{2-6}
-& \ding{55} & \ding{55} & generic median & 146346 & 145046 \\ \cline{2-6}
-& \ding{55} & \ding{55} & specific mean & 146075 & 145026 \\ \cline{2-6}
-& \ding{55} & \ding{55} & specific median & 146509 & 145088 \\ \cline{2-6}
-& \ding{55} & complete & \ding{55} & 146995 & 145395 \\ \cline{2-6}
-& \ding{55} & complete & generic mean & 145952 & 144928 \\ \cline{2-6}
-& \ding{55} & complete & generic median & 146225 & 145067 \\ \cline{2-6}
-& \ding{55} & complete & specific mean & 145671 & 144939 \\ \cline{2-6}
-& \ding{55} & complete & specific median & 146124 & 145119 \\ \cline{2-6}
-& \ding{55} & sparse & \ding{55} & 147000 & 145395 \\ \cline{2-6}
-& \ding{55} & sparse & generic mean & 145519 & 144941 \\ \cline{2-6}
-& \ding{55} & sparse & generic median & 145910 & 144995 \\ \cline{2-6}
-& \ding{55} & sparse & specific mean & 146043 & 144966 \\ \cline{2-6}
-& \ding{55} & sparse & specific median & 146904 & 145121 \\ \cline{2-6}
-& \ding{51} & \ding{55} & \ding{55} & 146494 & 144961 \\ \cline{2-6}
-& \ding{51} & \ding{55} & generic mean & 145900 & 144853 \\ \cline{2-6}
-& \ding{51} & \ding{55} & generic median & 146071 & 144992 \\ \cline{2-6}
-& \ding{51} & \ding{55} & specific mean & 145637 & 144922 \\ \cline{2-6}
-& \ding{51} & \ding{55} & specific median & 145831 & 144882 \\ \cline{2-6}
-& \ding{51} & complete & \ding{55} & 146354 & 144992 \\ \cline{2-6}
-& \ding{51} & complete & generic mean & 145978 & 144798 \\ \cline{2-6}
-& \ding{51} & complete & generic median & 145801 & 144976 \\ \cline{2-6}
-& \ding{51} & complete & specific mean & 146815 & 145015 \\ \cline{2-6}
-& \ding{51} & complete & specific median & 146061 & 144945 \\ \cline{2-6}
-& \ding{51} & sparse & \ding{55} & 146354 & 144987 \\ \cline{2-6}
-& \ding{51} & sparse & generic mean & 145976 & 144798 \\ \cline{2-6}
-& \ding{51} & sparse & generic median & 145801 & 144976 \\ \cline{2-6}
-& \ding{51} & sparse & specific mean & 146011 & 144959 \\ \cline{2-6}
-& \ding{51} & sparse & specific median & 145862 & 144998 \\ \hline
-\multicolumn{4}{c|}{natural order} & 145457 & 145457 \\ \hline
-\multicolumn{4}{c|}{aeiou} & 144742 & 145378 \\ \hline
-\multicolumn{4}{c|}{Chapin hst diff} & 145226 & 145237 \\ \hline
-\multicolumn{4}{c|}{Chapin inv} & 145004 & 144970 \\ \hline
-\multicolumn{4}{c|}{Chapin inv log} & 145613 & 145071 \\ \hline
-\end{tabular}
-%TODO
-\caption{Simulated compression results for paper1 of the Calgary Corpus using
-one order, in size 425288}
-\end{table}
-
-%-first column only, all columns, with feedback corrections, compare
-%-chapin's metrics in my impl not quite as good as handpicked, same in his
-
-book1, first col only:
+Some observations about the results reordering only the first column:
 \begin{itemize}
-  \item first col only brings almost no benefit when using the handpicked order
-  \item for first col only almost all badness variants perform better than
-  handpicked or Chapin's
-  \item with weighting is usually better
-  \item when entropy code length prediction is turned on, it can affect the
-  result in either direction, but usually not by much. possible explanation: its
-  output are low integers instead of (higher) floats, this takes some precision
-  away. when the prediction is correct for most values, it affects the result
-  positively (as it's theoretically ideal), but if a couple of values are off by
-  a bit, it introduces a considerable relative error (arithmetic coding?). also,
-  they seem to be pretty useless on their own (without either mtf prediction or
-  weighting).
-  \item all kinds of mtf predicition have a positive influence, unless when
-  combined with entropy length prediction, in which case results vary (gonna
-  put this on entr len pred, see above). both generic and specific median give
-  bad results when combined with entr len pred. this could be because the median
-  tips the entr len predictor into incorrect results (some form of rounding
-  error, see above) and so this could be reversed for a different file, but
-  maybe not. generic prediction works much better when no weigthing occurs,
-  otherwise the specific version is marginally better. no significant difference
-  between mean and median, except for what's described before.
+  \item The handpicked order brings almost no benefit.
+  \item Almost all badness variants perform better than either Chapin's
+  metrics or the handpicked order.
+  \item Using weighting usually gives better results.
+  \item Prediction of Huffman code lengths can affect the result in either
+  direction, but usually not by much. It also seem to be fairly useless on its
+  own (without either MTF prediction or weighting).
+  \item All kinds of MTF predicition have a positive influence, unless when
+  combined with Huffman length prediction, in which case results vary. In
+  particular, both generic and specific median give bad results when combined
+  with Huffman length prediction.
 \end{itemize}
 
-all cols:
+When reordering all columns:
 \begin{itemize}
-  \item when only considering first col reordering, almost all badness variants
-  were better than handpicked and Chapin's, with all cols only a few. some are
-  even worse than the standard ordering. so badness is good at what it was
-  designed to do, but obviously not all variants make good reorderings for every
-  column.
-  \item when using all cols, much higher compression gain (up to 5x). this means
-  reordering of subsequent cols to make 2nd- 3rd- etc order transitions better
-  is very relevant compared to just considering the first column. this makes
-  sense: compression is gained where transitions are reordered. if there are n
-  transitions of the first order, there are up to \(n^2\) of the second, \(n^3\)
-  of the third etc. but at a certain point the k-th order context only contains
-  one or a few symbols, making reorderings not seem useful anymore. if the file
-  is larger and contains more contexts, reordering further into the columns can
-  become useful. (it becomes useless at the latest when all the columns in the
-  bw table up to that column are unique)
-  %TODO more?
+  \item Only a few of the badness variants are better than Chapin's metrics now,
+  and some are even worse than the natural order. The badness metric seems to be
+  good at what it was designed for, but not all variants give orders that are
+  good when used for all columns.
+  \item The compression gains are much greater than when only the first column
+  is reordered. This makes sense, since reordering can improve compression where
+  transitions occur, but there is only a very limited number in the first
+  column. When reordering all columns, the transitions within a context block
+  are also reordered.
 \end{itemize}
 
-%TODO update in case parameters to LKH change
 %TODO more files, book2, some non-text
 
-\section{Further Work}
+\subsection{Evaluating the performance of the predictors}
 
+Besides just trying out how much of an impact the different predictors have on
+the final comression rate, we can also evaluate their performance by simply
+comparing the values they predicted with the values that actually appear.
+
+\subsubsection{MTF predictor}
+
+To evaluate the MTF predictor, every prediction is logged while the metric is
+computed. It is recorded in which transition the prediction happened, which
+symbol of the underlying BW code is encoded by the MTF code that has to be
+predicted, and the predicted value itself.
+
+Once the TSP heuristic has computed the reordering according to the metric,
+only the predictions of the transitions that occur in the reordering can be
+evaluated. The predictions for the first context block in the reordering also
+can not be evaluated, since predictions only happen in the right side of a
+transition and the first block is not the right side of any transition that
+appears in the reordering.
+
+When we have all the pairs of actual value and predicted value, we can calculate
+indicators that can hint at the quality of the predictions\footnote{This is
+just a selection of the most interesting indicators; more can be found in the
+raw output files that are distributed with the program.}:
+\begin{itemize}
+  \item The mean difference, i.e. the mean over all the differences \(actual -
+  predicted\).
+  \item The (kind of) standard deviation, i.e. the square root of the mean of
+  the squared differences between actual and predicted value.\footnote{This is
+  not a real standard deviation, because it is not measured with the distances
+  from a single expected value, since each prediction gets its own actual 
+  value. It is also by no means clear clear that the distances follow a normal
+  distribution (in fact, it almost certainly does not), and the distribution is
+  much more spread out when the predicted value is less than the actual value
+  than when it is greater.}
+\end{itemize}
+
+The mean difference can tell us how well the predictions are on average and
+should be close to zero. If it is significantly greater or less, it means that
+the predictor is too optimistic or pessimistic, respectively.
+
+The deviation can tell us how far the predictions are spread around the correct
+value, and should be as low as possible.
+
+We can also calculate these indicators with just the subset of the values where
+the actual value is less than or equal the number of distinct symbols in the
+input. Values like that only occur when a symbol that's never been encoded
+before needs to be fetched to the front of the MTF alphabet. They occur at most
+as many times as there are distinct symbols in the input, but they skew the
+averages significantly.
+
+%TODO table
+
+\subsubsection{Huffman code length predictor}
+
+Evaluating the predictions for the Huffman code lengths is less complicated
+since there's no logging involved. The predicted values are easily computed in
+advance. To get the actual values, we simply encode the input file according to
+the computed order until we have the MTF code, and then ask the Huffman coder
+for the code lengths for each MTF code.
+
+The resulting pairs of actual and predicted values can be evaluated with the
+same indicators as in the last section.
+
+%TODO table
+
+\subsubsection{Feeding back correction values}
+%TODO
+
+\section{Future Work}
+%TODO
 %-sorting more useful if using a different list update algo? (with slower
 %	convergence)
 %-analyze longer transitions, i.e. not all a->b, a!=b, but all a->b->c, a!=b!=c
@@ -848,7 +728,7 @@ all cols:
 %-bzip does bw block wise. this means more transitions. reordering more useful
 %	there? maybe that's why chapin's results were better
 
-\chapter{Ordering more columns independently}
+\chapter{Sorting more columns independently}
 
 %-transition from last 2nd-order context in first 1st-order context to first
 % 2nd-order context in second 1st-order context relevant?
@@ -864,7 +744,7 @@ Chapin's metrics or the handpicked order, while some actually make compression
 worse than the natural order although, when used only on the first column they
 produce good results.
 
-This makes to a point, since the Badness metric was designed for the very
+This makes sense to a point, since the Badness metric was designed for the very
 specific purpose of finding an ideal reordering of blocks of MTF code (for
 which only the order of the first column is changed), while Chapin's metrics
 find more general similarities between blocks of BW code.
@@ -873,24 +753,24 @@ So in this chapter I try to make specific orders for more columns than just the
 first to increase the compression gained from reordering.
 
 \section{Generic and specific orders}
-%TODO proper definitions: order, specific order (dictionary), prefix
 
 During the sorting stage of the BWT, more than one sort order can be given. In
-the simplest case they are all generic orders: The rows are first sorted by
-their first symbol according to the first sort order given. Subsequent symbols
-are used as tie breakers where the previous ones were all the same, with the
-\(n\)-th symbols of a row being sorted according to the \(n\)-th order given.
+the simplest case they are all \emph{generic orders}: The rows are first sorted
+by their first symbol according to the first sort order given. Subsequent
+symbols are used as tie breakers where the previous ones were all the same, with
+the \(n\)-th symbols of a row being sorted according to the \(n\)-th order
+given.
 
 To simplify, there don't need to be sort orders specified for each column; in
 this case, the last order is used as the default for all following columns.
 
 For example, the input \texttt{mississippi} sorted with the order \texttt{[i, m,
 p, s]} for the first and \texttt{[s, p, m, i]} for all following columns would
-yield the BW table
+yield the BW table~\ref{tab:example2} and the BW code \texttt{msspiipiiss}.
 
 \begin{table}
 \centering
-\begin{tabular}{|r||ttttttttttt|}
+\begin{tabular}{|r||tttttttttt|t|}
 \hline
 0 & i & s & s & i & s & s & i & p & p & i & m \\
 1 & i & s & s & i & p & p & i & m & i & s & s \\
@@ -905,17 +785,18 @@ yield the BW table
 10 & s & i & p & p & i & m & i & s & s & i & s \\
 \hline
 \end{tabular}
-%TODO
-\caption{example table}
+\label{tab:example2}
+\caption{BW table for the input \texttt{mississippi} using two different sort
+orders.}
 \end{table}
 
-and the BW code \texttt{msspiipiiss}.
-
-The more complex case is that of specific orders. Here, for the \(n\)-th column,
+The more complex case is that of \emph{specific orders}. A specific order is
+actually a collection of orders: for the \(n\)-th column (starting at 1),
 multiple orders are given, one for each subsequence of symbols of length \(n -
-1\) that is the beginning of a row in the BW table (the prefix). The order
-for the first column is of course still a generic one, since there is only one
-prefix of length zero.
+1\) that is the beginning of a row in the BW table (the \emph{prefix}). The
+order for the first column is of course still a generic one, since there is only
+one prefix of length zero. Symbols are compared using the order belonging to
+their prefix.
 
 For example, suppose the strings \texttt{aa}, \texttt{ab}, \texttt{ba} and
 \texttt{bb} appear at the beginning of rows in a BW table. The order for the
@@ -933,9 +814,7 @@ They would be sorted as follows:
 
 If the default order is a specific one, it has to be used for columns with depth
 greater than the prefix length of the order. In this case, the symbols
-immediately preceding the symbol to be sorted must be used as a prefix (instead
-of the symbols at the beginning of the row). This is important to allow
-reversibility (see next section).
+immediately preceding the symbol to be sorted are used as a prefix.
 
 Using specific orders, the transitions within different contexts can be
 optimized separately. For example, the transition in the BW code from
@@ -950,11 +829,11 @@ transitions that can be optimized: If the input has \(n\) distinct symbols,
 there are \(n - 1\) transitions in the first column. In the second column, there
 are up to \(n - 1\) transitions in the context of each of the \(n\) symbols. In
 general, if there are special orderings for \(k\) columns given, there are up to
-\(\sum_{i=0}^{k} n^{i} \cdot (n - 1)\) transitions. ``Up to'', because not every
-symbols has to appear after every other symbol. In fact, the further you get
-into the columns, the bigger the difference between the upper bound and the
-actual number of encountered transitions will be. The individual context blocks
-will of course also get smaller.
+\(\sum_{i=1}^{k} n^{i - 1} \cdot (n - 1)\) transitions. ``Up to'', because not
+every symbol has to appear after every other symbol. In fact, the greater \(k\)
+gets, the bigger the difference between the upper bound and the actual number of
+encountered transitions will be. The individual context blocks will of course
+also get smaller, meaning less information for the metrics to work with.
 
 %-overhead
 
@@ -966,7 +845,8 @@ needs to be reversible.
 I can show that it is, if only two sort orders are given (the second one can be
 either generic or specific). I have, however, been unable to show reversibility
 for an arbitrary number of sort orders. But I believe it is possible and will
-give my unfinished algorithm and point out the part where it fails in some cases.
+describe my approach to the problem and point out the part where it fails in
+some cases.
 
 \subsection{Two Orders}
 
@@ -984,7 +864,7 @@ by the sequences of symbols that follow, and the rows where that symbol is in
 the last column are sorted by the same sequences.
 
 But with two orders, the sequences are sorted differently when they begin in the
-first column than when they begin in the second since the sort order for the
+first column than when they begin in the second, since the sort order for the
 first column is different from that of the other columns.
 
 This problem can be solved by ``looking ahead'' one more symbol and reordering
@@ -997,81 +877,119 @@ column to an index in the last column.
 \State $sym \gets first\_col[idx]$
 \State $num \gets$ number of appearances of $sym$ in $first\_col$ with index $<
 idx$
-\State $possible\_idx \gets [i | last\_col[i] = sym]$\Comment{this list must be
-sorted}
+\State $possible\_idx \gets [i | last\_col[i] = sym]$
+\State sort $possible\_idx$\Comment{Only necessary if the list is not created
+in the correct order to begin with.}
 \State sort $possible\_idx$ according to $second\_order$, using $first\_col[i]$
-as the key for element $i$\Comment{this must be a stable sort}
+as the key for element $i$\Comment{This must be a stable sort.}
 \State \Return $possible\_idx[num]$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
-%TODO line 5 only thing different from normal BW
-In line 5, %TODO correct line?
-the possible indices are sorted as though the second order was used for the
-first column. Since all subsequent orders are the same (there are only two),
-this means the sequences at the beginning of the rows with those indices are in
-the same order as when they appear starting in the second column. We now have
-the same situation as if we were reversing a BWT with only one order and can
-return the appropriate index.
-
-%TODO specific order, why it's important default order uses symbol directly
-% before
+In line 6, the possible indices are sorted as though the second order was used
+for the first column. Since all subsequent orders are the same (there are only
+two), this means the sequences at the beginning of the rows with those indices
+are in the same order as when they appear starting in the second column. We now
+have the same situation as if we were reversing a BWT with only one order and
+can return the appropriate index.
 
 \subsection{More Orders}
 
 I have tried to modify the algorithm to work with more orders, but what I have
 so far can potentially create a livelock.
 
-The algorithm doesn't return only one index, but a sequence of indices. During
-execution, many possible sequences of indices may have to be saved to
+The basic idea is an extension of the algorithm for two orders: ``looking
+ahead'' and reordering to get the correct index.
+
+The algorithm doesn't return only one index, but a sequence of indices.
+During execution, many possible sequences of indices may have to be saved to
 determine the correct one, so this is, first of all, an optimization -- if we
-have all those correct indices, why only return one? But it can also become
+have all those correct indices, why only return one?
+
+But it can also become
 necessary for correctness to return more than one index if there are multiple
 possible index sequences that would decode the whole file. They all give the
 correct result, but returning only the first index of one of them might make it
 impossible to correctly continue the sequence with the next call to the
-function.
+function. That is because, although they all produce the correct result, only
+one is actually correct (the correct continuation of a row in the BW table). If
+an incorrect one is returned, the next call to the function may compute a
+different number of appearances of the symbol before the (incorrect) index and
+thus produce an incorrect continuation.
 
-\begin{algorithmic}[1]
-\Procedure{next\_indices}{$idx$, $first\_col$, $last\_col$, $orders$, $history$}
-\State $sym \gets first\_col[idx]$
-\State $num \gets$ number of appearances of $sym$ in $first\_col$ with index $<
-idx$
-\State $possible\_idx \gets [([i], \True) | last\_col[i] = sym]$
-\EndProcedure
-\end{algorithmic}
+The basic steps in the adapted algorithm are:
+
+\begin{enumerate}
+  \item Get the symbol at the given index in the first column.
+  \item Record the number of appearances the symbol has in the first column
+  before the given index.
+  \item Make a list of sequences, each beginning with a possible index in the
+  last column (i.e. where the symbol appears in the last column).
+  \item Sort the sequences according to the symbols at the given indices, the
+  \(n\)-th symbols according to the \(n + 1\)-st order.
+  \item If all orders have been used in the previous step (and therefore only
+  the default order remains), or if all the strings of symbols corresponding to
+  the sequences of incides are unique, return the index sequence at the position
+  that was recorded in step 2.
+  \item Otherwise, call the function recursively for every index at the end of
+  one of the index sequences to get more indices for sorting. Also pass along a
+  history of already visited indices, so the recursive call knows not to return
+  any of them, as they're obviously incorrect (and would lead to cycles).
+\end{enumerate}
+
+The problem with this algorithm lies in the last step: A recursive call may not
+return a result, because what the recursive call considers the correct result is
+contained in the history, and can not be returned.
+
+If no history is passed along, a situation can occur in which, while calculating
+the next index for index \(i\), a continuation of a possible (but in fact
+incorrect) index sequence whose last index is \(j\) is needed. But during the
+recursive call a continuation for the index \(i\) is requested: livelock ensues.
+
+Not computing a continuation is not an option either, since then there is no
+knowing whether the incomplete sequence has been sorted correctly. If it is not,
+it might shift the elements of the list so that the number recorded in step 2
+points to the wrong sequence.
 
 \section{Computing the Orders}
 
-Actually computing specific orders for more than one column is fairly
-straightforward: First, the order for the first column is computed as in the
-previous chapter. The \(n\)-th specific order is a collection of orders, one for
-each subsequence of length \(n - 1\). For each of these subsequences, the
-context block is extracted from the BW code and the order computed as if it were
-the first order.
+Actually computing orders for more than one column is fairly straightforward,
+although there are two possible approaches, one starting with the lowest level
+orders, the other starting with the highest level ones.
 
-%TODO describe both approaches, describe why i use the bad one
+Starting with the highest level ones has the advantage that the metric
+computing the lower level orders already knows which order the context blocks
+will be in.
+When doing it the other way around, the lower levels have to assume that the
+context blocks they try to reorder are in an order that is likely to change
+after the higher levels are done.
 
-Unfortunately, with this approach the orders that are computed first are likely
-to get messed up again, as during calculating the \(n\)-th order context blocks
-of the \(n + 1\)-st order are assumed to be in an order that is likely to change
-when the \(n + 1\)-st order is computed.
+However, starting at the lowest level has the advantage that all the information
+is there from the beginning. The higher level orders are not concerned with
+where their context blocks end up in the BW table. In contrast, the metric for
+the lower level orders needs to know the blocks it is supposed to reorder. This
+makes it necessary to wait for the TSP solver to give the higher level orders,
+and then do another BW encode with the new order.
 
-The alternative would be to first compute all the highest level orders, so that
-the transitions ``further into the table'' are already done and the lower next
-order can be computed with the correct higher level transitions. 
+For this reason, my implementation uses the simpler approach.
 
 \section{Results}
+
+Compression results using one generic and one specific order for the file book1
+can be seen in table~\ref{tab:resultsbook1twoorders}. The sizes are in bits,
+overhead is not taken into account. The two result columns are for the cases
+that the last computed order is used as the default order, and that the natural
+order is used as the default, respectively.
 
 \begin{table}
 \centering
 \begin{tabular}{c|ccc|c|c}
 \multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
-\multicolumn{1}{c}{\rot{entropy length prediction}} &
+\multicolumn{1}{c}{\rot{Huffman prediction}} &
 \multicolumn{1}{c}{\rot{MTF prediction}} &
-\multicolumn{1}{c}{\rot{out size all columns}} & \multicolumn{1}{c}{\rot{out
-size first columns}} \\ \hline
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first columns}}
+\\ \hline
 \multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2140704 &
 2132844 \\ \cline{2-6}
 & \ding{55} & \ding{55} & generic mean & 2137932 & 2131678\\ \cline{2-6}
@@ -1104,17 +1022,38 @@ size first columns}} \\ \hline
 & \ding{51} & sparse & specific mean & 2138153 & 2130583 \\ \cline{2-6}
 & \ding{51} & sparse & specific median & 2138909 & 2130750 \\ \hline
 \multicolumn{4}{c|}{natural order} & 2136995 & 2136995 \\ \hline
-\multicolumn{4}{c|}{aeiou} & 2132079 & 2136451 \\ \hline
-\multicolumn{4}{c|}{Chapin hst diff} & 2139151 & 2135040 \\ \hline
-\multicolumn{4}{c|}{Chapin inv} & 2135684 & 2133483 \\ \hline
-\multicolumn{4}{c|}{Chapin inv log} & 2136573 & 2133527 \\ \hline
+\multicolumn{4}{c|}{``aeiou\ldots''} & 2132079 & 2136451 \\ \hline
+\multicolumn{4}{c|}{histogram differences} & 2139151 & 2135040 \\ \hline
+\multicolumn{4}{c|}{number of inversions} & 2135684 & 2133483 \\ \hline
+\multicolumn{4}{c|}{number of inversions log} & 2136573 & 2133527 \\ \hline
 \end{tabular}
-%TODO
-\caption{Simulated compression results for book1 of the Calgary Corpus using
-two orders, in size 6150168}
+\label{tab:resultsbook1twoorders}
+\caption{Simulated compression results for book1 of the Calgary Corpus using two
+orders computed with different metrics. All sizes in bits without overhead, size
+of the input is 6150168 bits.}
 \end{table}
 
-\section{Further Work}
+Some observations about the results:
+
+\begin{itemize}
+  \item When used on all columns, the performance is always worse than with only
+  one order, and with the exception of Chapin's inversion metrics, worse than
+  with the natural order. Orders computed for the second column seem to be very
+  poor default orders.
+  \item When the natural order is used as the default\footnote{Note that this
+  requires the use of three orders during compression, and I can not show that
+  the transformation is reversible.}, almost all variations of the badness
+  metric are doing better than the best result when using only one order. Again,
+  the badness metric seems to be good at reordering the transitions if it knows
+  how the next column will be sorted.
+\end{itemize}
+
+Unfortunately, the overhead required to store all the orders far outweighs the
+compression gains. Since book1 has 82 distinct symbols, 83 orders are needed
+(one for the first column). These would need \(83 \cdot 1684 = 139772\) bits to
+store, opposed to the less than \(7000\) bits of compression gain.
+
+\section{Future Work}
 
 %-selecting only a limited number of distinct orders for more efficient format
 %-maybe make a selection of frequently useful orders that can be accessed in the
@@ -1122,37 +1061,30 @@ two orders, in size 6150168}
 
 \chapter{Exceptions to MTF}
 
-%-when removing blocks from the bw, transitions are ripped out and  the computed
-% order isn't correct anymore
-%-bzip2 has the ability to switch between multiple huffman tables. maybe that
-% makes exceptions to mtf superfluous
-%-adaptive entropy coder might also limit the problem
-%-when encoded with mtf, no information about underlying symbols remains,
-% frequencies can't be exploited as well
-
-This chapter doesn't have a strong relation to the previous chapters. It's about
-how some parts of the BW code don't contextualize very well and therefore aren't
-very suitable for encoding using MTF. Excepting unsuitable contexts from the MTF
-phase, and instead compression them directly with an entropy coder, can increase
-overall compression.
+This chapter is about how the MTF phase is not very suitable for parts of the BW
+code that do not contextualize well. Excepting these unsuitable blocks from the
+MTF phase, and instead compression them directly with a Huffman coder, can
+increase overall compression.
 
 \section{Related Work}
 
-adaptive coders, fenwick noticed that arithmetic coders without a sliding window
-were performing worse because frequencies of mtf change\cite{fenwick1996block}
+Many publications have examined different list-update algorithms with respect to
+their potential to replace MTF in BW compression. The one I am aware of is by
+Gagie and Manzini\cite{gagie2007listupdate}, in which they also give an overview
+of other work.
 
-gagie, manzini overview of different list update algos that have been
-examined\cite{gagie2007listupdate}
+Fenwick\cite{fenwick1996block} noticed that an arithmetic coder which assumes
+uniform frequencies of MTF codes throughout the entire code perform worse than
+one which adapts based on the recent history, because symbol frequencies of MTF
+codes are subject to change.
 
-chapin tried using two list update algos
-\cite{chapin2000switching,chapin2001diss}. also assumes that one algo isn't
-universally the best
+Chapin\cite{chapin2000switching,chapin2001diss} tried using two different
+list-update algorithms, assuming that one is not universally the best.
 
-wirth, moffat, altered or no list update \cite{wirth2001ranks}
+Wirth and Moffat\cite{wirth2001ranks} attempted to skip the second step of the
+compression altogether.
 
 \section{The Problem}
-
-%TODO entropy coder -> Huffman
 
 In the BW table, rows that begin with the same symbols are sorted one below the
 other, with the symbols immediately preceding them forming part of the BW code.
@@ -1171,13 +1103,13 @@ code. And if the current symbol in the BW code changes to one of the other
 likely symbols, it is likely to be close to the front of the MTF alphabet,
 meaning a low code will follow.
 
-When the resulting MTF code is passed to the (static) entropy coder, it
+When the resulting MTF code is passed to the (static) Huffman coder, it
 recognizes that very low MTF codes (and especially 0) appear much more
 frequently than others and assigns them much shorter codes.
 
 But now consider that not all symbols contextualize well, i.e. that the BW code
-generated by the rows that begin with that symbol doesn't contain long runs and
-doesn't only contain symbols from a small set.
+generated by the rows that begin with that symbol does not contain long runs and
+does not only contain symbols from a small set.
 
 For example, consider rows beginning with ``\texttt{. }''. These typically mark
 the end of a sentence and are followed by the next sentence. The symbols in the
@@ -1187,38 +1119,62 @@ word. But the way the next sentence starts doesn't really give any additional
 information, as it doesn't say anything about what the last symbol of the
 previous sentence was.
 
-If a BW code like this is encoded with MTF, there won't be any long runs of
-zeros and the codes will on average be much higher than in most of the other MTF
-code. The code will be erratically jumping, as there is no real connection
-between consecutive rows in the BW table.
+If a BW code like this is encoded with MTF, there will likely not be any long
+runs of zeros and the codes will, on average, be much higher than in most of the
+other MTF code. The code will be erratically jumping, as there is no real
+connection between consecutive rows in the BW table.
 
-But since the entropy coder considers the whole MTF code to make the code
+But since the Huffman coder considers the whole MTF code to make the code
 book and assigns very short codes to low MTF codes, it also assigns very long
 codes to higher MTF codes. This means that this MTF code is encoded with some
-very long entropy codes and will get rather big.
+very long Huffman codes and will get rather big.
 
 On top of that, even if there are still only few high MTF codes, their slightly
 increased frequency might actually affect the statistical analysis of the
-Huffman coder: If there are more high codes, they will get shorter Huffman
+Huffman coder: If there are more high MTF codes, they will get shorter Huffman
 codes, causing some of the lower codes to get longer ones.
-%TODO not clear how this is a problem
+
+The problem here is not with the Huffman coder -- it does exactly what it is
+supposed to. The problem is that encoding parts of the BW code that do not
+contextualize well with MTF does not make sense to begin with. There is nothing
+gained in doing it as opposed to encoding the part directly with Huffman coding.
 
 \section{The Solution}
 
 Symbols that don't contextualize well are not suited for the MTF phase. They
-should skip that phase and be encoded with an entropy coder separately.
+should skip that phase and be encoded with a Huffman coder separately.
 
 Looking at the ``\texttt{. }'' example again: The order in which the symbols in
 the BW appear is not related to the beginning of the row and so the MTF code
 would be erratic. But they are all symbols appearing at the end of words, and so
 some symbols are more likely to appear than others -- a perfect candidate for
 entropy coding.
-%TODO format, overhead
+
+To estimate the overhead incurred by such a modification, consider this possible
+format to store the encoded data: The Huffman encoded MTF code is preceded by
+the number of MTF codes to be decoded. Any time a part of BW code is omitted
+from the MTF code, a special code is written to the MTF instead. All the parts
+that were excepted from the MTF phase are Huffman encoded and appended to the
+Huffman code of the MTF code in the order they were removed from the BW code,
+each preceded by its number of symbols.
+
+The decoder first decodes the first block of Huffman code and so gets the MTF
+code. It knows when to stop because the length of the MTF code is given.
+Decoding the MTF goes as usual, except when one of the special codes is
+encountered: these are ignored for the purpose of decoding, but their position
+marked for later. When the MTF is decoded, blocks of directly Huffman encoded BW
+code following it are decoded and inserted at the positions marked earlier.
+After this, the full BW code is reconstructed and decoding can proceed as usual.
+
+Assuming that 64 bits are (more than) enough to store the lengths, and the
+Huffman code the special MTF code gets is 20 bits long (which seems reasonable),
+this format needs an overhead of \(64 + n \cdot 84\) bits, where \(n\) is the
+number of blocks excepted from the MTF phase.
 
 \subsection{Selecting symbols to be excepted}
 
-In order to find symbols that don't contextualize well and should be excepted
-from the MTF phase, first do a regular BWT and MTF encode. For each distinct
+In order to find symbols that do not contextualize well and should be excepted
+from the MTF phase, first do a regular BW and MTF encode. For each distinct
 symbol in the input, cut out the MTF code corresponding to the BW code from the
 rows starting with that symbol. Calculate the average of the codes. If it is
 above a threshold, consider the symbol not suitable for MTF. Additionally,
@@ -1226,10 +1182,73 @@ require the MTF code to have a certain length to be excepted, in order not to
 let the overhead from the special treatment destroy the gains.
 
 \section{Results}
-
+%-when removing blocks from the bw, transitions are ripped out and  the computed
+% order isn't correct anymore
+%-bzip2 has the ability to switch between multiple huffman tables. maybe that
+% makes exceptions to mtf superfluous
+%-adaptive entropy coder might also limit the problem
+%-when encoded with mtf, no information about underlying symbols remains,
+% frequencies can't be exploited as well
 \section{Future Work}
 
 %-except smaller contexts, e.g. '. ' instead of '.'
+%-better finding exceptions
+
+\appendix
+
+\chapter{Compression results using one order}
+\label{app:resultsoneorder}
+
+\begin{table}
+\centering
+\begin{tabular}{c|ccc|c|c}
+\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
+\multicolumn{1}{c}{\rot{Huffman prediction}} &
+\multicolumn{1}{c}{\rot{MTF prediction}} &
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first column}}
+\\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 147160 & 145360
+\\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 146329 & 145027 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic median & 146346 & 145046 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific mean & 146075 & 145026 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific median & 146509 & 145088 \\ \cline{2-6}
+& \ding{55} & complete & \ding{55} & 146995 & 145395 \\ \cline{2-6}
+& \ding{55} & complete & generic mean & 145952 & 144928 \\ \cline{2-6}
+& \ding{55} & complete & generic median & 146225 & 145067 \\ \cline{2-6}
+& \ding{55} & complete & specific mean & 145671 & 144939 \\ \cline{2-6}
+& \ding{55} & complete & specific median & 146124 & 145119 \\ \cline{2-6}
+& \ding{55} & sparse & \ding{55} & 147000 & 145395 \\ \cline{2-6}
+& \ding{55} & sparse & generic mean & 145519 & 144941 \\ \cline{2-6}
+& \ding{55} & sparse & generic median & 145910 & 144995 \\ \cline{2-6}
+& \ding{55} & sparse & specific mean & 146043 & 144966 \\ \cline{2-6}
+& \ding{55} & sparse & specific median & 146904 & 145121 \\ \cline{2-6}
+& \ding{51} & \ding{55} & \ding{55} & 146494 & 144961 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic mean & 145900 & 144853 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic median & 146071 & 144992 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific mean & 145637 & 144922 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific median & 145831 & 144882 \\ \cline{2-6}
+& \ding{51} & complete & \ding{55} & 146354 & 144992 \\ \cline{2-6}
+& \ding{51} & complete & generic mean & 145978 & 144798 \\ \cline{2-6}
+& \ding{51} & complete & generic median & 145801 & 144976 \\ \cline{2-6}
+& \ding{51} & complete & specific mean & 146815 & 145015 \\ \cline{2-6}
+& \ding{51} & complete & specific median & 146061 & 144945 \\ \cline{2-6}
+& \ding{51} & sparse & \ding{55} & 146354 & 144987 \\ \cline{2-6}
+& \ding{51} & sparse & generic mean & 145976 & 144798 \\ \cline{2-6}
+& \ding{51} & sparse & generic median & 145801 & 144976 \\ \cline{2-6}
+& \ding{51} & sparse & specific mean & 146011 & 144959 \\ \cline{2-6}
+& \ding{51} & sparse & specific median & 145862 & 144998 \\ \hline
+\multicolumn{4}{c|}{natural order} & 145457 & 145457 \\ \hline
+\multicolumn{4}{c|}{``aeiou\ldots''} & 144742 & 145378 \\ \hline
+\multicolumn{4}{c|}{histogram differences} & 145226 & 145237 \\ \hline
+\multicolumn{4}{c|}{number of inversions} & 145004 & 144970 \\ \hline
+\multicolumn{4}{c|}{number of inversions log} & 145613 & 145071 \\ \hline
+\end{tabular}
+%TODO
+\caption{Simulated compression results for paper1 of the Calgary Corpus using
+one order computed with different metrics. All sizes in bits without overhead,
+size of the input is 425288 bits.}
+\end{table}
 
 \bibliographystyle{plain}
 \bibliography{bib}
