@@ -1,0 +1,7 @@
+simulating compression for file /home/dddsnn/Dokumente/Studium/BA/calgary/book1
+minimum length of an mtf block for an mtf exception: 0
+threshold for the mean mtf value in a block for an mtf exception: 4
+in size: 6150168
+
+natural order: 2100693 (mtf exceptions: [b'\x00', b'\n', b'\x1a', b' ', b'!', b'&', b')', b'*', b'+', b',', b'.', b'0', b'5', b'7', b':', b';', b'=', b'>', b'?', b'E', b'U', b'V', b'X'])
+time: 38s
