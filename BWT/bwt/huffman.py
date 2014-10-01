@@ -1,3 +1,5 @@
+"""This module is a very basic two-pass Huffman library."""
+
 import bitstring
 from collections import namedtuple
 import heapq
@@ -303,21 +305,3 @@ def decode_from_bits_static(bits):
     """
     cb = deserialize_codebook(bits)
     return decode_data(bits, cb)
-
-if __name__ == '__main__':
-    with open('/home/dddsnn/Downloads/calgary/book1', 'rb') as file:
-        bs = file.read(10000)
-    s = b'aaaaaaaaaaaaaaaaab'
-    enc = encode_to_bits_static(bs)
-    dec = decode_from_bits_static(enc)
-    print(bs == dec)
-
-#     weights = symbol_frequencies(s)
-#     lengths = codeword_lengths(weights)
-#     codebook = canonical_codebook(lengths)
-#     ser = serialize_codebook(codebook)
-#     des_cb = deserialize_codebook(ser)
-#     print(des_cb == codebook)
-#     enc = encode_data(s, codebook)
-#     dec = decode_data(enc, codebook)
-#     print(s == dec)

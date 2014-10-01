@@ -1,3 +1,6 @@
+"""This module contains functions to encode and decode BWT and MTF (full and
+    partial."""
+
 from bwt import BWEncodeResult
 from collections.abc import Mapping
 from collections import namedtuple

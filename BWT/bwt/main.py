@@ -1,3 +1,6 @@
+"""This module serves as the main user interface. All basic functions like
+    computing sort orders and simulating compression are available from here."""
+
 from bwt import *
 import bwt.coder as cd
 import bwt.analyzer as an
@@ -565,11 +568,10 @@ def assemble_multicol_orders(work_dir, metric):
 
 if __name__ == '__main__':
     start_time = time.time()
-    work_dir = '/home/dddsnn/tmp/null/'
-    in_file_path = '/home/dddsnn/Dokumente/Studium/BA/calgary/book1'
+    work_dir = '/path/to/work/directory/'
+    in_file_path = '/path/to/input/file'
     metrics = [('chapin_hst_diff', {}), ('chapin_inv', {}),
                ('chapin_inv', {'log':True})]
-#     metrics = []
     for w in [True, False]:
         for entr_len in [False, 'complete', 'sparse']:
             for new_pen in [False, 'generic_mean', 'generic_median',
@@ -577,30 +579,6 @@ if __name__ == '__main__':
                 opts = {'weighted':w, 'entropy_code_len':entr_len,
                         'new_penalty':new_pen, 'new_penalty_log':{}}
                 metrics.append(('badness', opts))
-#     metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
-#                             'weighted': False, 'new_penalty_log': {},
-#                             'mtf_prediction_correction':14.76774193548387}),
-#                ('badness', {'new_penalty': 'generic_mean',
-#                             'entropy_code_len': False, 'weighted': False,
-#                             'new_penalty_log': {},
-#                             'mtf_prediction_correction':7.016073054355908}),
-#                ('badness', {'new_penalty': 'generic_median',
-#                             'entropy_code_len': False,
-#                             'weighted': False, 'new_penalty_log': {},
-#                             'mtf_prediction_correction':9.033012379642367}),
-#                ('badness', {'new_penalty': 'specific_mean',
-#                             'entropy_code_len': False,
-#                             'weighted': False,
-#                             'new_penalty_log': {},
-#                             'mtf_prediction_correction':5.2337720496925035}),
-#                ('badness', {'new_penalty': 'specific_median',
-#                             'entropy_code_len': False,
-#                             'weighted': False, 'new_penalty_log': {},
-#                             'mtf_prediction_correction':6.9992559523809526})]
-#     metrics = [('badness', {'new_penalty': False, 'entropy_code_len': False,
-#                             'weighted': False, 'new_penalty_log': {}})]
-
-    metrics = []
 
 #     make_aux_data(work_dir, in_file_path, col_depth=1)
 
@@ -608,17 +586,10 @@ if __name__ == '__main__':
 
 #     write_tsplib_files(work_dir, metrics, print_rel_error=False)
 
-    print_simulated_compression_results(work_dir, metrics, in_file_path, 0, 4.5)
+#     print_simulated_compression_results(work_dir, metrics, in_file_path)
 
 #     print_mtf_prediction_evaluations(work_dir, metrics)
 
 #     print_entropy_length_prediction_evaluations(work_dir, metrics)
-
-#     natural_order = [bytes([x]) for x in range(256)]
-#     orders = [natural_order, list(reversed(natural_order)), natural_order]
-#     in_bs = b'missishjkdgfhjkdasdasdasdjklsdg'
-#     bw = cd.bw_encode(in_bs, orders)
-#     dec = cd.bw_decode(bw.encoded, bw.start_index, orders)
-#     print(in_bs == dec)
 
     print('time: {0:.0f}s'.format(time.time() - start_time))

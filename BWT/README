@@ -1,4 +1,59 @@
-bitstring, numpy
-all results can be reconstructed
-metric format (ugly)
-aux, nondenames etc. pickle
+This is the program used to generate the simulated compression results in my
+thesis on BW compression.
+
+Besides the Python library, it uses the bitstring library by Scott Griffiths
+which is included in this distribution, as well as NumPy which isn't (because
+who doesn't have numpy, right?).
+
+Additionally, to compute orders, the external TSP heuristic LKH by Keld Helsgaun
+(available at http://www.akira.ruc.dk/~keld/research/LKH/) is needed.
+
+The program can be used by loading the bwt.main module into an interactive
+Python interpreter and calling the appropriate functions from there.
+Alternatively, the main "method" of the module can be modified and then run as a
+script. There are example function calls that just need to be un-commented, as
+well as a list of all possible metrics.
+
+
+There are basically two different things this program can do:
+
+1.: Compute orders for a file and given metrics and simulate compression.
+i) Create an empty working directory and give its path, as well as the path to
+    the input file, to bwt.make_aux_data(). Specify col_depth if you want to
+    make orders for more than just the first column.
+    This will create a file "aux" in the working directory containing data that
+    is needed to compute the transitions.
+ii) Call bwt.make_transitions(), give it the same working directory and a list
+    of metrics to make transitions for (see below for specification). Specify
+    col_depth if you want to make orders for more than just the first column.
+    This has to be less than or equal to the col_depth specified in the previous
+    step.
+    This will create a .transitions file for every metric containing the metric
+    values for every possible transition (multiple files, if col_depth is
+    greater than 1). If new_penalty_log was given as an option to the badness
+    metric, a .new_penalty_log file will also be written for every .transitions
+    file.
+iii) Call bwt.write_tsplib_files(), give it the working directory and the list
+    of metrics. Specify print_rel_error if you want the maximum relative scaling
+    error to be printed (this takes a long time).
+    This will write a .par and .atsp file for every metric which will be used as
+    input to LKH, as well as a .nodenames file which is needed to map node
+    numbers back to their proper names (TSPLIB only allows nodes to have numbers
+    instead of names).
+iv) For every .par file in the directory, run LKH and give it the file as a
+    parameter.
+    This will create a .tour file for every .par file, containing the
+    approximation of an optimal tour using the transitions.
+v) Call bwt.print_simulated_compression_results(), give it the working
+    directory, the list of metrics and the path to the input file.
+    This will print the size of the compressed input file in bits without
+    overhead, using the orders computed with the metrics provided.
+vi) (Optional, informational) Call bwt.print_mtf_prediction_evaluations() or
+    bwt.print_entropy_length_prediction_evaluations() for evaluations of the
+    performance of the MTF or Huffman code predictors.
+
+2.: Simulate compression while excluding some context blocks from the MTF phase.
+
+
+
+Metric format:

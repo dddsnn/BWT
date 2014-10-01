@@ -1,3 +1,7 @@
+"""This module includes all the functionality to determine how best to compress
+    a file. Most notably this includes the metrics used to compute a reordering.
+"""
+
 import bwt.huffman as hf
 import bwt.coder as cd
 import sys
