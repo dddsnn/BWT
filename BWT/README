@@ -53,7 +53,42 @@ vi) (Optional, informational) Call bwt.print_mtf_prediction_evaluations() or
     performance of the MTF or Huffman code predictors.
 
 2.: Simulate compression while excluding some context blocks from the MTF phase.
-
+Just call bwt.print_simulated_compression_results() with the two optional
+arguments for minimum length and mean MTF threshold set. The working directory
+and metric arguments in this case don't matter, so you can use an empty string
+and empty list (it's ugly, I know). Although it is theoretically possible to
+compress with a combination of reordering and MTF exceptions, but the exceptions
+are performed after the reordering, so the order is likely to get messed up.
 
 
 Metric format:
+The way to specify a metric is a little inconvenient. Didn't get to prettifying
+it.
+A metric is a tuple of the metric name as a string, and metric options as a
+dictionary. If no options are given (i.e. an empty dictionary), default values
+are assumed.
+
+Valid metric names: 'chapin_hst_diff', 'chapin_inv' and 'badness'.
+
+Valid options for the different metrics:
+chapin_hst_diff: No options
+chapin_inv:
+    log (possible values: True, False):
+        Return the natural logarithm of the value instead of the value itself.
+        Defaults to False.
+badness:
+    weighted (possible values: True, False):
+        Whether the final value should be divided by the number of new symbols
+        on the right side of the transition. Defaults to False.
+    new_penalty (possible values: False, 'generic_mean', 'generic_median',
+                 'specific_mean', 'specific_median'):
+        Whether and which strategy should be used for predicting MTF codes of
+        new symbols on the right side of the transition. Defaults to False.
+    entropy_code_len (possible values: False, 'complete', 'sparse'):
+        Whether the difference in the number of bits used by the entropy coder
+        should be used to compute the badness, and which strategy should be
+        used to approximate them. Defaults to False.
+    new_penalty_log:
+        A dictionary to which the MTF predictions are to be written. Just pass
+        in an empty dictionary, the MTF prediction evaluation function will read
+        it (this is also ugly, I know).

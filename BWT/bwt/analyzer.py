@@ -360,12 +360,15 @@ def metric_badness(first_seq_a, first_seq_b, aux_data, **kwargs):
         kwargs: Keyword Arguments:
             weighted: Boolean, whether the badness should be weighted with the
                 number of new symbols in the right side. Defaults to False.
-            new_penalty: Boolean, whether a penalty should be given for new
-                symbols in the right side that don't appear in the left side.
-                Defaults to False.
-            entropy_code_len: Boolean, whether the difference in the number of
-                bits used by the entropy coder should be used to compute the
-                badness, rather than the plain difference between the codes.
+            new_penalty: False, 'generic_mean', 'generic_median',
+                'specific_mean' or 'specific_median'. Whether a penalty should
+                be given for new symbols in the right side that don't appear in
+                the left side, and which strategy should be used. Defaults to
+                False.
+            entropy_code_len: False, 'complete' or 'sparse'. Whether the
+                difference in the number of bits used by the entropy coder
+                should be used to compute the badness, rather than the plain
+                difference between the codes, and which strategy should be used.
                 Defaults to False.
             new_penalty_log: A dictionary to which the predictions of mtf codes
                 that aren't know are written. If it doesn't exist, a new key
