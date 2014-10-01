@@ -6,6 +6,9 @@ import math
 import numpy as np
 
 def select_mtf_exceptions(bw, min_length, threshold):
+    """Select symbols whose context blocks should be excluded from the MTF
+    phase.
+    """
     mtf = cd.mtf_encode(bw.encoded)
     contexts = {s:context_block(mtf, bw.firsts, bytes([s]))
                 for s in set(bw.encoded)}

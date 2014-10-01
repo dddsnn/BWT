@@ -10,7 +10,16 @@ import os
 from itertools import chain
 
 def make_aux_data(work_dir, in_file_path, col_depth=1):
-    """Create data commonly used in transition analysis."""
+    """Create the aux file containing data commonly used in transition analysis.
+
+    Args:
+        work_dir: The directory to which the aux file will be written.
+        in_file_path: The path to the input file (the compression of which is to
+            be optimized with reordering).
+        col_depth: The number of columns for which transition analysis should be
+            possible. If make_transitions() is to be called with col_depth n,
+            this col_depth must be >= n.
+    """
     with open(in_file_path, 'rb') as in_file:
         bs = in_file.read()
     raw = bs
@@ -63,7 +72,17 @@ def make_aux_data(work_dir, in_file_path, col_depth=1):
     return result
 
 def make_transitions(work_dir, metrics, col_depth=1):
-    """Create the transition analysis for a file."""
+    """Create the transition analyses for a set of metrics.
+
+    If the new_penalty_log option is set in a metric, the log is also written.
+
+    Args:
+        work_dir: The directory containing the aux file for the input file. The
+            output files are written to it.
+        metrics: A list of metrics for which the transitions should be computed.
+        col_depth: The number of columns for which transitions should be
+            computed (in order to create orders for multiple columns).
+    """
     with open(work_dir + 'aux', 'rb') as aux_file:
         aux_data = pickle.load(aux_file)
     prefixes = set([x[:i] for x in aux_data.firsts for i in range(col_depth)])
@@ -113,8 +132,21 @@ def write_trivial_tour(path, transitions):
         pickle.dump(numbers_to_names, names_file)
 
 def write_tsplib_files(work_dir, metrics, print_rel_error=False):
-    """Create and write the .tsp and .par files for the LKH program as well as
-    the file mapping the LKH node ids back to the node names."""
+    """Create the .tsp and .par files for the LKH program as well as the file
+    mapping the LKH node numbers back to the node names.
+
+    The transition values are scaled up and converted to integers, because LKH
+    only accepts integer inputs. Information about this scaling process is
+    printed during the process.
+
+    Args:
+        work_dir: The directory containing all .transition files relevant to the
+            metrics specified, and to which the output will be written.
+        metrics: A list of metrics for which the files should be written.
+        print_rel_error: If True, also print the maximum relative error between
+            all pairs of original/scaled values. This will slow the process down
+            by at least a factor of 100.
+    """
     file_names_list = [find_metric_file_names(work_dir, metric)
                              for metric in metrics]
     file_names = list(chain.from_iterable(file_names_list))
@@ -222,6 +254,17 @@ def write_tsplib_files(work_dir, metrics, print_rel_error=False):
             pickle.dump(numbers_to_names, names_file)
 
 def read_tsplib_files(in_path_tour, in_path_names):
+    """Read the computed tour and generate and order.
+
+    Args:
+        in_path_tour: The path to the .tour file containing the computed tour.
+        in_path_names: The name to the .nodenames file matching node numbers of
+            the tour to the symbols they represent.
+
+    Returns:
+        A sort order of symbols, like the elements of the orders list required
+        as input to bwt.coder.bw_encode().
+    """
     with open(in_path_tour, 'rt') as tour_file:
         line = tour_file.readline().rstrip()
         # skip until the TOUR_SECTION
@@ -244,7 +287,21 @@ def read_tsplib_files(in_path_tour, in_path_names):
 def print_simulated_compression_results(work_dir, metrics, in_file_path,
                                         mtf_exc_min_length=None,
                                         mtf_exc_threshold=None):
-    """Simulate compression of a file and print achieved compression."""
+    """Simulate compression of a file and print achieved compression.
+
+    Args:
+        work_dir: Directory containing all the .tour files relevant to the
+            metrics that are specified.
+        metrics: A list of metrics whose orders should be used to simulate
+            compression.
+        in_file_path: The path to the file that should be compressed.
+        mtf_exc_min_length: The minimum length required for a context block to
+            be excluded from the MTF phase. If None is given, no exclusions are
+            performed.
+        mtf_exc_threshold: The minimum value for the mean of all MTF codes
+            belonging to a context block for that block to be excluded from the
+            MTF phase. If None is given, no exclusions are performed.
+    """
     def final_bit_len(orders):
         bw = cd.bw_encode(bs, orders)
         if mtf_exc_min_length is not None and mtf_exc_threshold is not None:
@@ -304,6 +361,15 @@ def print_simulated_compression_results(work_dir, metrics, in_file_path,
         print()
 
 def print_mtf_prediction_evaluations(work_dir, metrics):
+    """Print different indicators for the performance of the mtf code
+        predictions.
+
+    Args:
+        work_dir: Directory containing the .tour and .nodenames files relevant
+            for the given metrics. Must also contain the aux file.
+        metrics: A list of metrics for which the predictor's performance should
+            be analyzed.
+    """
     with open(work_dir + 'aux', 'rb') as aux_file:
         aux_data = pickle.load(aux_file)
     for metric in metrics:
@@ -381,6 +447,15 @@ def print_mtf_prediction_evaluations(work_dir, metrics):
         print()
 
 def print_entropy_length_prediction_evaluations(work_dir, metrics):
+    """Print different indicators for the performance of the entropy code length
+        predictions.
+
+    Args:
+        work_dir: Directory containing the .tour and .nodenames files relevant
+            for the given metrics. Must also contain the aux file.
+        metrics: A list of metrics for which the predictor's performance should
+            be analyzed.
+    """
     with open(work_dir + 'aux', 'rb') as aux_file:
         aux_data = pickle.load(aux_file)
     for metric in metrics:
@@ -461,6 +536,16 @@ def find_metric_file_names(work_dir, metric):
     return list(set([f.rsplit(sep='.', maxsplit=1)[0] for f in metric_files]))
 
 def assemble_multicol_orders(work_dir, metric):
+    """Make a list of orders from .tour files in a directory.
+
+    Args:
+        work_dir: The directory containing all the necessary .tour files for the
+            numbers of orders that should be returned.
+        metric: The metric for which the orders should be assembled.
+
+    Returns: A list of orders, as is required as input for
+        bwt.coder.bw_encode().
+    """
     base_file_name = metric_unique_name(metric, b'')
     file_name_splits = [f.split('.')
                         for f in find_metric_file_names(work_dir, metric)]

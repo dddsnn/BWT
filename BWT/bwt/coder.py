@@ -6,7 +6,11 @@ import itertools as it
 NUM_CHARS = 25
 
 def bw_table(text):
-    """Create the Burrows-Wheeler table."""
+    """Create the Burrows-Wheeler table.
+
+    This is only for demo purposes with small inputs, as it has terribly
+    terrible memory requirements.
+    """
     table = [text]
     for i in range(len(text) - 1):
         table.append(table[i][1:] + table[i][0])
@@ -210,6 +214,23 @@ def bw_encode(bs, orders=None):
     return result
 
 def bw_decode(bs, start_idx, orders=None):
+    """Decode a string transformed with the BWT using an arbitrary number of
+    sort orders.
+
+    Does not produce correct results in its current form. E.g., the input
+    b'missishjkdgfhjkdasdasdasdjklsdg' will lead to a livelock when the orders
+    are a list containing the natural order, the reverse of the natural order,
+    and then the natural order again.
+
+    Args:
+        bs: Input bytes object.
+        start_idx: The index in bs of the first symbol of the output.
+        orders: The list of orders that was used to encode bs.
+
+    Returns:
+        Anything between the correct result, garbage and maximum recursion depth
+        reached. Is supposed to return the reverse of the BWT applied to bs.
+    """
     SeqTuple = namedtuple('SeqTuple', ['idx_seq', 'sym_seq', 'possible',
                                        'need_more'])
     def next_indices(idx, history):
@@ -333,6 +354,17 @@ def bw_decode(bs, start_idx, orders=None):
     return bytes([bs[i] for i in result_idx])
 
 def bw_decode_2_orders(bs, start_idx, orders=None):
+    """Decode a string encoded with the BWT using up to two orders.
+
+    Args:
+        bs: The encoded input, as a bytes object.
+        start_idx: The index in bs containing the first symbol of the output.
+        order: A list of at most two orders, as passed to bw_encode(). If more
+            than two are provided, a ValueError is raised.
+
+    Returns:
+        The reverse BWT of bs using the given orders, as a bytes object.
+    """
     # if no order was given, assume natural
     if not orders:
         orders = [[bytes([x]) for x in range(256)]]
