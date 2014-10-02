@@ -992,7 +992,7 @@ order is used as the default, respectively.
 \\ \hline
 \multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 2140704 &
 2132844 \\ \cline{2-6}
-& \ding{55} & \ding{55} & generic mean & 2137932 & 2131678\\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 2137932  & 2131678 \\ \cline{2-6}
 & \ding{55} & \ding{55} & generic median & 2140252 & 2132114 \\ \cline{2-6}
 & \ding{55} & \ding{55} & specific mean & 2139041 & 2131493 \\ \cline{2-6}
 & \ding{55} & \ding{55} & specific median & 2139429 & 2132034 \\ \cline{2-6}
@@ -1350,6 +1350,106 @@ modifications it is also fairly easy to implement.
 \caption{Simulated compression results for paper1 of the Calgary Corpus using
 one order computed with different metrics. All sizes in bits without overhead,
 size of the input is 425288 bits.}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{c|ccc|c|c}
+\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
+\multicolumn{1}{c}{\rot{Huffman prediction}} &
+\multicolumn{1}{c}{\rot{MTF prediction}} &
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first column}}
+\\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 110788 & 109071
+\\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 109355 & 108704 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic median & 109994 & 108845 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific mean & 109404 & 108697 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific median & 109822 & 108837 \\ \cline{2-6}
+& \ding{55} & complete & \ding{55} & 110427 & 108972 \\ \cline{2-6}
+& \ding{55} & complete & generic mean & 109319 & 108649 \\ \cline{2-6}
+& \ding{55} & complete & generic median & 109632 & 108728 \\ \cline{2-6}
+& \ding{55} & complete & specific mean & 109454 & 108656 \\ \cline{2-6}
+& \ding{55} & complete & specific median & 109669 & 108798 \\ \cline{2-6}
+& \ding{55} & sparse & \ding{55} & 110592 & 108974 \\ \cline{2-6}
+& \ding{55} & sparse & generic mean & 109401 & 108609 \\ \cline{2-6}
+& \ding{55} & sparse & generic median & 109654 & 108778 \\ \cline{2-6}
+& \ding{55} & sparse & specific mean & 109617 & 108743 \\ \cline{2-6}
+& \ding{55} & sparse & specific median & 109651 & 108761 \\ \cline{2-6}
+& \ding{51} & \ding{55} & \ding{55} & 109734 & 108730 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic mean & 109608 & 108800 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic median & 109603 & 108726 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific mean & 108842 & 108659 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific median & 109545 & 108797 \\ \cline{2-6}
+& \ding{51} & complete & \ding{55} & 109260 & 108780 \\ \cline{2-6}
+& \ding{51} & complete & generic mean & 109706 & 108763 \\ \cline{2-6}
+& \ding{51} & complete & generic median & 109112 & 108707 \\ \cline{2-6}
+& \ding{51} & complete & specific mean & 108688 & 108685 \\ \cline{2-6}
+& \ding{51} & complete & specific median & 109598 & 108706 \\ \cline{2-6}
+& \ding{51} & sparse & \ding{55} & 109255 & 108780 \\ \cline{2-6}
+& \ding{51} & sparse & generic mean & 109706 & 108763 \\ \cline{2-6}
+& \ding{51} & sparse & generic median & 109112 & 108707 \\ \cline{2-6}
+& \ding{51} & sparse & specific mean & 108839 & 108678 \\ \cline{2-6}
+& \ding{51} & sparse & specific median & 109598 & 108706 \\ \hline
+\multicolumn{4}{c|}{natural order} & 109241 & 109241 \\ \hline
+\multicolumn{4}{c|}{``aeiou\ldots''} & 108716 & 109166 \\ \hline
+\multicolumn{4}{c|}{histogram differences} & 109513 & 108985 \\ \hline
+\multicolumn{4}{c|}{number of inversions} & 108824 & 108777 \\ \hline
+\multicolumn{4}{c|}{number of inversions log} & 109080 & 108749 \\ \hline
+\end{tabular}
+\caption{Simulated compression results for progc of the Calgary Corpus using one
+order computed with different metrics. All sizes in bits without overhead, size
+of the input is 316888 bits.}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{c|ccc|c|c}
+\multicolumn{1}{c}{\rot{Metric}} & \multicolumn{1}{c}{\rot{weighted}} &
+\multicolumn{1}{c}{\rot{Huffman prediction}} &
+\multicolumn{1}{c}{\rot{MTF prediction}} &
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first column}}
+\\ \hline
+\multirow{30}{*}{Badness} & \ding{55} & \ding{55} & \ding{55} & 95282 & 92738
+\\ \cline{2-6}
+& \ding{55} & \ding{55} & generic mean & 93995 & 92349 \\ \cline{2-6}
+& \ding{55} & \ding{55} & generic median & 94105 & 92463 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific mean & 93770 & 92346 \\ \cline{2-6}
+& \ding{55} & \ding{55} & specific median & 94376 & 92635 \\ \cline{2-6}
+& \ding{55} & complete & \ding{55} & 95578 & 92641 \\ \cline{2-6}
+& \ding{55} & complete & generic mean & 94184 & 92066 \\ \cline{2-6}
+& \ding{55} & complete & generic median & 94123 & 92160 \\ \cline{2-6}
+& \ding{55} & complete & specific mean & 94083 & 92155 \\ \cline{2-6}
+& \ding{55} & complete & specific median & 94494 & 92228 \\ \cline{2-6}
+& \ding{55} & sparse & \ding{55} & 95578 & 92641 \\ \cline{2-6}
+& \ding{55} & sparse & generic mean & 94184 & 92066 \\ \cline{2-6}
+& \ding{55} & sparse & generic median & 94123 & 92160 \\ \cline{2-6}
+& \ding{55} & sparse & specific mean & 94083 & 92155 \\ \cline{2-6}
+& \ding{55} & sparse & specific median & 94494 & 92228 \\ \cline{2-6}
+& \ding{51} & \ding{55} & \ding{55} & 94509 & 92358 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic mean & 94120 & 92547 \\ \cline{2-6}
+& \ding{51} & \ding{55} & generic median & 93979 & 92485 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific mean & 94205 & 92481 \\ \cline{2-6}
+& \ding{51} & \ding{55} & specific median & 94344 & 92591 \\ \cline{2-6}
+& \ding{51} & complete & \ding{55} & 95078 & 92399 \\ \cline{2-6}
+& \ding{51} & complete & generic mean & 94315 & 92166 \\ \cline{2-6}
+& \ding{51} & complete & generic median & 94591 & 92263 \\ \cline{2-6}
+& \ding{51} & complete & specific mean & 94525 & 92198 \\ \cline{2-6}
+& \ding{51} & complete & specific median & 94691 & 92301 \\ \cline{2-6}
+& \ding{51} & sparse & \ding{55} & 95071 & 92399 \\ \cline{2-6}
+& \ding{51} & sparse & generic mean & 94315 & 92166 \\ \cline{2-6}
+& \ding{51} & sparse & generic median & 94591 & 92263 \\ \cline{2-6}
+& \ding{51} & sparse & specific mean & 94525 & 92198 \\ \cline{2-6}
+& \ding{51} & sparse & specific median & 94691 & 92301 \\ \hline
+\multicolumn{4}{c|}{natural order} & 93678 & 93678 \\ \hline
+\multicolumn{4}{c|}{``aeiou\ldots''} & 94139 & 93752 \\ \hline
+\multicolumn{4}{c|}{histogram differences} & 94531 & 93643 \\ \hline
+\multicolumn{4}{c|}{number of inversions} & 93732 & 92660 \\ \hline
+\multicolumn{4}{c|}{number of inversions log} & 94064 & 92823 \\ \hline
+\end{tabular}
+\caption{Simulated compression results for obj1 of the Calgary Corpus using one
+order computed with different metrics. All sizes in bits without overhead, size
+of the input is 172032 bits.}
 \end{table}
 
 \addtocontents{toc}{\setcounter{tocdepth}{-1}}
