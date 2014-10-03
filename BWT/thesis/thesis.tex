@@ -63,7 +63,6 @@ paper and can lead to considerable compression gains.
 
 However, this thesis will focus on only the three core stages, as these (in
 particular the first two) are the ones affected by the modifications examined.
-%TODO what contributing
 
 I wrote a program\footnote{If not distributed with this thesis, it is available
 at \url{https://github.com/dddsnn/BWT/tree/master/BWT}.} to test the effect of
@@ -112,9 +111,9 @@ table~\ref{tab:example1}.
 10 & s & s & i & s & s & i & p & p & i & m & i \\
 \hline
 \end{tabular}
-\label{tab:example1}
 \caption{BW table for the input \texttt{mississippi}. The last column is
 separated by a line to show the output of the transform.}
+\label{tab:example1}
 \end{table}
 The output of the transformation in this case is \texttt{pssmipissii}. In
 addition, the index of the row where the first symbol of the input string
@@ -615,11 +614,11 @@ compressed sizes using the natural and modified orders, respectively).
 \multicolumn{4}{c|}{number of inversions} & 2134449 (0.04) & 2136168 (0.01) \\ \hline
 \multicolumn{4}{c|}{number of inversions log} & 2134371 (0.04) & 2136131 (0.01) \\ \hline
 \end{tabular}
-\label{tab:resultsbook1}
 \caption{Simulated compression results for book1 of the Calgary Corpus using one
 order computed with different metrics. In parentheses, the increase in
 compression ratio compared to the natural order, in percentage points. All sizes
 in bits without overhead, size of the input is 6150168 bits.}
+\label{tab:resultsbook1}
 \end{table}
 
 Some observations about the results reordering only the first column:
@@ -746,12 +745,12 @@ table~\ref{tab:mtfeval}.
 \ding{51} & sparse & specific mean & 9.0 & 28.2 & 1.2 & 14.4 \\ \hline
 \ding{51} & sparse & specific median & 14.0 & 28.3 & 8.3 & 18.6 \\ \hline
 \end{tabular}
-\label{tab:mtfeval}
 \caption{Evaluation of the MTF predictor's performance on the file book1 of
-the Calgary Corpus using the different variants of the badness metric. The mean
-difference and the ``standard deviation'' are given both for all predictions,
-and for predictions where the actual value is less than the number of distinct
-symbols in the file.}
+the Calgary Corpus using the different variants of the badness metric. The file
+was compressed reordering only the first column. The mean difference and the
+``standard deviation'' are given both for all predictions, and for predictions
+where the actual value is less than the number of distinct symbols in the file.}
+\label{tab:mtfeval}
 \end{table}
 
 \subsubsection{Huffman code length predictor}
@@ -765,8 +764,44 @@ for the code lengths for each MTF code.
 The resulting pairs of actual and predicted values can be evaluated with the
 same indicators as in the last section.
 
-The full analysis can be found in the raw output files distributed with the
-program.
+The results of the evaluation for book1 can be seen in
+table~\ref{tab:huffeval}.
+
+\begin{table}
+\centering
+\begin{tabular}{ccc|c|c}
+\multicolumn{1}{c}{weighted} &
+\multicolumn{1}{c}{Huffman prediction} &
+\multicolumn{1}{c}{MTF prediction} &
+\multicolumn{1}{c}{mean diff} &
+\multicolumn{1}{c}{std dev} \\
+\ding{55} & complete & \ding{55} & -0.38 & 1.47 \\ \hline
+\ding{55} & complete & generic mean & -0.11 & 1.43 \\ \hline
+\ding{55} & complete & generic median & -0.46 & 1.69 \\ \hline
+\ding{55} & complete & specific mean & -0.27 & 1.48 \\ \hline
+\ding{55} & complete & specific median & -0.42 & 1.75 \\ \hline
+\ding{55} & sparse & \ding{55} & -0.13 & 0.76 \\ \hline
+\ding{55} & sparse & generic mean & -0.04 & 0.68 \\ \hline
+\ding{55} & sparse & generic median & -0.12 & 0.89 \\ \hline
+\ding{55} & sparse & specific mean & 0.32 & 0.82 \\ \hline
+\ding{55} & sparse & specific median & 0.06 & 0.69 \\ \hline
+\ding{51} & complete & \ding{55} & -0.46 & 2.00 \\ \hline
+\ding{51} & complete & generic mean & -0.41 & 1.90 \\ \hline
+\ding{51} & complete & generic median & -0.55 & 1.93 \\ \hline
+\ding{51} & complete & specific mean & -0.30 & 2.04 \\ \hline
+\ding{51} & complete & specific median & -0.43 & 1.57 \\ \hline
+\ding{51} & sparse & \ding{55} & 0.05 & 0.83 \\ \hline
+\ding{51} & sparse & generic mean & 0.24 & 0.83 \\ \hline
+\ding{51} & sparse & generic median & 0.06 & 0.78 \\ \hline
+\ding{51} & sparse & specific mean & 0.00 & 0.78 \\ \hline
+\ding{51} & sparse & specific median & -0.07 & 0.72 \\ \hline
+\end{tabular}
+\caption{Evaluation of the Huffman code predictor's performance on the file
+book1 of the Calgary Corpus using the different variants of the badness metric.
+The file was compressed reordering only the first column. Both the mean
+difference and the ``standard deviation'' are given.}
+\label{tab:huffeval}
+\end{table}
 
 \section{Future Work}
 
@@ -841,9 +876,9 @@ yield the BW table~\ref{tab:example2} and the BW code \texttt{msspiipiiss}.
 10 & s & i & p & p & i & m & i & s & s & i & s \\
 \hline
 \end{tabular}
-\label{tab:example2}
 \caption{BW table for the input \texttt{mississippi} using two different sort
 orders.}
+\label{tab:example2}
 \end{table}
 
 The more complex case is that of \emph{specific orders}. A specific order is
@@ -1080,11 +1115,11 @@ order is used as the default, respectively.
 \multicolumn{4}{c|}{number of inversions} & 2135684 (0.02) & 2133483 (0.06) \\ \hline
 \multicolumn{4}{c|}{number of inversions log} & 2136573 (0.01) & 2133527 (0.06) \\ \hline
 \end{tabular}
-\label{tab:resultsbook1twoorders}
 \caption{Simulated compression results for book1 of the Calgary Corpus using two
 orders computed with different metrics. In parentheses, the increase in
 compression ratio compared to the natural order, in percentage points. All sizes
 in bits without overhead, size of the input is 6150168 bits.}
+\label{tab:resultsbook1twoorders}
 \end{table}
 
 Some observations about the results:
@@ -1277,11 +1312,11 @@ i, s, y \\
 100 & 5 & 2100607 (0.59) & \textbackslash n, space, !, +, ``,'', ., :, ;, > \\
 100 & 6 & 2120885 (0.26) & \textbackslash n, ``,'', . \\
 \end{tabularx}
-\label{tab:resmtfexc}
 \caption{Simulated compression results for book1 of the Calgary Corpus using
 different parameters to select MTF exceptions. In parentheses, the increase in
 compression ratio compared to compression without exceptions, in percentage
 points. All sizes in bits without overhead. Input size is 6150168 bits.}
+\label{tab:resmtfexc}
 \end{table}
 
 Observations about the results:
