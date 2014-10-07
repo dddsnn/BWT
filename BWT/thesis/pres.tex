@@ -1,0 +1,164 @@
+\documentclass{beamer}
+
+\usepackage{tabularx}
+\usepackage{color}
+
+\beamertemplatenavigationsymbolsempty
+\newcolumntype{t}{>{\fontfamily{\ttdefault}\selectfont}c}
+
+\title{Burrows-Wheeler compression with modified sort orders and exceptions to
+the MTF phase, and their impact on the compression rate}
+\author{Marc Lehmann}
+\date{October 9, 2014}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Burrows-Wheeler compression}
+
+\begin{itemize}
+  \item M. Burrows and D.J. Wheeler in 1994
+  \item lossless compression
+  \item context-based
+  \item 3 stages in basic form
+\end{itemize}
+
+\pause
+
+Definitions:
+
+\begin{description}
+  \item[symbol] smallest logical unit of information
+  \item[string] sequence of symbols
+\end{description}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The Burrows-Wheeler Transform}
+
+Example: \texttt{mississippi}
+
+\begin{itemize}
+\item Write all cyclic shifts into a table.
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{|r||ttttttttttt|}
+\hline
+0 & m & i & s & s & i & s & s & i & p & p & i \\
+1 & i & s & s & i & s & s & i & p & p & i & m \\
+2 & s & s & i & s & s & i & p & p & i & m & i \\
+3 & s & i & s & s & i & p & p & i & m & i & s \\
+4 & i & s & s & i & p & p & i & m & i & s & s \\
+5 & s & s & i & p & p & i & m & i & s & s & i \\
+6 & s & i & p & p & i & m & i & s & s & i & s \\
+7 & i & p & p & i & m & i & s & s & i & s & s \\
+8 & p & p & i & m & i & s & s & i & s & s & i \\
+9 & p & i & m & i & s & s & i & s & s & i & p \\
+10 & i & m & i & s & s & i & s & s & i & p & p \\
+\hline
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The BWT}
+
+\begin{itemize}
+  \item Sort the table lexicographically to get the \emph{BW table}.
+  \item Last column is the output of the transform (\emph{BW code}).
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{|r||tttttttttt|t|}
+\hline
+0 & i & m & i & s & s & i & s & s & i & p & p \\
+1 & i & p & p & i & m & i & s & s & i & s & s \\
+2 & i & s & s & i & p & p & i & m & i & s & s \\
+3 & i & s & s & i & s & s & i & p & p & i & m \\
+4 & m & i & s & s & i & s & s & i & p & p & i \\
+5 & p & i & m & i & s & s & i & s & s & i & p \\
+6 & p & p & i & m & i & s & s & i & s & s & i \\
+7 & s & i & p & p & i & m & i & s & s & i & s \\
+8 & s & i & s & s & i & p & p & i & m & i & s \\
+9 & s & s & i & p & p & i & m & i & s & s & i \\
+10 & s & s & i & s & s & i & p & p & i & m & i \\
+\hline
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The BWT: context blocks}
+
+\begin{itemize}
+  \item \emph{Context block}: block of BW code corresponding to rows with a
+  specific symbol at the beginning.
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{|r||tttttttttt|t|}
+\hline
+0 & \color{red}{i} & m & i & s & s & i & s & s & i & p & \color{red}{p} \\
+1 & \color{red}{i} & p & p & i & m & i & s & s & i & s & \color{red}{s} \\
+2 & \color{red}{i} & s & s & i & p & p & i & m & i & s & \color{red}{s} \\
+3 & \color{red}{i} & s & s & i & s & s & i & p & p & i & \color{red}{m} \\
+4 & \color{blue}{m} & i & s & s & i & s & s & i & p & p &
+\color{blue}{i} \\
+5 & \color{green}{p} & i & m & i & s & s & i & s & s & i & \color{green}{p} \\
+6 & \color{green}{p} & p & i & m & i & s & s & i & s & s & \color{green}{i} \\
+7 & \color{cyan}{s} & i & p & p & i & m & i & s & s & i & \color{cyan}{s} \\
+8 & \color{cyan}{s} & i & s & s & i & p & p & i & m & i & \color{cyan}{s} \\
+9 & \color{cyan}{s} & s & i & p & p & i & m & i & s & s & \color{cyan}{i} \\
+10 & \color{cyan}{s} & s & i & s & s & i & p & p & i & m & \color{cyan}{i} \\
+\hline
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The BWT: Reversibility}
+
+\begin{itemize}
+  \item Start index is also needed
+  \item \(i\)-th occurrence in the first column corresponds to \(i\)-th
+  occurrence of the last column
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{|r||tttttttttt|t|}
+\hline
+0 & \color{red}{i} & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p \\
+1 & \color{blue}{i} & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s &
+s & i & s & s \\
+2 & \color{green}{i} & \colorbox{green}{s} & \colorbox{green}{s} &
+\colorbox{green}{i} & \colorbox{green}{p} & p & i & m & i & s & s \\
+3 & \color{cyan}{i} & \colorbox{cyan}{s} & \colorbox{cyan}{s} &
+\colorbox{cyan}{i} & \colorbox{cyan}{s} & s & i & p & p & i & m \\
+4 & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p & \color{red}{i} \\
+5 & p & i & m & i & s & s & i & s & s & i & p \\
+6 & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s & s & i & s & s &
+\color{blue}{i} \\
+7 & s & i & p & p & i & m & i & s & s & i & s \\
+8 & s & i & s & s & i & p & p & i & m & i & s \\
+9 & \colorbox{green}{s} & \colorbox{green}{s} & \colorbox{green}{i} &
+\colorbox{green}{p} & p & i & m & i & s & s & \color{green}{i} \\
+10 & \colorbox{cyan}{s} & \colorbox{cyan}{s} & \colorbox{cyan}{i} &
+\colorbox{cyan}{s} & s & i & p & p & i & m & \color{cyan}{i} \\
+\hline
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\end{document}
