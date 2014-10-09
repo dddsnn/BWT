@@ -268,7 +268,7 @@ eaeaaAaaiaaaaaaaaauaaaaoaaaaiaaaiiaauaauaauaiaaaaiuaaaaaaaaaaaaaaaaaaaaaiaaaaaaA
   \item Alphabet initialized with all possible symbols (e.g. \texttt{[0x00,
   0x01, \ldots, 0xff]} for bytes)
   \item Symbols encoded as index in the coder's alphabet
-  \item Encoded symbols is moved to the front of the alphabet
+  \item Encoded symbol is moved to the front of the alphabet
 \end{itemize}
 
 \pause
@@ -656,8 +656,8 @@ File: book1, size 6150168 bits.
   \item Orders for the second column even less suitable as default order
   \item Overhead for storing the orders ($83 \cdot 1684$ bits) outweighs
   compression gain
-  \item First columns only requires three orders (natural order as default), not
-  sure if reversible
+  \item First columns actually require three orders (natural order as default),
+  not sure if reversible
 \end{itemize}
 
 \end{frame}
@@ -754,6 +754,7 @@ Caveats
   \item Effective with static (two-pass) Huffman coder I use
   \item Adaptive coder could adapt to temporarily higher MTF codes
   \item Huffman coder with multiple tables could have one for these bad cases
+  (bzip2)
 \end{itemize}
 
 \end{frame}
