@@ -5,4 +5,5 @@
 /thesis/*.synctex.gz
 /thesis/*.toc
 /thesis/*.out
-/thesis
+/thesis/*.nav
+/thesis/*.snm

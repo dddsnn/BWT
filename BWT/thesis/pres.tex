@@ -2,14 +2,48 @@
 
 \usepackage{tabularx}
 \usepackage{color}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{xparse}
+\usepackage{array}
+\usepackage{pifont}
+\usepackage{graphicx}
+\usepackage{tabularx}
 
 \beamertemplatenavigationsymbolsempty
 \newcolumntype{t}{>{\fontfamily{\ttdefault}\selectfont}c}
+\newcolumntype{y}{>{\fontfamily{\ttdefault}\selectfont}r}
+\newcolumntype{u}{>{\fontfamily{\ttdefault}\selectfont}l}
+\setbeamertemplate{footline}[frame number]
+\NewDocumentCommand{\rot}{O{25} O{1em} m}{\makebox[#2][l]{\rotatebox{#1}{#3}}}
+
+\makeatletter
+{\obeylines\gdef\bt@eol{^^M}}
+\newenvironment{breakabletexttt}
+  {\ttfamily\hfuzz=0.4em
+   \list{}{\leftmargin=2em
+           \itemindent=-\leftmargin
+           \listparindent=-\leftmargin
+           \parsep=0pt}
+   \item\relax\obeylines\breakable@texttt}
+  {\endlist}
+\def\breakable@texttt#1{%
+  \ifx#1\end
+  \expandafter\end
+  \else
+    \expandafter\ifx\bt@eol#1%
+      #1%
+    \else
+      \string#1\hskip1sp
+    \fi
+    \expandafter\breakable@texttt
+  \fi}
+\makeatother
 
 \title{Burrows-Wheeler compression with modified sort orders and exceptions to
 the MTF phase, and their impact on the compression rate}
 \author{Marc Lehmann}
-\date{October 9, 2014}
+\date{}
 
 \begin{document}
 
@@ -96,7 +130,8 @@ Example: \texttt{mississippi}
 \end{frame}
 
 \begin{frame}
-\frametitle{The BWT: context blocks}
+\frametitle{The BWT}
+\framesubtitle{Context Blocks}
 
 \begin{itemize}
   \item \emph{Context block}: block of BW code corresponding to rows with a
@@ -126,7 +161,45 @@ Example: \texttt{mississippi}
 \end{frame}
 
 \begin{frame}
-\frametitle{The BWT: Reversibility}
+\frametitle{The BWT}
+\framesubtitle{Reversibility}
+
+\begin{itemize}
+  \item Every column is a permutation of the input
+  \item First column can be reconstructed by sorting the last
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{|r||tttttttttt|t|l}
+\cline{1-12}
+0 & \color{red}{i} & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p & \\
+1 & \color{blue}{i} & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s &
+s & i & s & s & \\
+2 & \color{green}{i} & \colorbox{green}{s} & \colorbox{green}{s} &
+\colorbox{green}{i} & \colorbox{green}{p} & p & i & m & i & s & s & \\
+3 & \color{cyan}{i} & \colorbox{cyan}{s} & \colorbox{cyan}{s} &
+\colorbox{cyan}{i} & \colorbox{cyan}{s} & s & i & p & p & i & m & \\
+4 & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p & \color{red}{i} & 0
+\\
+5 & p & i & m & i & s & s & i & s & s & i & p & \\
+6 & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s & s & i & s & s &
+\color{blue}{i} & 1 \\
+7 & s & i & p & p & i & m & i & s & s & i & s & \\
+8 & s & i & s & s & i & p & p & i & m & i & s & \\
+9 & \colorbox{green}{s} & \colorbox{green}{s} & \colorbox{green}{i} &
+\colorbox{green}{p} & p & i & m & i & s & s & \color{green}{i} & 2 \\
+10 & \colorbox{cyan}{s} & \colorbox{cyan}{s} & \colorbox{cyan}{i} &
+\colorbox{cyan}{s} & s & i & p & p & i & m & \color{cyan}{i} & 3 \\
+\cline{1-12}
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The BWT}
+\framesubtitle{Reversibility}
 
 \begin{itemize}
   \item Start index is also needed
@@ -136,28 +209,552 @@ Example: \texttt{mississippi}
 
 \begin{table}
 \centering
+\begin{tabular}{|r||tttttttttt|t|l}
+\cline{1-12}
+0 & \color{red}{i} & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p & \\
+1 & \color{blue}{i} & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s &
+s & i & s & s & \\
+2 & \color{green}{i} & \colorbox{green}{s} & \colorbox{green}{s} &
+\colorbox{green}{i} & \colorbox{green}{p} & p & i & m & i & s & s & \\
+3 & \color{cyan}{i} & \colorbox{cyan}{s} & \colorbox{cyan}{s} &
+\colorbox{cyan}{i} & \colorbox{cyan}{s} & s & i & p & p & i & m & \\
+4 & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p & \color{red}{i} & 0
+\\
+5 & p & i & m & i & s & s & i & s & s & i & p & \\
+6 & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s & s & i & s & s &
+\color{blue}{i} & 1 \\
+7 & s & i & p & p & i & m & i & s & s & i & s & \\
+8 & s & i & s & s & i & p & p & i & m & i & s & \\
+9 & \colorbox{green}{s} & \colorbox{green}{s} & \colorbox{green}{i} &
+\colorbox{green}{p} & p & i & m & i & s & s & \color{green}{i} & 2 \\
+10 & \colorbox{cyan}{s} & \colorbox{cyan}{s} & \colorbox{cyan}{i} &
+\colorbox{cyan}{s} & s & i & p & p & i & m & \color{cyan}{i} & 3 \\
+\cline{1-12}
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The BWT}
+\framesubtitle{The Effect}
+
+\begin{itemize}
+  \item Substrings of the input beginning with the same symbols are sorted one
+  below the other
+  \item BW code are the symbols immediately preceding them
+  \item Usually only a few distinct symbols in a context block, many runs of the
+  same symbol
+\end{itemize}
+
+\pause
+
+For example, context block corresponding to ``\texttt{nd }'' in book1 (first
+100 symbols):
+\begin{breakabletexttt}
+eaeaaAaaiaaaaaaaaauaaaaoaaaaiaaaiiaauaauaauaiaaaaiuaaaaaaaaaaaaaaaaaaaaaiaaaaaaAaaaaaaaaaaaaaaaaaaaa
+\end{breakabletexttt}
+
+%"nd ": eaeaaAaaiaaaaaaaaauaaaaoaaaaiaaaiiaauaauaauaiaaaaiuaaaaaaaaaaaaaaaaaaaaaiaaaaaaAaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaAaaaaaaaaaaaaaaaaaaaAaaaaAaaaaaaaaaaaaaaaAaaaaaAaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaAaAaaAaaaaaAaaAAaaaaaAaaAaaaaaaaaaaaaAAaaAaaaaaaaaaaaaaaaaaauaaaaaaaaaaaaiaaaaaaaaaaaaaaaaauaaaaiaaauaaaaaaaaaoaaaaaaAaaAuaaaaoaeaeauaaaaaaaaaiiuaaaaauaaaaaaaeaaaaaaAaaaaaAAaaaeauuaiaiauauauiaaaauauuaaaaaoaaiaiaaaaaaaaaaaaaaaaaiaaaaaaaeiaAaaiaaaaaaaiouuauaaiaaaaaaaaaaeaaaaaaaaaaaaaaaaaauaaaauaaaaaaaaauoaaiaaoaoaaaaaaaaaoaiaaaaaaaaaaaaaiaaaaaaaaaaaaAaaauaaaaauaaaaaauiauaauauoiaoauiaaaaAaaaaaaaaaaauaaaaaaaaaaaaiaaaaaaaaauauaaaaaAaaAauiaaAaaaAauauaaaaaaaaaaaaauaaauaiaAaaaaaAAaaeaiaaaaiaaaauuuaaaaaaaaaaaaaaaaaaaaaoaaaaaaaaaaaaaaaaaaaaaauAaaaaaaaaaiaaaaaaaaaaaaiaaaaaaaaaiaaaauaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaaaaaaeaaaaaaauaaaaaaaaaaAaaaaaaaaaaaaiaaiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaauaaaaaaaiaaaaaaaoaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaeaaaaaaaaaiaaaaaaaaaaaaaiaaiiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAaaaiaiaaaaaaaAaAaaaaoaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaauaaaaaaaaaaoiaaaaaaaaaaaaaaaaaaaaaaAauaauaaaaaiaaaaaaaaaaaaaauaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaaaaiauaaaaieeaauuueuaaaauaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaaauaaaaaaaaeaaaaaaaaaaaaaaaaaaaaaaaaaaauaaaaaaaaaaAAaaaaaaaaaAaaaaaAaaaAaaaaaaaaaaaaaaaaauaaaaaaaaaaaaAaaaaauaaaaaaaaaaaAaaaaaauaaaaaaaaaaaaaaaaaaaaaaaauauuuaaaaiaaaauaaaaauaaaaauaaaaiaiiAauaaiiaiiaaaaaaAaauiaaaaauauiiuiiaeuuiuuuauuuaaaiuaaaaaaaaaaaaaauaaaeeaaaaeaaouaaaaAaauiaiaaaauaaaaaAaaaaaaaaaaAaaaaAiaaAAaaAAaaaaaaaAAaaaaaaaaaAauaaAaAaaaaaaaaaaaauauaiauaaaauaaaauaiaaaaaaaaaaauuaaaaaaaaaaaaaaauuaaaaauaoaauaaaaaaaaaaaaaaaauaaaaauaiaaaaaaaaaaaaaaaaaAaaiaaaiaaaaiiaiaiaaauuAaaAaaaaaAaAaiuaaAaaeeeuaaaaaaaaaaaaaaaauioiiiiaaaaaaaaaaaaauaaaaaaaaaauuaaaaaaaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaAiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAaaaaaaeaaaauaaaaaaaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaoaaaaaaaaaoaaiaaaaaaaaaaaaaaaaaauaiaiiooaaaaaaoaaaaaaaaaaAaaaaAuaaaaaaaaaiaaaaaiaaaaaaaaaaaaaaaaaeaaaaaaaAaaaaaaiaaaaaaaAaooaaaoaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaaaAaaaaaaaaaaaoaaauaAAAaaaaaAAaaaAaaaAAAAAaAuuuaaaaaiaaaaaiaeaiuueaeeeaeieueuaieuueuoeeeaaeeuiieioaeaauuaueeeuuieaeeeaeeeeaeeeeeeeeuueeuuoeeeuuiaoaeaaaaaaauaAaaauauoaiaaaaaauaaaaaaaaaaaaaaaaaaiiaaaaaaaaaaaaaaaaaaAaaaaaiiiuiuiaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaaaaaoaaaaaaoaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaoaaaaaaaaaaaaaaiaaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAaaaaaaaiaaiaaaaaaaaaaaaauaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaauaaaaaaaaaaaaaaaaaaaaaaoaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaoaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaaaaaaAaaaaaaeaaaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaAaaaaiaaaaaaaaaaaaaaaaaauaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaAAaAAAaaaaaaaaaaaAaaAaaaAaaaaaAAaaaaaaaaaaauuaaiaaaaaaaaaaaAAaaaAaaaaaaaaaaaaaiaiaaaaaaiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaAaiaa-aaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaiaaaaaauaoaiaiaaauaaauiaauaaaeaaauaiuaaaiaaaAaauuauiuaaeaaaaaaiaaaauuAiiaaaaaaaiaaaaaeaaaaaaaaaaaaaauuaaaaaaaaeaaaaAaaaaaaaoauaaaiaaaaaauuaaaaaaaiaauaauaaaaaaaaaaaauaaaaaaaaoaaauaauaoaaauaaaaaaiaauoaaaaoaaaaAaaauauiaauuaAaaauaaaoaaaaaaaaaaaaaaaaaaaiiaiaaaaaaaaaaaoaaaaaaaaaaaAaaaAaaiiaaaaaaaaiAaaoaaaaaaAauaaaaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaioaaaaaaaaaaaaaaaaiiaaaaaoaaaaaaaaiaaaaaaaaaaaaaiaaiauaauaaaaaAaaauaaeaaaauiiaaaauaauaiuiiiaaaaaaAaaAAaaaaaaaaaaaaaaaaaaaaaaaaaaAAauaaAAaaaaaaAaAaaaaaaaaaaaaaaaAaaaaaaaaaaaaaaAuaaaaaaaaAAaaaaaaaiaaiaiaaAaaaaAaaaaaaaaaaAAaaaaaaaaaaiaaaaaaaaaaiaiaaAaaeaoaiaaiiiiaaaaaaaaaaaaaaaaaaaoaaaaaaaaaaaaaaaaaaaaaaaaaAaaaaaauueaooaooaaaaaaaeaueuuuauaeiaaiuaauaeaiuaaiaiiaiAuiiiaaiaeaaiaoauAiaaaAaueuiuuueeuuaaiaaaaaaaaaaaiaaaaaaaaaaaaaaaaoaaaaaaaaaaaaaaaaoaaaaaaaaaaaaaaaaaauaaaaaaaaaaaaaaaaeaaaaaaaaauaaaaaaaaaaaaaaaaiiaiuuaaueuaiauaeaaaaoaaaaaaaaaaaaaaaaaaaaaaaiaaaaaaaaaaaaaaaaaaaaaaaiuaaaiaaaaauuaiaaaaaaAiaaaaeaaauuaaaaiaaAiuiuaaaaaaaaaaaaaaaaaaaaaaAaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaauiaaaAaaaaoAAaAaaAaaaAaaaaaaAaiaaaaAAAaAaaaAaaeieaaaiaiiiaAAuiaaaaaaaaaaaaaiaaaaaAaaaaaaaAaaaaaaaaaaaaaaaaaaaaaaaaaaaaauaaaaiuaaauaaaaiAiaaaaaaaoaaaaaauaaaaaaaaaaaaaaaaaaaAiaaaaaaaiaaaAAaaaaaaaAaaaAAaaaaaaaAAAAaaaAaiAiaaaaaiAAaaAaAAaaaaaauauaaaAAAAaauauaaaaaaaaiai
+%". ":
+% leyyytetylnyyykrnytehnnyadyyyrkesyyydalsyyyddlednyyydtrgkryesendydnekyayswnregsyrmdeycs.nntyhkdegyd!seeenyktntlenrrhydmyrwyensnypndbeyretmrnysetyetykyyyneymynpnhdengblseydttdnpsnn)yeyypdehkweylnellyytrefdnsnfeykssdklnyesglsewykekydtyyeylyrdnrdydslspaeyddyednmdhsrnyyddsyrefe)ysnegytre.mnnyyskyklbddsrshssetnr)ryrktenanlhddelwtepyyyemdawsdeeyylyyfsegteldtehlbtwy!!drt!ygnrtyunhl!!!!!!!t!egayedtykny!depglgtrkyywypdynd!!!!!!!!!!!!kweynywyfdytnengykenadnnmeyeeeeldmdnyndrydydndndtyrltlleyynryekdgesmeesoehyeeknnedtdedynynytnatlrtmddyk!kdd .nhetyemt!!c e ynsyrrytehlteerreengdmrrddsssytttysstadleeykysprlsetipohtfedserkdntggesmeewrrsrnenydnlewegmessstsllseng.y.rrttttdeeytsdmgr)rdtreytosneenledswIlghn.smeleegeostrslnesmdnehtshnmottwslgnnnyydeheesntnsulseneonyrnesesnldwrdsndrdtddrmttterdtghenmemdpeswe.eederrtdrtmdeedtenrnmeetggyddsltrpndynsyrtedesnerdtdrsnene.ewgersssneenefeteteherreedwtkswhlnnrdrdrrerrrrrrsedsarererydeyererrremrtrrdelrmrnsresrrrrrrrrrllrrmrrrsrrrrrrrrrydsettedehnergde.yeegtnsytmoottnoyey'tnnelsussnnyosdnttmyedyemtmnr.srsslstnsnndwtetrdewsesdeysenndenlefsedsgetrwstyeueetdkdresrlwdssoenrmnrrrrnrdsdssgmestsrhrrsserssgusnnlkmsnyfgrn!dyegtuyrrnnrytdstrneedk!teuwtos!essewkBBnnwkeetsherthegIsyteeyyllteeuasstmsyenyneermnyeessnhlyerhstnwwererrnrrtwretsseyyrsvnaeyentneeensytee!yegsgdtswdeehkerenmryenfsmtenoeekosroreeoloyaTlnedmyysntotgeysnkerfdemsaeeeeylkyyeemrgsnerenteshneessdynatnseddynssnrdpyktwkyydltslsettnydygnteyeuntdtnsnunndneeeeydttofkdwedmdpdsyededydnernrdmmytyedldetermeskydlndhsegersysesytmeewtermwnnyemnemremerdddteettyethynteydeeekyrs!tynewrenetswsegtywbsdyssedeymnrloynddegtesdsknemsrrdmsedtsntddnsstwwpytdsdottyerkrndnegle!ryedsr!eegtkemyelsygeeegdd.msddesnsssssrkettldeyssnyyesyynmke!esslengytseeseyntdehedketegnherIeygresse.esedgdotedrusdmdotmeerm.n.tIwtudeueygygltw!swserrtseoeyhayyhyuyyotseestnmetytmxoepukskrnreynonuesertydtktgkeesntyregernetusesstwgnpnosgtlsdeedrosleereytee.esudsyesdtlhimleeyr.wtettyotteseedrtdedylnygnsestedsthdseslsedesresyeseedsysmsdrteeyrwdunttetnysnlleheeytdyeegrdmorhrsssgyymyxemeestdttsltsguewfedndtrkfeodedegyntphndmaordseoemhmkwynnerydtyedtnmrbgseetgseldeegtnsddnsseedergerhenrydrytdrsrtdttneenym!drst!ryttetyrrrmtrtesedekl.wtmdretmeedutnlennggrsrrtenssrmoenmee.thwfrndrrsetlddyedresmoGIomhhwmednertowdnressdeetee.yfegnmrdtldtohfnendp.eyyrsdrerdgrdntynengymshmlywesyntsyd!guetdoterdeeelogsmfstsdsuf! gdgttswdfprrregwsgnefdotsnsydmlheretyestsrerrrrrrrrrrrthlmnrrlwbfnenslsyreeesdrdntdkrrdsmsysgrnlnngtytyhdtlftllermaylwgtewnddnedfoyegepdlympssstsrsymnyefee!sbsyltrdedsrmrnhsgemnd'dtegemntnsdsstgrsseoygsdsetwdeeteeddeddmrdtnmfysayslnsdnydtotstdethsggtmeydtesngddtyYeerdnwswelemerstswrdyyyyeglsyneanefedededrtetleltee.trerdedylenltttyeedlensssdytynelkesdsyeryndlordydrstrestlnsdyyeunulgsereyytededhnesrustdsssorredyyhteestygdyndeetrndhsemtenensre)nyerthlonyssnrprytdgdrrlfwhyddtlrdeeeesedredndgdsoeelsewnnryptergftreengddeetewydtmeennsknerdsrlhnwyssercldndeeetsnfdyesgptwmdkefeseldnytnhedytyesysngrsekhsadmdeptyemdesrdglayysnnnswe!drgngsgseeemdrngegwtteltregdtayerdgdwynwettdyydddydshdntdefmrftregrtsyommrelshmndeydoyfeldrdyetgrngyeeesdgeytftyemreedyayeenedeeynysynewldtrgtrrdesrnsfntyhsednmskestdtdlsddyetkdroddmfdsentgmedssyssanemst.emsseyhdsgkesektdydewenesrlyghyhssnskynenhhdedkeeesstweedlrrrlnemenmddysneertyedfrnelklnneewnsmrtetgtrtldnsdaotlefddyhdpgtdsdet!trryydlekcmegesssteserrssrrrktseropmssnsssesMrsgrrdtysdsrrrlsssrsrsrssshydspsh'eekmnnkenlndetts!seytelrs.eymossolturrwtnynleteeytuddymew.ndregIeslmhntdltheerresskolrgrsnrnldyryeyrreresdnmekysmdkyysyksgnldmeddyewmtrendrytseywkedwntyeksyytfonnedsggee.lyefeneotdstenseywtnndfu!ertrlsdkssegsrettwduhstekrthlydldhtsytttneto!teeertryekghety.,adreo!Iese.yded!os gn!!enstetd!dl
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Move-To-Front Coding}
+
+\begin{itemize}
+  \item Alphabet initialized with all possible symbols (e.g. \texttt{[0x00,
+  0x01, \ldots, 0xff]} for bytes)
+  \item Symbols encoded as index in the coder's alphabet
+  \item Encoded symbols is moved to the front of the alphabet
+\end{itemize}
+
+\pause
+
+For example, encode \texttt{aaabacccba}:
+
+\texttt{[97, 0, 0, 98, 1, 99, 0, 0, 2, 2]}
+
+\begin{itemize}
+  \item Generally small numbers
+  \item Runs of same symbols are runs of zeros
+  \item book1: \texttt{0}: 49.8\%, \texttt{1}: 15.4\%, \texttt{2}: 8\%,
+  \texttt{3}: 5.3\%
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Entropy Coding}
+
+\begin{itemize}
+  \item Output of MTF has very skewed probabilities, suitable for entropy coding
+  \item Symbols with high probability are encoded with short codes
+  \item Huffman coding, arithmetic coding
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Modifying the Sort Order}
+
+\begin{itemize}
+  \item B. Chapin, 1998
+  \item Instead of \texttt{a} $\rightarrow$ \texttt{b} $\rightarrow$ \texttt{c}
+  $\rightarrow \ldots$, sort differently
+  \item Transitions between ``similar'' context blocks means lower MTF codes in
+  the beginning
+  \item Less symbols have to be ``fetched from the back'' of the alphabet
+  \item Chapin: handpicked order \texttt{aeioubcd\ldots}
+  \item Overhead: \(\lceil log_{2}256! \rceil = 1684\) bits
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Computing Orders}
+
+\begin{itemize}
+  \item Assign a cost to each transitions between symbols (i.e. What if \(x\)
+  was sorted before \(y\)?)
+  \item Run Traveling Salesman Heuristic on the costs
+  \item Best tour is the best sort order
+  \item (according to the metric that computed the costs)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Metrics}
+
+\begin{itemize}
+  \item Chapin: based on BW code
+  \item Analyze similarities in symbol frequencies of context blocks
+  \item Badness metric: based on the effect on the MTF code
+  \item Attempts to put a number to how ``bad'' a transition is (for
+  compression)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The Badness Metric}
+\framesubtitle{Partial MTF}
+
+\begin{itemize}
+  \item Like regular MTF, but start with empty alphabet
+  \item Encode symbols that aren't in it with a special code (\texttt{-1})
+\end{itemize}
+
+Example \texttt{aaabacccba} from earlier:
+
+\begin{tabular}{rc}
+MTF: & \texttt{[97, 0, 0, 98, 1, 99, 0, 0, 2, 2]} \\
+
+Partial MTF: & \texttt{[-1, 0, 0, -1, 1, -1, 0, 0, 2, 2]} \\
+\end{tabular}
+
+\begin{itemize}
+  \item Special codes only difference from regular MTF
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The Badness Metric}
+
+\begin{itemize}
+  \item Want to determine badness value for transition from $x$ to $y$
+  \item Do BWT with natural order and get the context blocks corresponding to
+  $x$ and $y$
+  \item Create the partial MTF for context block $y$ and for the concatenation
+  of both
+\end{itemize}
+
+\pause
+
+For example, \texttt{abc} and \texttt{ccaadb}:
+
+\bgroup
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{ruyyyyyyyyy}
+right side: & [ & & & \colorbox{green}{-1}, & 0, & \colorbox{green}{-1}, & 0, &
+\colorbox{green}{-1}, & \colorbox{green}{-1}] \\
+combined: & [-1, & -1, & -1, & 0, & 0, & 2, & 0, & -1, & 3] \\
+\end{tabular}
+\egroup
+
+\begin{itemize}
+  \item Metric assumes that context blocks remain unchanged
+  \item Only positions where the right side has special codes are relevant
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The Badness Metric}
+
+\begin{itemize}
+  \item Compare values at the relevant positions to ideal values
+\end{itemize}
+
+\texttt{abc} $\rightarrow$ \texttt{ccaadb}
+
+\bgroup
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{ruyyyyyyyyy}
+right side: & [ & & & \colorbox{green}{-1}, & 0, & \colorbox{green}{-1}, & 0, &
+\colorbox{green}{-1}, & \colorbox{green}{-1}] \\
+combined: & [-1, & -1, & -1, & 0, & 0, & 2, & 0, & \colorbox{red}{-1}, & 3] \\
+ideal: & [ & & & 0, & & 1, & & 2, & 3] \\ 
+\end{tabular}
+\egroup
+
+\pause
+
+\begin{itemize}
+  \item Special code in the combined code: symbol only appears in the right side
+  \item No information: assume ideal
+  \item Badness value is the sum of the differences between actual and ideal
+  value
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The Badness Metric}
+\framesubtitle{Variants}
+
+\begin{itemize}
+  \item Weighting: divide value by the number of special codes in the right side
+  \item So (long) blocks with many different symbols aren't punished
+  \item MTF prediction: instead of assuming ideal code, make a guess
+  \begin{description}
+  \item[generic] mean of all MTF codes greater or equal the ideal code
+  \item[specific] mean of all MTF codes greater or equal the ideal code, that
+  are encoding the same underlying symbol
+  \end{description}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The Badness Metric}
+\framesubtitle{First Column Only}
+
+\begin{itemize}
+  \item Metric assumes context blocks remain unchanged, but this is not true
+  \item When a different order is used, the blocks will also be sorted
+  differently
+  \item More specific problem: only look for order for first column, rest is
+  ordered with the natural order
+  \item This way, context blocks stay as they were, metric's assumption holds
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Performance of the Metrics}
+\framesubtitle{book1}
+
+\begin{table}
+\centering
+\begin{tabular}{c|cc|c|c}
+\multicolumn{1}{c}{Metric} & \multicolumn{1}{c}{weighted} &
+\multicolumn{1}{c}{MTF prediction} &
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first column}}
+\\ \hline
+\multirow{6}{*}{Badness} & \ding{55} & \ding{55} & -0.04 & 0.01 \\ \cline{2-5}
+& \ding{55} & generic & -0.02 & 0.02 \\ \cline{2-5}
+& \ding{55} & specific & 0.04 & 0.01 \\ \cline{2-5}
+& \ding{51} & \ding{55} & 0.03 & 0.02 \\ \cline{2-5}
+& \ding{51} & generic & 0.06 & 0.02 \\ \cline{2-5}
+& \ding{51} & specific & 0.08 & 0.02 \\ \cline{2-5}
+\multicolumn{3}{c|}{``aeiou\ldots''} & 0.08 & 0.01 \\ \hline
+\multicolumn{3}{c|}{histogram differences} & 0.04 & 0.01 \\ \hline
+\multicolumn{3}{c|}{number of inversions} & 0.04 & 0.01 \\ \hline
+\multicolumn{3}{c|}{number of inversions log} & 0.04 & 0.01 \\ \hline
+\end{tabular}
+\end{table}
+File: book1, size 6150168 bits.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Performance of the Metrics}
+\framesubtitle{paper1}
+
+\begin{table}
+\centering
+\begin{tabular}{c|cc|c|c}
+\multicolumn{1}{c}{Metric} & \multicolumn{1}{c}{weighted} &
+\multicolumn{1}{c}{MTF prediction} &
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first column}}
+\\ \hline
+\multirow{6}{*}{Badness} & \ding{55} & \ding{55} & -0.40 & 0.02 \\ \cline{2-5}
+& \ding{55} & generic & -0.21 & 0.10 \\ \cline{2-5}
+& \ding{55} & specific & -0.15 & 0.10 \\ \cline{2-5}
+& \ding{51} & \ding{55} & -0.24 & 0.12 \\ \cline{2-5}
+& \ding{51} & generic & -0.10 & 0.14 \\ \cline{2-5}
+& \ding{51} & specific & -0.04 & 0.13 \\ \cline{2-5}
+\multicolumn{3}{c|}{``aeiou\ldots''} & 0.17 & 0.02 \\ \hline
+\multicolumn{3}{c|}{histogram differences} & 0.05 & 0.05 \\ \hline
+\multicolumn{3}{c|}{number of inversions} & 0.11 & 0.11 \\ \hline
+\multicolumn{3}{c|}{number of inversions log} & -0.04 & 0.09 \\ \hline
+\end{tabular}
+\end{table}
+File: paper1, size 425288 bits.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Performance of the Metrics}
+\framesubtitle{Observations}
+
+\begin{itemize}
+  \item Not much of a difference
+  \item More relative improvement with smaller file size (number of transitions)
+  \item Badness is good for first column, not always for all columns
+  \item Considering overhead, paper1 actually gets bigger
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Multiple Sort Orders}
+
+\begin{itemize}
+  \item Make separate orders for the first two (or more) columns
+  \item One order: for every distinct symbol in the first column, there's one
+  context block
+  \item Two orders: for every distinct symbol in the first column, for every
+  distinct symbol in the second that follows it, there's one context block
+  \item More transitions to optimize, hopefully more compression gains
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Multiple Sort Orders}
+\framesubtitle{The BWT}
+
+\begin{table}
+\centering
 \begin{tabular}{|r||tttttttttt|t|}
 \hline
-0 & \color{red}{i} & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p \\
-1 & \color{blue}{i} & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s &
-s & i & s & s \\
-2 & \color{green}{i} & \colorbox{green}{s} & \colorbox{green}{s} &
-\colorbox{green}{i} & \colorbox{green}{p} & p & i & m & i & s & s \\
-3 & \color{cyan}{i} & \colorbox{cyan}{s} & \colorbox{cyan}{s} &
-\colorbox{cyan}{i} & \colorbox{cyan}{s} & s & i & p & p & i & m \\
-4 & \colorbox{red}{m} & i & s & s & i & s & s & i & p & p & \color{red}{i} \\
-5 & p & i & m & i & s & s & i & s & s & i & p \\
-6 & \colorbox{blue}{p} & \colorbox{blue}{p} & i & m & i & s & s & i & s & s &
-\color{blue}{i} \\
-7 & s & i & p & p & i & m & i & s & s & i & s \\
-8 & s & i & s & s & i & p & p & i & m & i & s \\
-9 & \colorbox{green}{s} & \colorbox{green}{s} & \colorbox{green}{i} &
-\colorbox{green}{p} & p & i & m & i & s & s & \color{green}{i} \\
-10 & \colorbox{cyan}{s} & \colorbox{cyan}{s} & \colorbox{cyan}{i} &
-\colorbox{cyan}{s} & s & i & p & p & i & m & \color{cyan}{i} \\
+0 & i & s & s & i & s & s & i & p & p & i & m \\
+1 & i & s & s & i & p & p & i & m & i & s & s \\
+2 & i & p & p & i & m & i & s & s & i & s & s \\
+3 & i & m & i & s & s & i & s & s & i & p & p \\
+4 & m & i & s & s & i & s & s & i & p & p & i \\
+5 & p & p & i & m & i & s & s & i & s & s & i \\
+6 & p & i & m & i & s & s & i & s & s & i & p \\
+7 & s & s & i & s & s & i & p & p & i & m & i \\
+8 & s & s & i & p & p & i & m & i & s & s & i \\
+9 & s & i & s & s & i & p & p & i & m & i & s \\
+10 & s & i & p & p & i & m & i & s & s & i & s \\
 \hline
 \end{tabular}
 \end{table}
+
+\begin{itemize}
+  \item In general, different orders for all different symbols in the first
+  column
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Reversibility}
+
+\begin{itemize}
+  \item Can't show reversibility with arbitrary number of orders
+  \item Can show for two orders
+  \item Problem: $i$-th occurrence in first column doesn't correspond to $i$-th
+  occurence in last column anymore
+  \item Solution: ``Look ahead'' and reorder according to the second column
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Reversibility}
+\framesubtitle{Looking Ahead}
+
+\begin{table}
+\centering
+\begin{tabular}{|r||tttttttttt|t|l}
+\cline{1-12}
+0 & \color{red}{i} & \colorbox{red}{s} & \colorbox{red}{s} & \colorbox{red}{i} &
+\colorbox{red}{s} & s & i & p & p & i & m & \\
+1 & \color{blue}{i} & \colorbox{blue}{s} & \colorbox{blue}{s} &
+\colorbox{blue}{i} & \colorbox{blue}{p} & p & i & m & i & s & s & \\
+2 & \color{green}{i} & \colorbox{green}{p} & p & i & m & i & s & s & i & s & s &
+\\
+3 & \color{cyan}{i} & \colorbox{cyan}{m} & i & s & s & i & s & s & i & p & p &
+\\
+4 & \colorbox{cyan}{m} & i & s & s & i & s & s & i & p & p & \color{cyan}{i} & 3
+\\
+5 & \colorbox{green}{p} & p & i & m & i & s & s & i & s & s & \color{green}{i} &
+2
+\\
+6 & p & i & m & i & s & s & i & s & s & i & p & \\
+7 & \colorbox{red}{s} & \colorbox{red}{s} & \colorbox{red}{i} &
+\colorbox{red}{s} & s & i & p & p & i & m & \color{red}{i} & 0 \\
+8 & \colorbox{blue}{s} & \colorbox{blue}{s} &
+\colorbox{blue}{i} & \colorbox{blue}{p} & p & i & m & i & s & s &
+\color{blue}{i} & 1 \\
+9 & s & i & s & s & i & p & p & i & m & i & s & \\
+10 & s & i & p & p & i & m & i & s & s & i & s & \\
+\cline{1-12}
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item Get possible indices and sort based on following symbols according to
+  the second order
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Performance}
+
+\begin{table}
+\centering
+\begin{tabular}{c|cc|c|c}
+\multicolumn{1}{c}{Metric} & \multicolumn{1}{c}{weighted} &
+\multicolumn{1}{c}{MTF prediction} &
+\multicolumn{1}{c}{\rot{all columns}} & \multicolumn{1}{c}{\rot{first columns}}
+\\ \hline
+\multirow{6}{*}{Badness} & \ding{55} & \ding{55} & -0.06 & 0.07 \\ \cline{2-5}
+& \ding{55} &  generic & -0.02 & 0.09 \\ \cline{2-5}
+& \ding{55} & specific & -0.03 & 0.09 \\ \cline{2-5}
+& \ding{51} & \ding{55} & -0.06 & 0.09 \\ \cline{2-5}
+& \ding{51} & generic & -0.03 & 0.10 \\ \cline{2-5}
+& \ding{51} & specific & -0.04 & 0.09 \\ \cline{2-5}
+\multicolumn{3}{c|}{``aeiou\ldots''} & 0.08 & 0.01 \\ \hline
+\multicolumn{3}{c|}{histogram differences} & -0.04 & 0.03 \\ \hline
+\multicolumn{3}{c|}{number of inversions} & 0.02 & 0.06 \\ \hline
+\multicolumn{3}{c|}{number of inversions log} & 0.01 & 0.06
+\\ \hline
+\end{tabular}
+\end{table}
+File: book1, size 6150168 bits.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Performance}
+\framesubtitle{Observations}
+
+\begin{itemize}
+  \item Better compression than one order if only the first columns are
+  reordered
+  \item Orders for the second column even less suitable as default order
+  \item Overhead for storing the orders ($83 \cdot 1684$ bits) outweighs
+  compression gain
+  \item First columns only requires three orders (natural order as default), not
+  sure if reversible
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exceptions to the MTF}
+
+\begin{itemize}
+  \item Context block ``\texttt{nd }'' in book1:
+\end{itemize}
+\begin{breakabletexttt}
+eaeaaAaaiaaaaaaaaauaaaaoaaaaiaaaiiaauaauaauaiaaaaiuaaaaaaaaaaaaaaaaaaaaaiaaaaaaAaaaaaaaaaaaaaaaaaaaa
+\end{breakabletexttt}
+
+\begin{itemize}
+  \item Context block ``\texttt{. }'':
+\end{itemize}
+\begin{breakabletexttt}
+leyyytetylnyyykrnytehnnyadyyyrkesyyydalsyyyddlednyyydtrgkryesendydnekyayswnregsyrmdeycs.nntyhkdegyd!
+\end{breakabletexttt}
+
+\begin{itemize}
+  \item Next sentence doesn't give indication about last letter of last word of
+  previous one
+  \item Many different symbols, no long runs
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exceptions to the MTF}
+
+\begin{itemize}
+  \item Symbols are the last letters of words, different probabilities
+  \item But no information is taken from the further context
+  \item Encoding with MTF doesn't make sense in this case
+  \item ``Pollutes'' the statistics of a static entropy coder
+  \item<2-> Exclude certain blocks from the MTF phase
+  \item<2-> Put a special code in the MTF to signalize a missing block
+  \item<2-> Encode with Huffman directly and append 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exceptions to the MTF}
+\framesubtitle{Selecting Exceptions}
+
+\begin{itemize}
+  \item Encode with MTF as usual
+  \item For every context block: if the mean of all the MTF values is above a
+  threshold, exclude it from the MTF phase
+  \item Also require a certain length of the block, so the compression gains
+  aren't destroyed by the overhead
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exceptions to the MTF}
+\framesubtitle{Performance, book1}
+
+\begin{table}
+\centering
+\begin{tabularx}{\textwidth}{c|c|c|X}
+min length & threshold & gain & excepted blocks \\ \hline
+0 & 3 & -0.39 & \emph{many} \\
+0 & 4 & 0.59 & 0x00, \textbackslash n, 0x1a, space, !, \&, ), *, +, ``,'', .,
+0, 5, 7, :, ;, =, \textgreater, ?, E, U, V, X \\
+100 & 4 & 0.59 & \textbackslash n, space, !, +, ``,'', ., :, ;, \textgreater,
+?, E, U \\
+100 & 4.5 & 0.60 & \textbackslash n, space, !, +, ``,'', ., :, ;, \textgreater, ? \\
+100 & 5 & 0.59 & \textbackslash n, space, !, +, ``,'', ., :, ;, \textgreater \\
+100 & 6 & 0.26 & \textbackslash n, ``,'', . \\
+\end{tabularx}
+\end{table}
+File: book1, size 6150168 bits.
+\end{frame}
+
+\begin{frame}
+\frametitle{Exceptions to the MTF}
+\framesubtitle{Observations}
+
+\begin{itemize}
+  \item Works much better than the reordering stuff
+  \item Good choice for threshold seems to be between 4 and 5
+\end{itemize}
+
+\pause
+
+Caveats
+
+\begin{itemize}
+  \item Effective with static (two-pass) Huffman coder I use
+  \item Adaptive coder could adapt to temporarily higher MTF codes
+  \item Huffman coder with multiple tables could have one for these bad cases
+\end{itemize}
 
 \end{frame}
 
